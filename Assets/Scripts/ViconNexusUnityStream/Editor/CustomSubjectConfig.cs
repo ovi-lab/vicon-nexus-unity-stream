@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace ubc.ok.ovilab.ViconUnityStream
+namespace ubco.ovilab.ViconUnityStream
 {
     [FilePath("UserSettings/Vicon.config", FilePathAttribute.Location.ProjectFolder)]
     public class CustomSubjectConfig : ScriptableSingleton<CustomSubjectConfig>

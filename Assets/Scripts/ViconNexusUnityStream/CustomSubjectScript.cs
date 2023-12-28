@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 using MessagePack;
 using MessagePack.Resolvers;
 
-namespace ubc.ok.ovilab.ViconUnityStream
+namespace ubco.ovilab.ViconUnityStream
 {
     public class CustomSubjectScript : MonoBehaviour
     {

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ubc.ok.ovilab.ViconUnityStream
+namespace ubco.ovilab.ViconUnityStream
 {
     public class HWDFollower: MonoBehaviour
     {

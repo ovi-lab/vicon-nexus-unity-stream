@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using MessagePack;
 
-namespace ubc.ok.ovilab.ViconUnityStream
+namespace ubco.ovilab.ViconUnityStream
 {
     [MessagePackObject]
     public class Data

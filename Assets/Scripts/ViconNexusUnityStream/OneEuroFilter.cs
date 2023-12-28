@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 
 
-namespace ubc.ok.ovilab.ViconUnityStream
+namespace ubco.ovilab.ViconUnityStream
 {
     class LowPassFilter 
     {

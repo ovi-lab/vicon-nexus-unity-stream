@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace ubc.ok.ovilab.ViconUnityStream
+namespace ubco.ovilab.ViconUnityStream
 {
     public class CustomHandScript : CustomSubjectScript
     {
