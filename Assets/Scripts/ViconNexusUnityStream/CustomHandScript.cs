@@ -1,11 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.XR.Hands;
 
 namespace ubco.ovilab.ViconUnityStream
 {
     public class CustomHandScript : CustomSubjectScript
     {
+        /// <summary>
+        /// The <see cref="CustomHandScript"/> objects for each hands currently active in the scene. Will be used by the hand subsystem provider.
+        /// </summary>
+        internal static Dictionary<Handedness, CustomHandScript> activeHandScripts = new Dictionary<Handedness, CustomHandScript>();
 
         public float normalOffset = 0.001f;
         public bool setPosition = true;
@@ -245,6 +250,33 @@ namespace ubco.ovilab.ViconUnityStream
             SetupMessagePack();
             SetupWriter();
             SetupFilter();
+        }
+
+        /// <inheritdoc />
+        protected void OnEnable()
+        {
+            if (activeHandScripts.ContainsKey(handedness) && activeHandScripts[handedness] != this)
+            {
+                Debug.LogWarning($"A CustomHandScript has already been registered for the {handedness}. Disabling thy self.");
+                gameObject.SetActive(false);
+            }
+            else if (activeHandScripts[handedness] == this)
+            {
+                Debug.LogWarning($"CustomSubjectSctipt in {transform.name} already registered as an active hand.");
+            }
+            else
+            {
+                activeHandScripts.Add(handedness, this);
+            }
+        }
+
+        /// <inheritdoc />
+        protected void OnDisable()
+        {
+            if (activeHandScripts[handedness] == this)
+            {
+                activeHandScripts.Remove(handedness);
+            }
         }
 
         protected bool isRightHand()
@@ -593,9 +625,5 @@ namespace ubco.ovilab.ViconUnityStream
                 return true;
             }
         }
-    }
-
-    public enum Handedness {
-        Left, Right
     }
 }
