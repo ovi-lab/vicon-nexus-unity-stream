@@ -1,6 +1,6 @@
 ## Vicon nexus unity stream
 
-A unity package that communicates with the [vicon-nexus-unity-stream-py](https://github.com/ahmed-shariff/vicon-nexus-unity-stream-py) python package.
+A unity package that communicates with the [vicon-nexus-unity-stream-py](https://github.com/ovi-lab/vicon-nexus-unity-stream-py) python package.
 
 ## The blender models
 
