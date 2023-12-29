@@ -45,6 +45,8 @@ namespace ubco.ovilab.ViconUnityStream
         public UnityEvent OnShowingSubject;
         private bool subjectHidden = false;
 
+        public bool SubjectHidden { get => subjectHidden; }
+
         bool _sensorTriggered;
         public bool sensorTriggered
         {
@@ -481,7 +483,7 @@ namespace ubco.ovilab.ViconUnityStream
             return segments;
         }
 
-        protected void FindAndTransform(Transform iTransform, string BoneName)
+        protected virtual void FindAndTransform(Transform iTransform, string BoneName)
         {
             int ChildCount = iTransform.childCount;
             for (int i = 0; i < ChildCount; ++i)

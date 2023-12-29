@@ -11,6 +11,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// The <see cref="CustomHandScript"/> objects for each hands currently active in the scene. Will be used by the hand subsystem provider.
         /// </summary>
         internal static Dictionary<Handedness, CustomHandScript> activeHandScripts = new Dictionary<Handedness, CustomHandScript>();
+        internal static bool useHandSubsystem = true;
 
         public float normalOffset = 0.001f;
         public bool setPosition = true;
@@ -96,6 +97,9 @@ namespace ubco.ovilab.ViconUnityStream
         protected Dictionary<string, string> segmentChild;
         protected Dictionary<string, string> segmentParents;
         protected Dictionary<string, List<string>> fingerSegments;
+
+        protected Dictionary<string, XRHandJointID> segmentToJoinMapping;
+        protected Dictionary<XRHandJointID, Pose> xrJointPoses;
 
         protected virtual void Start()
         {
@@ -246,6 +250,37 @@ namespace ubco.ovilab.ViconUnityStream
                 {finger_5, new List<string>{segment_5D1, segment_5D2, segment_5D3, segment_5D4}},
             };
 
+            segmentToJoinMapping = new Dictionary<string, XRHandJointID>()
+            {
+                {segment_Hand, XRHandJointID.Wrist},
+                // {segment_Hand, segment_3D1},
+
+                {segment_1D1, XRHandJointID.ThumbMetacarpal},
+                {segment_1D2, XRHandJointID.ThumbProximal},
+                {segment_1D3, XRHandJointID.ThumbDistal},
+                {segment_1D4, XRHandJointID.ThumbTip},
+
+                {segment_2D1, XRHandJointID.IndexProximal},
+                {segment_2D2, XRHandJointID.IndexIntermediate},
+                {segment_2D3, XRHandJointID.IndexDistal},
+                {segment_2D4, XRHandJointID.IndexTip},
+
+                {segment_3D1, XRHandJointID.MiddleProximal},
+                {segment_3D2, XRHandJointID.MiddleIntermediate},
+                {segment_3D3, XRHandJointID.MiddleDistal},
+                {segment_3D4, XRHandJointID.MiddleTip},
+
+                {segment_4D1, XRHandJointID.RingProximal},
+                {segment_4D2, XRHandJointID.RingIntermediate},
+                {segment_4D3, XRHandJointID.RingDistal},
+                {segment_4D4, XRHandJointID.RingTip},
+
+                {segment_5D1, XRHandJointID.LittleProximal},
+                {segment_5D2, XRHandJointID.LittleIntermediate},
+                {segment_5D3, XRHandJointID.LittleDistal},
+                {segment_5D4, XRHandJointID.LittleTip},
+
+            };
 
             SetupMessagePack();
             SetupWriter();
@@ -253,29 +288,56 @@ namespace ubco.ovilab.ViconUnityStream
         }
 
         /// <inheritdoc />
+        protected void Awake()
+        {
+            if (useHandSubsystem)
+            {
+                ViconHandSubsystem.MaybeInitializeSubsystem();
+            }
+        }
+
+        /// <inheritdoc />
         protected void OnEnable()
         {
-            if (activeHandScripts.ContainsKey(handedness) && activeHandScripts[handedness] != this)
+            if (activeHandScripts.ContainsKey(handedness))
             {
-                Debug.LogWarning($"A CustomHandScript has already been registered for the {handedness}. Disabling thy self.");
-                gameObject.SetActive(false);
-            }
-            else if (activeHandScripts[handedness] == this)
-            {
-                Debug.LogWarning($"CustomSubjectSctipt in {transform.name} already registered as an active hand.");
+                if (activeHandScripts[handedness] != this)
+                {
+                    Debug.LogWarning($"A CustomHandScript has already been registered for the {handedness}. Disabling thy self.");
+                    gameObject.SetActive(false);
+                }
+                else
+                {
+                    Debug.LogWarning($"CustomSubjectSctipt in {transform.name} already registered as an active hand.");
+                }
             }
             else
             {
                 activeHandScripts.Add(handedness, this);
             }
+            ViconHandSubsystem.subsystem?.Start();
         }
 
         /// <inheritdoc />
         protected void OnDisable()
         {
-            if (activeHandScripts[handedness] == this)
+            if (activeHandScripts.ContainsKey(handedness) && activeHandScripts[handedness] == this)
             {
                 activeHandScripts.Remove(handedness);
+            }
+            if (activeHandScripts.Count == 0)
+            {
+                ViconHandSubsystem.subsystem?.Stop();
+            }
+        }
+
+        /// <inheritdoc />
+        protected void OnDestroy()
+        {
+            OnDisable(); // FIXME: is this needed here?
+            if (activeHandScripts.Count == 0)
+            {
+                ViconHandSubsystem.subsystem?.Destroy();
             }
         }
 
@@ -592,6 +654,11 @@ namespace ubco.ovilab.ViconUnityStream
                                 else
                                     Bone.position += Bone.forward * normalOffset;
                             }
+
+                            if (useHandSubsystem && segmentToJoinMapping.ContainsKey(BoneName))
+                            {
+                                xrJointPoses.Add(segmentToJoinMapping[BoneName], new Pose(Bone.position, Bone.rotation));
+                            }
                         }
                     }
                 }
@@ -600,6 +667,19 @@ namespace ubco.ovilab.ViconUnityStream
             AddBoneDataToWriter(Bone);
             if (Bone.name == segment_Hand)
                 handWorldToLocalMatrix = Bone.worldToLocalMatrix;
+        }
+
+        /// <inheritdoc />
+        protected override void FindAndTransform(Transform iTransform, string BoneName)
+        {
+            if (xrJointPoses == null)
+            {
+                xrJointPoses = new Dictionary<XRHandJointID, Pose>();
+            }
+            xrJointPoses.Clear();  // FIXME: is threadsafety an issue here?
+            base.FindAndTransform(iTransform, BoneName);
+
+            ViconHandSubsystem.subsystem.SetHandPoses(handedness, xrJointPoses);
         }
 
         protected override bool TestSegmentsQulity(Dictionary<string, Vector3> segments)
