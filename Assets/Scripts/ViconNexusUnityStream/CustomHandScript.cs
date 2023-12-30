@@ -634,6 +634,11 @@ namespace ubco.ovilab.ViconUnityStream
                                         }
                                         if (forward != Vector3.zero)
                                             Bone.rotation = Quaternion.LookRotation(forward, upDirection);
+
+                                        if (CustomHandsOrigin.origin != null)
+                                        {
+                                            Bone.rotation = Bone.rotation * Quaternion.Inverse(CustomHandsOrigin.origin.rotation);
+                                        }
                                     }
                                 }
                             }
@@ -653,6 +658,11 @@ namespace ubco.ovilab.ViconUnityStream
                                     Bone.position += Bone.forward * normalOffset * 1.2f;
                                 else
                                     Bone.position += Bone.forward * normalOffset;
+
+                                if (CustomHandsOrigin.origin != null)
+                                {
+                                    Bone.position = CustomHandsOrigin.origin.InverseTransformPoint(Bone.position);
+                                }
                             }
 
                             if (useHandSubsystem && segmentToJoinMapping.ContainsKey(BoneName))
