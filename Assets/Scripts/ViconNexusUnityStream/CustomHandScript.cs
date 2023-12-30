@@ -292,7 +292,7 @@ namespace ubco.ovilab.ViconUnityStream
         {
             if (useHandSubsystem)
             {
-                ViconHandSubsystem.MaybeInitializeSubsystem();
+                ViconHandSubsystem.MaybeInitializeHandSubsystem();
             }
         }
 

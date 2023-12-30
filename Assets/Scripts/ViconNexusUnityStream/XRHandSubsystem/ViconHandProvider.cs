@@ -156,6 +156,7 @@ namespace ubco.ovilab.ViconUnityStream
 
             var handPoseCache = handsPoses[handedness];
             bool recompute = recomputeHandsPoses[handedness];
+            Transform originCache = CustomHandsOrigin.origin;
 
             for (int jointIndex = XRHandJointID.BeginMarker.ToIndex(); jointIndex < XRHandJointID.EndMarker.ToIndex(); ++jointIndex)
             {
@@ -167,17 +168,18 @@ namespace ubco.ovilab.ViconUnityStream
                 }
 
                 Pose pose = handPoseCache[jointID];
-                if (recompute)
+                if (recompute && originCache != null)
                 {
-                    // TODO: pose inverst transform xr origin
-                    // Probably have a ViconOrigin component which can be added to the HWD, and track that
-                    pose = pose;
+                    Pose oldPose = pose;
+                    pose.position = originCache.InverseTransformPoint(pose.position);
+                    pose.rotation = pose.rotation * Quaternion.Inverse(originCache.rotation);
                     handPoseCache[jointID] = pose;
                 }
 
                 handJoints[jointIndex] = XRHandProviderUtility.CreateJoint(handedness, XRHandJointTrackingState.Pose, jointID, pose);
             }
 
+            recompute = false;
             handRootPose = handPoseCache[XRHandJointID.Wrist];
             return true;
         }

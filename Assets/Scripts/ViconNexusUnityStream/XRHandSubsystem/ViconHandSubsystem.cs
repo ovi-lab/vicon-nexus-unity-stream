@@ -28,7 +28,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <summary>
         /// Initilize the hand subsystem
         /// </summary>
-        public static void MaybeInitializeSubsystem()
+        public static void MaybeInitializeHandSubsystem()
         {
             if (subsystem == null && true) // TODO: Get from scriptable object if we want hand subsystem
             {
@@ -57,6 +57,9 @@ namespace ubco.ovilab.ViconUnityStream
             }
         }
 
+        /// <summary>
+        /// Set the hand poses to provide through the subsystem.
+        /// </summary>
         public void SetHandPoses(Handedness handedness, Dictionary<XRHandJointID, Pose> poses)
         {
             handsProvider.SetHandPoses(handedness, poses);
