@@ -635,9 +635,9 @@ namespace ubco.ovilab.ViconUnityStream
                                         if (forward != Vector3.zero)
                                             Bone.rotation = Quaternion.LookRotation(forward, upDirection);
 
-                                        if (CustomHandsOrigin.origin != null)
+                                        if (CustomHandsOrigin.viconOrigin != null)
                                         {
-                                            Bone.rotation = Bone.rotation * Quaternion.Inverse(CustomHandsOrigin.origin.rotation);
+                                            Bone.rotation = Bone.rotation * Quaternion.Inverse(CustomHandsOrigin.viconOrigin.rotation);
                                         }
                                     }
                                 }
@@ -659,9 +659,9 @@ namespace ubco.ovilab.ViconUnityStream
                                 else
                                     Bone.position += Bone.forward * normalOffset;
 
-                                if (CustomHandsOrigin.origin != null)
+                                if (CustomHandsOrigin.viconOrigin != null)
                                 {
-                                    Bone.position = CustomHandsOrigin.origin.InverseTransformPoint(Bone.position);
+                                    Bone.position = CustomHandsOrigin.viconOrigin.InverseTransformPoint(Bone.position);
                                 }
                             }
 
@@ -689,7 +689,10 @@ namespace ubco.ovilab.ViconUnityStream
             xrJointPoses.Clear();  // FIXME: is threadsafety an issue here?
             base.FindAndTransform(iTransform, BoneName);
 
-            ViconHandSubsystem.subsystem.SetHandPoses(handedness, xrJointPoses);
+            if (useHandSubsystem)
+            {
+                ViconHandSubsystem.subsystem.SetHandPoses(handedness, xrJointPoses);
+            }
         }
 
         protected override bool TestSegmentsQulity(Dictionary<string, Vector3> segments)

@@ -156,7 +156,6 @@ namespace ubco.ovilab.ViconUnityStream
 
             var handPoseCache = handsPoses[handedness];
             bool recompute = recomputeHandsPoses[handedness];
-            Transform originCache = CustomHandsOrigin.origin;
 
             for (int jointIndex = XRHandJointID.BeginMarker.ToIndex(); jointIndex < XRHandJointID.EndMarker.ToIndex(); ++jointIndex)
             {
@@ -168,7 +167,7 @@ namespace ubco.ovilab.ViconUnityStream
                 }
 
                 Pose pose = handPoseCache[jointID];
-                if (recompute && originCache != null)
+                if (recompute)
                 {
                     Pose oldPose = pose;
                     pose.rotation = Quaternion.LookRotation(pose.up, -pose.forward);  // Accounting for the different coordinate system used.

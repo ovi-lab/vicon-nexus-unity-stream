@@ -428,8 +428,8 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 // inputWriter.WriteLine(SceneProperties.currentTicks + ", " + "{" + string.Join(",", segments) + "}");
                 // inputWriter.Flush();
-                transform.root.position = segments[rootSegment] * scale_1;
-                FindAndTransform(transform.root, rootSegment);
+                transform.position = segments[rootSegment] * scale_1;
+                FindAndTransform(transform, rootSegment);
 
                 if (PostTransformCallback != null)
                     PostTransformCallback(finalTransforms);
