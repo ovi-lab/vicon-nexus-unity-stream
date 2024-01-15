@@ -119,6 +119,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: L2D4_end_end
       objectReference: {fileID: 0}
+    - target: {fileID: -971658082878048829, guid: 80ceb2b413a439e448affd9a1b2ee77d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -971658082878048829, guid: 80ceb2b413a439e448affd9a1b2ee77d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -971658082878048829, guid: 80ceb2b413a439e448affd9a1b2ee77d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 80ceb2b413a439e448affd9a1b2ee77d, type: 3}
       propertyPath: m_Name
       value: hand_left Variant

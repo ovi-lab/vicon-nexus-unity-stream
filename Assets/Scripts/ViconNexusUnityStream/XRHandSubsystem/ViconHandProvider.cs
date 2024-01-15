@@ -166,18 +166,20 @@ namespace ubco.ovilab.ViconUnityStream
                     continue;
                 }
 
-                Pose pose = handPoseCache[jointID];
-                if (recompute)
+                if (handPoseCache.TryGetValue(jointID, out Pose pose))
                 {
-                    Pose oldPose = pose;
-                    pose.rotation = Quaternion.LookRotation(pose.up, -pose.forward);  // Accounting for the different coordinate system used.
-                    handPoseCache[jointID] = pose;
-                }
+                    if (recompute)
+                    {
+                        Pose oldPose = pose;
+                        pose.rotation = Quaternion.LookRotation(pose.up, -pose.forward);  // Accounting for the different coordinate system used.
+                        handPoseCache[jointID] = pose;
+                    }
 
-                handJoints[jointIndex] = XRHandProviderUtility.CreateJoint(handedness, XRHandJointTrackingState.Pose, jointID, pose);
+                    handJoints[jointIndex] = XRHandProviderUtility.CreateJoint(handedness, XRHandJointTrackingState.Pose, jointID, pose);
+                }
             }
 
-            recompute = false;
+            recomputeHandsPoses[handedness] = false;
             handRootPose = handPoseCache[XRHandJointID.Wrist];
             return true;
         }

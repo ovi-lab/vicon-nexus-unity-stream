@@ -98,7 +98,7 @@ namespace ubco.ovilab.ViconUnityStream
         protected Dictionary<string, string> segmentParents;
         protected Dictionary<string, List<string>> fingerSegments;
 
-        protected Dictionary<string, XRHandJointID> segmentToJoinMapping;
+        protected Dictionary<string, XRHandJointID> segmentToJointMapping;
         protected Dictionary<XRHandJointID, Pose> xrJointPoses;
 
         protected virtual void Start()
@@ -250,7 +250,7 @@ namespace ubco.ovilab.ViconUnityStream
                 {finger_5, new List<string>{segment_5D1, segment_5D2, segment_5D3, segment_5D4}},
             };
 
-            segmentToJoinMapping = new Dictionary<string, XRHandJointID>()
+            segmentToJointMapping = new Dictionary<string, XRHandJointID>()
             {
                 {segment_Hand, XRHandJointID.Wrist},
                 // {segment_Hand, segment_3D1},
@@ -434,7 +434,13 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 noHand = false;
                 if (normal != Vector3.zero)
-                    transform.root.rotation = Quaternion.LookRotation(-normal, -palm);
+                {
+                    transform.rotation = Quaternion.LookRotation(-normal, -palm);
+                    if (CustomHandsOrigin.viconOrigin != null)
+                    {
+                        transform.rotation = Quaternion.Inverse(CustomHandsOrigin.viconOrigin.rotation) * transform.rotation;
+                    }
+                }
             }
             return segments;
         }
@@ -637,7 +643,7 @@ namespace ubco.ovilab.ViconUnityStream
 
                                         if (CustomHandsOrigin.viconOrigin != null)
                                         {
-                                            Bone.rotation = Bone.rotation * Quaternion.Inverse(CustomHandsOrigin.viconOrigin.rotation);
+                                            Bone.rotation = Quaternion.Inverse(CustomHandsOrigin.viconOrigin.rotation) * Bone.rotation;
                                         }
                                     }
                                 }
@@ -665,9 +671,9 @@ namespace ubco.ovilab.ViconUnityStream
                                 }
                             }
 
-                            if (useHandSubsystem && segmentToJoinMapping.ContainsKey(BoneName))
+                            if (useHandSubsystem && segmentToJointMapping.ContainsKey(BoneName))
                             {
-                                xrJointPoses.Add(segmentToJoinMapping[BoneName], new Pose(Bone.position, Bone.rotation));
+                                xrJointPoses.Add(segmentToJointMapping[BoneName], new Pose(Bone.position, Bone.rotation));
                             }
                         }
                     }

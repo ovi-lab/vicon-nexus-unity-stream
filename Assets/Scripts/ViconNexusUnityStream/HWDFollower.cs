@@ -28,7 +28,7 @@ namespace ubco.ovilab.ViconUnityStream
                 Vector3 right = base3.position - base4.position;
                 if (right != Vector3.zero)
                 {
-                    Quaternion rotation = Quaternion.LookRotation(forward, Vector3.Cross(right, forward));
+                    Quaternion rotation = Quaternion.LookRotation(forward, Vector3.Cross(right, -forward));
                     if (applyFilter)
                     {
                         transform.rotation = filter.Filter(rotation, Time.realtimeSinceStartup);

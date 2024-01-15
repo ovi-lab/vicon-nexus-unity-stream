@@ -111,6 +111,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: hand_test_4 Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 767299664919104908, guid: 0eae284ac9aff8342aaa1e01c09eff2d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 767299664919104908, guid: 0eae284ac9aff8342aaa1e01c09eff2d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5965195893145308784, guid: 0eae284ac9aff8342aaa1e01c09eff2d, type: 3}
       propertyPath: m_Name
       value: R5D4
