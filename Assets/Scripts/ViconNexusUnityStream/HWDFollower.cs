@@ -22,7 +22,7 @@ namespace ubco.ovilab.ViconUnityStream
         void Update()
         {
             transform.position = base1.position;
-            Vector3 forward = base1.position - base2.position;
+            Vector3 forward = base2.position - base1.position;
             if (forward != Vector3.zero)
             {
                 Vector3 right = base3.position - base4.position;
