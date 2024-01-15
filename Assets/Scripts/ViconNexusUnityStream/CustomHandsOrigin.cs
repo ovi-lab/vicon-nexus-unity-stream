@@ -7,28 +7,40 @@ namespace ubco.ovilab.ViconUnityStream
     /// </summary>
     public class CustomHandsOrigin: MonoBehaviour
     {
-        public static Transform viconOrigin;
+        public static CustomHandsOrigin handsOrigin;
+        [Tooltip("The hands will be made relative to this transform.")]
+        [SerializeField] protected Transform otherOrigin;
+
+        public static Vector3 TransformPosition(Vector3 position)
+        {
+            return handsOrigin.otherOrigin.TransformPoint(handsOrigin.transform.InverseTransformPoint(position));
+        }
+
+        public static Quaternion TransformRotation(Quaternion rotation)
+        {
+            return handsOrigin.otherOrigin.rotation * Quaternion.Inverse(handsOrigin.transform.rotation) * rotation;
+        }
 
         /// <inheritdoc />
         protected void OnEnable()
         {
-            if (viconOrigin != null)
+            if (handsOrigin != null)
             {
-                Debug.LogWarning($"CustomHandsOrigin is already set to {viconOrigin.name}. Disabling this.");
+                Debug.LogWarning($"CustomHandsOrigin is already set to {handsOrigin.name}. Disabling this.");
                 gameObject.SetActive(false);
             }
             else
             {
-                viconOrigin = transform;
+                handsOrigin = this;
             }
         }
 
         /// <inheritdoc />
         protected void OnDisable()
         {
-            if (viconOrigin == this.transform)
+            if (handsOrigin == this)
             {
-                viconOrigin = null;
+                handsOrigin = null;
             }
         }
     }

@@ -436,9 +436,9 @@ namespace ubco.ovilab.ViconUnityStream
                 if (normal != Vector3.zero)
                 {
                     transform.rotation = Quaternion.LookRotation(-normal, -palm);
-                    if (CustomHandsOrigin.viconOrigin != null)
+                    if (CustomHandsOrigin.handsOrigin != null)
                     {
-                        transform.rotation = Quaternion.Inverse(CustomHandsOrigin.viconOrigin.rotation) * transform.rotation;
+                        transform.rotation = CustomHandsOrigin.TransformRotation(transform.rotation);
                     }
                 }
             }
@@ -641,9 +641,9 @@ namespace ubco.ovilab.ViconUnityStream
                                         if (forward != Vector3.zero)
                                             Bone.rotation = Quaternion.LookRotation(forward, upDirection);
 
-                                        if (CustomHandsOrigin.viconOrigin != null)
+                                        if (CustomHandsOrigin.handsOrigin != null)
                                         {
-                                            Bone.rotation = Quaternion.Inverse(CustomHandsOrigin.viconOrigin.rotation) * Bone.rotation;
+                                            Bone.rotation = CustomHandsOrigin.TransformRotation(Bone.rotation);
                                         }
                                     }
                                 }
@@ -665,9 +665,9 @@ namespace ubco.ovilab.ViconUnityStream
                                 else
                                     Bone.position += Bone.forward * normalOffset;
 
-                                if (CustomHandsOrigin.viconOrigin != null)
+                                if (CustomHandsOrigin.handsOrigin != null)
                                 {
-                                    Bone.position = CustomHandsOrigin.viconOrigin.InverseTransformPoint(Bone.position);
+                                    Bone.position = CustomHandsOrigin.TransformPosition(Bone.position);
                                 }
                             }
 

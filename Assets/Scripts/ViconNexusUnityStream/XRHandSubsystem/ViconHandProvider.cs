@@ -180,7 +180,7 @@ namespace ubco.ovilab.ViconUnityStream
             }
 
             recomputeHandsPoses[handedness] = false;
-            handRootPose = handPoseCache[XRHandJointID.Wrist];
+            handPoseCache.TryGetValue(XRHandJointID.Wrist, out handRootPose);
             return true;
         }
     }
