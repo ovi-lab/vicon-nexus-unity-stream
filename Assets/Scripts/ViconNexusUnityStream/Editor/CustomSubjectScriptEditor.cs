@@ -29,6 +29,11 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             CustomSubjectConfig.instance.UseJson = customSubjectScript.useJson;
             CustomSubjectConfig.instance.EnableWriteData = customSubjectScript.enableWriteData;
             CustomSubjectConfig.instance.BaseURI = customSubjectScript.baseURI;
+            if (customSubjectScript is CustomHandScript handScript)
+            {
+                CustomSubjectConfig.instance.UseXRHandsSubsystem = handScript.useHandSubsystem;
+            }
+
             if (CustomSubjectConfig.instance.Changed)
             {
                 UpdateContent();
@@ -49,6 +54,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             CustomSubjectConfig.instance.UseDefaultData = EditorGUILayout.Toggle("Use default data", CustomSubjectConfig.instance.UseDefaultData);
             CustomSubjectConfig.instance.UseJson = EditorGUILayout.Toggle("Use json for network", CustomSubjectConfig.instance.UseJson);
             CustomSubjectConfig.instance.EnableWriteData = EditorGUILayout.Toggle("Write data to file", CustomSubjectConfig.instance.EnableWriteData);
+            CustomSubjectConfig.instance.UseXRHandsSubsystem = EditorGUILayout.Toggle("Use XR Hand subsystem", CustomSubjectConfig.instance.UseXRHandsSubsystem);
             if (EditorGUI.EndChangeCheck())
             {
                 UpdateContent();
@@ -70,6 +76,11 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 script.enableWriteData = CustomSubjectConfig.instance.EnableWriteData;
                 script.baseURI = CustomSubjectConfig.instance.BaseURI;
                 script.UpdateURI();
+                if (customSubjectScript is CustomHandScript handScript)
+                {
+                    handScript.useHandSubsystem = CustomSubjectConfig.instance.UseXRHandsSubsystem;
+                }
+
                 EditorUtility.SetDirty(script);
             }
             Debug.Log($"Updated {subjectScripts.Count} subject script(s):"+
@@ -77,6 +88,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                       $"\n    Enabled:            {CustomSubjectConfig.instance.Enabled};"+
                       $"\n    Using default data: {customSubjectScript.useDefaultData};"+
                       $"\n    Using json:         {customSubjectScript.useJson};"+
+                      $"\n    Using XRHandSubsys: {CustomSubjectConfig.instance.UseXRHandsSubsystem};"+
                       $"\n    Writing data:       {customSubjectScript.enableWriteData};"+
                       $"\n    Scripts updated: \n         " +
                       string.Join(",\n         ", subjectScripts));

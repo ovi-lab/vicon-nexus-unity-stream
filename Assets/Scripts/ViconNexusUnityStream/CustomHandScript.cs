@@ -11,8 +11,8 @@ namespace ubco.ovilab.ViconUnityStream
         /// The <see cref="CustomHandScript"/> objects for each hands currently active in the scene. Will be used by the hand subsystem provider.
         /// </summary>
         internal static Dictionary<Handedness, CustomHandScript> activeHandScripts = new Dictionary<Handedness, CustomHandScript>();
-        internal static bool useHandSubsystem = true;
 
+        [HideInInspector] public bool useHandSubsystem = true;
         public float normalOffset = 0.001f;
         public bool setPosition = true;
         public bool setScale = true;

@@ -12,6 +12,7 @@ namespace ubco.ovilab.ViconUnityStream
         private bool enableWriteData = true;
         private bool useDefaultData = false;
         private bool useJson = true;
+        private bool useXRHandsSubsystem = true;
         private string baseURI = "http://127.0.0.1:5000/marker/test";
 
         public bool Changed { get; private set; } = false;
@@ -78,6 +79,17 @@ namespace ubco.ovilab.ViconUnityStream
                     Changed = true;
                 }
                 baseURI = value;
+            }
+        }
+
+        public bool UseXRHandsSubsystem {
+            get => useXRHandsSubsystem;
+            set {
+                if (useXRHandsSubsystem != value)
+                {
+                    Changed = true;
+                }
+                useXRHandsSubsystem = value;
             }
         }
 
