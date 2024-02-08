@@ -654,6 +654,11 @@ namespace ubco.ovilab.ViconUnityStream
                             }
                             if (setPosition)
                             {
+                                if (CustomHandsOrigin.handsOrigin != null)
+                                {
+                                    Bone.position = CustomHandsOrigin.TransformPosition(Bone.position);
+                                }
+
                                 if (fingerId == finger_1)
                                     Bone.position += Bone.forward * normalOffset * 0.9f;
                                 else if (fingerId == finger_3)
@@ -664,11 +669,6 @@ namespace ubco.ovilab.ViconUnityStream
                                     Bone.position += Bone.forward * normalOffset * 1.2f;
                                 else
                                     Bone.position += Bone.forward * normalOffset;
-
-                                if (CustomHandsOrigin.handsOrigin != null)
-                                {
-                                    Bone.position = CustomHandsOrigin.TransformPosition(Bone.position);
-                                }
                             }
 
                             if (useHandSubsystem && segmentToJointMapping.ContainsKey(BoneName))
