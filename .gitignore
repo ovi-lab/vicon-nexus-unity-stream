@@ -73,4 +73,9 @@ crashlytics-build.properties
 # emacs
 *~
 *#
+
+!Samples~
+
 *.blend1*
+/Samples
+/Samples.meta

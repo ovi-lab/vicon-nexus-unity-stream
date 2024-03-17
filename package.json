@@ -13,5 +13,12 @@
         "email": "shariff.mfa@outlook.com"
     },
     "scopedRegistries": [
+    ],
+    "samples": [
+      {
+        "displayName": "Sample scene with HPUI",
+        "description": "Sample scene that uses HPUI. Require <a href=\"https://github.com/ovi-lab/HPUI-Core\">HPUI-Core</a> package to be loaded.",
+        "path": "Samples~/SampleSceneWithHPUI"
+      }
     ]
 }
