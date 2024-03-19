@@ -170,7 +170,7 @@ namespace ubco.ovilab.ViconUnityStream
                 {
                     if (recompute)
                     {
-                        Pose oldPose = pose;
+                        pose = CustomHandsOrigin.InverseTransformPose(pose);
                         pose.rotation = Quaternion.LookRotation(pose.up, -pose.forward);  // Accounting for the different coordinate system used.
                         handPoseCache[jointID] = pose;
                     }
