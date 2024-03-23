@@ -31,7 +31,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public static Pose InverseTransformPose(Pose pose)
         {
-            return new Pose(handsOrigin.otherOrigin.InverseTransformPoint(pose.position), Quaternion.Inverse(handsOrigin.otherOrigin.rotation) * pose.rotation);
+            return new Pose(handsOrigin.otherOrigin.parent.parent.InverseTransformPoint(pose.position), Quaternion.Inverse(handsOrigin.otherOrigin.parent.parent.rotation) * pose.rotation);
         }
 
         /// <inheritdoc />
