@@ -101,8 +101,9 @@ namespace ubco.ovilab.ViconUnityStream
         protected Dictionary<string, XRHandJointID> segmentToJointMapping;
         protected Dictionary<XRHandJointID, Pose> xrJointPoses;
 
-        protected virtual void Start()
+        protected override void Start()
         {
+            base.Start();
             string prefix = handedness == Handedness.Right ? "R": "L";
 
             segment_1D1 = prefix + segment_1D1;
@@ -308,7 +309,7 @@ namespace ubco.ovilab.ViconUnityStream
                 }
                 else
                 {
-                    Debug.LogWarning($"CustomSubjectSctipt in {transform.name} already registered as an active hand.");
+                    Debug.LogWarning($"CustomSubjectScript in {transform.name} already registered as an active hand.");
                 }
             }
             else
@@ -613,69 +614,68 @@ namespace ubco.ovilab.ViconUnityStream
                         // Debug.Log("===========================+++++++++  " + Bone.position);
                         /// This was usePrevious; now handled in the ProcessData in CustomSubjectScript
                         /// with GapFillingStrategy.UsePrevious
-                        if (true)
+
+                        if (segmentChild.TryGetValue(BoneName, out var value))
                         {
-                            if (segmentChild.ContainsKey(BoneName))
+                            Vector3 childSegment = segments[value];
+
+                            /// Avoid setting rotation if childsegment is zero
+                            if (childSegment != Vector3.zero && baseVectors.ContainsKey(fingerId))
                             {
-                                Vector3 childSegment = segments[segmentChild[BoneName]];
-
-                                /// Avoid setting rotation if childsegment is zero
-                                if (childSegment != Vector3.zero && baseVectors.ContainsKey(fingerId))
+                                Vector3 upDirection = childSegment - BonePosition;
+                                if (upDirection != Vector3.zero)
                                 {
-                                    Vector3 upDirection = childSegment - BonePosition;
-                                    if (upDirection != Vector3.zero)
+                                    Vector3 right;
+                                    Vector3 forward;
+                                    if (fingerId == finger_1)
                                     {
-                                        Vector3 right;
-                                        Vector3 forward;
-                                        if (fingerId == finger_1)
-                                        {
-                                            right = baseVectors["R1_right"];
-                                            //right = Vector3.Cross(normal, baseVectors[fingerId]);
-                                            forward = Vector3.Cross(upDirection, right);
-                                        }
-                                        else
-                                        {
-                                            right = Vector3.Cross(normal, baseVectors[fingerId]);
-                                            forward = Vector3.Cross(upDirection, right);
-                                        }
-                                        if (forward != Vector3.zero)
-                                            Bone.rotation = Quaternion.LookRotation(forward, upDirection);
+                                        right = baseVectors["R1_right"];
+                                        //right = Vector3.Cross(normal, baseVectors[fingerId]);
+                                        forward = Vector3.Cross(upDirection, right);
+                                    }
+                                    else
+                                    {
+                                        right = Vector3.Cross(normal, baseVectors[fingerId]);
+                                        forward = Vector3.Cross(upDirection, right);
+                                    }
+                                    if (forward != Vector3.zero)
+                                        Bone.rotation = Quaternion.LookRotation(forward, upDirection);
 
-                                        if (CustomHandsOrigin.handsOrigin != null)
-                                        {
-                                            Bone.rotation = CustomHandsOrigin.TransformRotation(Bone.rotation);
-                                        }
+                                    if (CustomHandsOrigin.handsOrigin != null)
+                                    {
+                                        Bone.rotation = CustomHandsOrigin.TransformRotation(Bone.rotation);
                                     }
                                 }
                             }
-                            else
-                            {
-                                // Bone.rotation = Quaternion.identity;
-                            }
-                            if (setPosition)
-                            {
-                                if (CustomHandsOrigin.handsOrigin != null)
-                                {
-                                    Bone.position = CustomHandsOrigin.TransformPosition(Bone.position);
-                                }
-
-                                if (fingerId == finger_1)
-                                    Bone.position += Bone.forward * normalOffset * 0.9f;
-                                else if (fingerId == finger_3)
-                                    Bone.position += Bone.forward * normalOffset * 1.08f;
-                                else if (fingerId == finger_4)
-                                    Bone.position += Bone.forward * normalOffset * 1.13f;
-                                else if (fingerId == finger_5)
-                                    Bone.position += Bone.forward * normalOffset * 1.2f;
-                                else
-                                    Bone.position += Bone.forward * normalOffset;
-                            }
-
-                            if (useHandSubsystem && segmentToJointMapping.ContainsKey(BoneName))
-                            {
-                                xrJointPoses.Add(segmentToJointMapping[BoneName], new Pose(Bone.position, Bone.rotation));
-                            }
                         }
+                        else
+                        {
+                            // Bone.rotation = Quaternion.identity;
+                        }
+                        if (setPosition)
+                        {
+                            if (CustomHandsOrigin.handsOrigin != null)
+                            {
+                                Bone.position = CustomHandsOrigin.TransformPosition(Bone.position);
+                            }
+
+                            if (fingerId == finger_1)
+                                Bone.position += Bone.forward * normalOffset * 0.9f;
+                            else if (fingerId == finger_3)
+                                Bone.position += Bone.forward * normalOffset * 1.08f;
+                            else if (fingerId == finger_4)
+                                Bone.position += Bone.forward * normalOffset * 1.13f;
+                            else if (fingerId == finger_5)
+                                Bone.position += Bone.forward * normalOffset * 1.2f;
+                            else
+                                Bone.position += Bone.forward * normalOffset;
+                        }
+
+                        if (useHandSubsystem && segmentToJointMapping.ContainsKey(BoneName))
+                        {
+                            xrJointPoses.Add(segmentToJointMapping[BoneName], new Pose(Bone.position, Bone.rotation));
+                        }
+                        
                     }
                 }
                 previousSegments[BoneName] = BonePosition;
@@ -701,7 +701,7 @@ namespace ubco.ovilab.ViconUnityStream
             }
         }
 
-        protected override bool TestSegmentsQulity(Dictionary<string, Vector3> segments)
+        protected override bool TestSegmentsQuality(Dictionary<string, Vector3> segments)
         {
             if (segments.ContainsKey(segment_5D3) &&
                 segments.ContainsKey(segment_2D3) &&
