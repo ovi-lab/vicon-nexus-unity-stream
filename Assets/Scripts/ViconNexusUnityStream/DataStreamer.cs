@@ -43,6 +43,7 @@ public class DataStreamer : Singleton<DataStreamer>
 
         webSocket.OnClose += (e) =>
         {
+            webSocket.Close();
             Debug.Log("Connection closed!");
         };
 
