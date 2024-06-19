@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using MessagePack;
 
 namespace ubco.ovilab.ViconUnityStream
 {
-    [MessagePackObject]
+    [MessagePackObject] [Serializable]
     public class Data
     {
         [Key("data")]

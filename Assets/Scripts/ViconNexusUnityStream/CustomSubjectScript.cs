@@ -8,6 +8,7 @@ using System.Net.Http;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 using MessagePack;
 using MessagePack.Resolvers;
@@ -89,10 +90,21 @@ namespace ubco.ovilab.ViconUnityStream
         private int previousDataQueueLimit = 3;
 
         private Dictionary<string, Vector3> baseVectors = new Dictionary<string, Vector3>();
-    
+        private float timeSinceLastRequest = 0;
+        private List<UnityWebRequest> webRequests = new List<UnityWebRequest>();
+
+        private List<UnityWebRequestAsyncOperation> asyncWebRequests = new List<UnityWebRequestAsyncOperation>();
+
+        private UnityWebRequest previousRequest = null;
         //ViconDataStreamSDK_DotNET.Client pHeapClient = new ViconDataStreamSDK.DotNET.Client();
-        void Start()
+
+        protected DataStreamer dataStreamer;
+        
+        protected virtual async void Start()
         {
+            dataStreamer = DataStreamer.instance; 
+            timeSinceLastRequest = Time.time;
+            
             segmentMarkers = new Dictionary<string, List<string>>() {
                 { "base1", new List<string>() { "base1"}},
                 { "base2", new List<string>() { "base2"}},
@@ -104,13 +116,20 @@ namespace ubco.ovilab.ViconUnityStream
             SetupMessagePack();
             SetupWriter();
             SetupFilter();
+            
         }
+        
 
         protected void SetupMessagePack()
         {
             defaultDataObj = JsonConvert.DeserializeObject<Data>(defaultData);
             defaultDataBytes = MessagePackSerializer.Serialize(defaultDataObj);
             messagePackOptions = MessagePackSerializerOptions.Standard.WithResolver(StandardResolver.Instance);
+        }
+
+        protected void LateUpdate()
+        {
+            ProcessData(dataStreamer.StreamedData[subjectName], dataStreamer.StreamedRawData[subjectName]);
         }
 
         protected void SetupWriter()
@@ -186,66 +205,78 @@ namespace ubco.ovilab.ViconUnityStream
                 ", 'forward':" + string.Join(",", finalForwardVectors.Select(kvp => "[" +kvp.Key + ", " + kvp.Value.ToString("F6") + "]")) +
                 "}";
         }
+        
+        
+        
+        
 
-        protected virtual void Update()
+        void ProcessUnityClient(byte[] receivedData)
         {
-            if (processedRequest){
-                processedRequest = false;
-                if (useDefaultData)
-                {
-                    ProcessData(defaultDataObj, defaultData);
-                    processedRequest = true;
-                    processFrameFlag = true;
-                }
-                else
-                {
-                    StartCoroutine(GetRequestUnityClient(URI));
-                }
-                // GetRequestHttpClient(URI);
-            }
+            var currentTime = Time.time;
+            var latency  = currentTime - timeSinceLastRequest;
+            Debug.Log(latency);
+            timeSinceLastRequest = currentTime;
+            // try
+            // {
+            //ProcessData(data, text);
+            processedRequest = true;
+            processFrameFlag = true;
+            // } 
+            // catch(Exception err)
+            // {
+            //     Debug.Log("Exception: " + err.ToString());
+            //     //Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
+            // }   
         }
-
-        IEnumerator GetRequestUnityClient(string uri)
-        {
-            using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
-            {
-                // Request and wait for the desired page.
-                yield return webRequest.SendWebRequest();
-                string[] pages = uri.Split('/');
-                int page = pages.Length - 1;
-                if (webRequest.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.Log(pages[page] + ": Error: " + webRequest.error);
-                    Debug.Log(pages[page] + ": Error: " + uri);
-                }
-                else
-                {
-                    // Debug.Log(data.sensorTriggered.ToString());
-
-                    try
-                    {
-                        Data data;
-                        string text;
-                        if (useJson)
-                        {
-                            text = webRequest.downloadHandler.text;
-                            data = JsonConvert.DeserializeObject<Data>(text);
-                        }
-                        else
-                        {
-                            data = MessagePackSerializer.Deserialize<Data>(webRequest.downloadHandler.data);
-                            text = JsonConvert.SerializeObject(data);
-                        }
-                        ProcessData(data, text);
-                    } catch(Exception err){
-                        Debug.Log("Exception: " + err.ToString());
-                        Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
-                    }   
-                }
-                processedRequest = true;
-                processFrameFlag = true;
-            }
-        }
+        
+        // void GetRequestUnityClient(string uri)
+        // {
+        //     timeSinceLastRequest = Time.time;
+        //     //using UnityWebRequest webRequest = UnityWebRequest.Get(uri);
+        //     // Request and wait for the desired page.
+        //     timeSinceLastRequest = Time.time;
+        //     // yield return null;
+        //     timeSinceLastRequest = Time.time - timeSinceLastRequest;
+        //     Debug.Log($"Time Since Last Request{timeSinceLastRequest}, Delta Time{Time.fixedDeltaTime}");
+        //     string[] pages = uri.Split('/');
+        //     int page = pages.Length - 1;
+        //     UnityWebRequest webRequest = currentWebRequest;
+        //     
+        //     if (webRequest.result != UnityWebRequest.Result.Success)
+        //     {
+        //         Debug.Log(pages[page] + ": Error: " + webRequest.error);
+        //         Debug.Log(pages[page] + ": Error: " + uri);
+        //     }
+        //     else
+        //     {
+        //         // Debug.Log(data.sensorTriggered.ToString());
+        //
+        //         try
+        //         {
+        //             Data data;
+        //             string text;
+        //             if (useJson)
+        //             {
+        //                 text = webRequest.downloadHandler.text;
+        //                 data = JsonConvert.DeserializeObject<Data>(text);
+        //             }
+        //             else
+        //             {
+        //                 data = MessagePackSerializer.Deserialize<Data>(webRequest.downloadHandler.data);
+        //                 text = JsonConvert.SerializeObject(data);
+        //             }
+        //             ProcessData(data, text);
+        //                 
+        //         } 
+        //         catch(Exception err){
+        //             Debug.Log("Exception: " + err.ToString());
+        //             Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
+        //         }   
+        //     }
+        //     processedRequest = true;
+        //     processFrameFlag = true;
+        //     //webRequests.Clear();
+        // }
 
         // async void GetRequestHttpClient(string uri)
         // {
@@ -261,6 +292,7 @@ namespace ubco.ovilab.ViconUnityStream
         private LinkedList<List<float>> markerQueue;
         private Vector3 pos, k_vector, t_prev_vector, t_current_vector;
         private Quaternion rot;
+        private UnityWebRequest currentWebRequest;
 
         void ProcessData(Data data, string text)
         {
@@ -415,7 +447,7 @@ namespace ubco.ovilab.ViconUnityStream
             segments = ProcessSegments(segments, data);
 
             ///Retest the data quality
-            if(TestSegmentsQulity(segments))
+            if(TestSegmentsQuality(segments))
             {
                 ShowSubject();
             }
@@ -452,7 +484,7 @@ namespace ubco.ovilab.ViconUnityStream
             return previousData[marker].Last();
         }
 
-        /// makses sure the length of the queue is going to be fixed (by previousDataQueueLimit)
+        /// makes sure the length of the queue is going to be fixed (by previousDataQueueLimit)
         private void SetPreviousData(string marker, List<float> value)
         {
             LinkedList<List<float>> _previousData;
@@ -491,7 +523,7 @@ namespace ubco.ovilab.ViconUnityStream
                 Transform Child = iTransform.GetChild(i);
                 if (Child.name == BoneName)
                 {
-                    this.ApplyBoneTransform(Child);
+                    ApplyBoneTransform(Child);
                     TransformChildren(Child);
                     break;
                 }
@@ -502,8 +534,8 @@ namespace ubco.ovilab.ViconUnityStream
 
         protected void TransformChildren(Transform iTransform)
         {
-            int ChildCount = iTransform.childCount;
-            for (int i = 0; i < ChildCount; ++i)
+            int childCount = iTransform.childCount;
+            for (int i = 0; i < childCount; ++i)
             {
                 Transform Child = iTransform.GetChild(i);
                 this.ApplyBoneTransform(Child);
@@ -515,10 +547,10 @@ namespace ubco.ovilab.ViconUnityStream
         {
             string BoneName = Bone.gameObject.name;
             //if (segmentParents.ContainsKey(BoneName) && segments.ContainsKey(BoneName))
-            if (segments.ContainsKey(BoneName))
+            if (segments.TryGetValue(BoneName, out Vector3 segment))
                 //if (segmentChild.ContainsKey(BoneName) && segments.ContainsKey(BoneName))
             {
-                Bone.position = segments[BoneName] * scale_1;
+                Bone.position = segment * scale_1;
                 Bone.rotation = segmentsRotation[BoneName];
                 // Debug.Log(")))))))))))))))))))))))))))))))))))) " + Bone.position);
             }
@@ -536,38 +568,34 @@ namespace ubco.ovilab.ViconUnityStream
 
         protected void HideSubject()
         {
-            if (!subjectHidden)
-            {
-                OnHidingSubject.Invoke();
-                subjectHidden = true;
+            if (subjectHidden) return;
+            OnHidingSubject.Invoke();
+            subjectHidden = true;
 
-                int ChildCount = transform.childCount;
-                for (int i = 0; i < ChildCount; ++i)
-                {
-                    transform.GetChild(i).gameObject.SetActive(false);
-                }
+            int ChildCount = transform.childCount;
+            for (int i = 0; i < ChildCount; ++i)
+            {
+                transform.GetChild(i).gameObject.SetActive(false);
             }
         }
 
         protected void ShowSubject()
         {
-            if(subjectHidden)
-            {
-                OnShowingSubject.Invoke();
-                subjectHidden = false;
+            if (!subjectHidden) return;
+            OnShowingSubject.Invoke();
+            subjectHidden = false;
 
-                int ChildCount = transform.childCount;
-                for (int i = 0; i < ChildCount; ++i)
-                {
-                    transform.GetChild(i).gameObject.SetActive(true);
-                }
+            int ChildCount = transform.childCount;
+            for (int i = 0; i < ChildCount; ++i)
+            {
+                transform.GetChild(i).gameObject.SetActive(true);
             }
         }
 
         /// <summary>
         /// Returns true if the `segments` are good to be applied to transforms
         /// </summary>
-        protected virtual bool TestSegmentsQulity(Dictionary<string, Vector3> segments)
+        protected virtual bool TestSegmentsQuality(Dictionary<string, Vector3> segments)
         {
             return true;
         }
@@ -577,17 +605,15 @@ namespace ubco.ovilab.ViconUnityStream
             if (enableWriteData)
             {
                 Debug.Log("Closing files: \n    " + string.Join("\n    ", filePaths));
-                if (inputWriter != null)
-                    inputWriter.Close();
-                if (finalWriter != null)
-                    finalWriter.Close();
-                if (rawWriter != null)
-                    rawWriter.Close();
+                inputWriter?.Close();
+                finalWriter?.Close();
+                rawWriter?.Close();
             }
         }
     }
 
-    public enum GapFillingStrategy{
+    public enum GapFillingStrategy
+    {
         UseRemote,
         Ignore,
         UsePrevious,

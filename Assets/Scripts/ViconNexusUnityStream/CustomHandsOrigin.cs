@@ -11,6 +11,7 @@ namespace ubco.ovilab.ViconUnityStream
         // i.e., akin to making the object child of `handsOrigin`, and then making `otherOrigin` as the parent while keeping the local pose. 
         [Tooltip("The hands will be made relative to this transform.")]
         [SerializeField] protected Transform otherOrigin;
+        [SerializeField] protected Transform XROrigin;
 
         /// <summary>
         /// Transform position such that the returned position is relative to the
@@ -39,11 +40,13 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public static Pose InverseTransformPose(Pose pose)
         {
-            if (handsOrigin.otherOrigin == null)
+            if (handsOrigin.otherOrigin != null)
             {
-                return pose;
+                return new Pose(handsOrigin.XROrigin.InverseTransformPoint(pose.position), 
+                    Quaternion.Inverse(handsOrigin.XROrigin.rotation) * pose.rotation);
             }
-            return new Pose(handsOrigin.otherOrigin.parent.parent.InverseTransformPoint(pose.position), Quaternion.Inverse(handsOrigin.otherOrigin.parent.parent.rotation) * pose.rotation);
+            
+            return pose;
         }
 
         /// <inheritdoc />

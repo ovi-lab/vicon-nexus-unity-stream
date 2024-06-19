@@ -10,13 +10,11 @@ namespace ubco.ovilab.ViconUnityStream
         {
             Vector3 forward = segments["base2"] - segments["base1"];
             Vector3 up = Vector3.Cross(forward, segments["base3"] - segments["base4"]);
-            if (forward != Vector3.zero && up != Vector3.zero)
+            if (forward == Vector3.zero || up == Vector3.zero) return segments;
+            Quaternion rotation = Quaternion.LookRotation(forward, up);
+            foreach (var key in segmentsRotation.Keys.ToArray())
             {
-                Quaternion rotation = Quaternion.LookRotation(forward, up);
-                foreach (var key in segmentsRotation.Keys.ToArray())
-                {
-                    segmentsRotation[key] = rotation;
-                }
+                segmentsRotation[key] = rotation;
             }
             return segments;
         }

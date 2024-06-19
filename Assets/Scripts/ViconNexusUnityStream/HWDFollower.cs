@@ -31,7 +31,7 @@ namespace ubco.ovilab.ViconUnityStream
             }
         }
 
-        void Update()
+        void LateUpdate()
         {
             if (applyPosFilter)
             {
@@ -60,5 +60,6 @@ namespace ubco.ovilab.ViconUnityStream
                 }
             }
         }
+        
     }
 }
