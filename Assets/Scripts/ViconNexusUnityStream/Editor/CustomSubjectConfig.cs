@@ -96,6 +96,7 @@ namespace ubco.ovilab.ViconUnityStream
         public void Save()
         {
             Save(true);
+            Changed = false;
         }
     }
 }
