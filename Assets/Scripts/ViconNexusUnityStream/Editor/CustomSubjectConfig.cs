@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
 
 namespace ubco.ovilab.ViconUnityStream
@@ -69,7 +66,7 @@ namespace ubco.ovilab.ViconUnityStream
             }
         }
 
-        public string BaseURI {
+        public string URI {
             get {
                 return baseURI;
             }

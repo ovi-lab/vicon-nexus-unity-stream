@@ -28,7 +28,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             CustomSubjectConfig.instance.UseDefaultData = customSubjectScript.useDefaultData;
             CustomSubjectConfig.instance.UseJson = customSubjectScript.useJson;
             CustomSubjectConfig.instance.EnableWriteData = customSubjectScript.enableWriteData;
-            CustomSubjectConfig.instance.BaseURI = customSubjectScript.baseURI;
+            CustomSubjectConfig.instance.URI = customSubjectScript.URI;
             if (customSubjectScript is CustomHandScript handScript)
             {
                 CustomSubjectConfig.instance.UseXRHandsSubsystem = handScript.useHandSubsystem;
@@ -49,7 +49,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
         {
             EditorGUILayout.LabelField("<color=#eeeeee>----- Common Config -----</color>", new GUIStyle() { fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, richText = true});
             EditorGUI.BeginChangeCheck();
-            CustomSubjectConfig.instance.BaseURI = EditorGUILayout.TextField("base URI", CustomSubjectConfig.instance.BaseURI);
+            CustomSubjectConfig.instance.URI = EditorGUILayout.TextField("base URI", CustomSubjectConfig.instance.URI);
             CustomSubjectConfig.instance.Enabled = EditorGUILayout.Toggle("Enabled", CustomSubjectConfig.instance.Enabled);
             CustomSubjectConfig.instance.UseDefaultData = EditorGUILayout.Toggle("Use default data", CustomSubjectConfig.instance.UseDefaultData);
             CustomSubjectConfig.instance.UseJson = EditorGUILayout.Toggle("Use json for network", CustomSubjectConfig.instance.UseJson);
@@ -74,8 +74,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 script.useDefaultData = CustomSubjectConfig.instance.UseDefaultData;
                 script.useJson = CustomSubjectConfig.instance.UseJson;
                 script.enableWriteData = CustomSubjectConfig.instance.EnableWriteData;
-                script.baseURI = CustomSubjectConfig.instance.BaseURI;
-                script.UpdateURI();
+                script.URI = CustomSubjectConfig.instance.URI;
                 if (customSubjectScript is CustomHandScript handScript)
                 {
                     handScript.useHandSubsystem = CustomSubjectConfig.instance.UseXRHandsSubsystem;

@@ -8,7 +8,6 @@ using System.Net.Http;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 using MessagePack;
 using MessagePack.Resolvers;
@@ -17,6 +16,13 @@ namespace ubco.ovilab.ViconUnityStream
 {
     public class CustomSubjectScript : MonoBehaviour
     {
+        #region data set by CustomSubjectConfig 
+        [HideInInspector] public bool useDefaultData = false;
+        [HideInInspector] public bool useJson = true;
+        [HideInInspector] public bool enableWriteData = true;
+        [HideInInspector] public string URI = "http://127.0.0.1:5000/marker/";
+        #endregion
+
         public string subjectName = "test";
         public float scale_1 = 0.001f;
         public float scale_2 = 0.02f;
@@ -25,15 +31,7 @@ namespace ubco.ovilab.ViconUnityStream
         private Data defaultDataObj;
         private byte[] defaultDataBytes;
 
-        [HideInInspector] public bool useDefaultData = false;
-        [HideInInspector] public bool useJson = true;
-        [HideInInspector] public bool enableWriteData = true;
-        [HideInInspector] public string baseURI = "http://127.0.0.1:5000/marker/";
-        [HideInInspector] public string URI = "http://127.0.0.1:5000/marker/test";
-        private bool processedRequest = true;
         private static readonly HttpClient client = new HttpClient();
-
-        private IEnumerator e;
 
         public Text outputText;
         public event System.Action<Dictionary<string, Transform>> PostTransformCallback;
@@ -57,16 +55,12 @@ namespace ubco.ovilab.ViconUnityStream
             }
             private set
             {
-                // if (value || expectSensorChange)
-                // 	Debug.Log("--  " + expectSensorChange + "      val:: " + value);
                 if (!value)
                     expectSensorChange = false;
-                //if (!expectSensorChange)
                 _sensorTriggered = value && !expectSensorChange;
             }
         }
         public bool expectSensorChange { get; set; }
-        public bool processFrameFlag { get; set; }
 
         public List<string> filePaths { get; protected set; }
 
@@ -89,18 +83,11 @@ namespace ubco.ovilab.ViconUnityStream
         private Dictionary<string, LinkedList<List<float>>> previousData = new Dictionary<string, LinkedList<List<float>>>();
         private int previousDataQueueLimit = 3;
 
-        private Dictionary<string, Vector3> baseVectors = new Dictionary<string, Vector3>();
         private float timeSinceLastRequest = 0;
-        private List<UnityWebRequest> webRequests = new List<UnityWebRequest>();
-
-        private List<UnityWebRequestAsyncOperation> asyncWebRequests = new List<UnityWebRequestAsyncOperation>();
-
-        private UnityWebRequest previousRequest = null;
-        //ViconDataStreamSDK_DotNET.Client pHeapClient = new ViconDataStreamSDK.DotNET.Client();
 
         protected DataStreamer dataStreamer;
         
-        protected virtual async void Start()
+        protected virtual void Start()
         {
             dataStreamer = DataStreamer.instance; 
             timeSinceLastRequest = Time.time;
@@ -119,7 +106,6 @@ namespace ubco.ovilab.ViconUnityStream
             
         }
         
-
         protected void SetupMessagePack()
         {
             defaultDataObj = JsonConvert.DeserializeObject<Data>(defaultData);
@@ -129,7 +115,14 @@ namespace ubco.ovilab.ViconUnityStream
 
         protected void LateUpdate()
         {
-            ProcessData(dataStreamer.StreamedData[subjectName], dataStreamer.StreamedRawData[subjectName]);
+            if (useDefaultData)
+            {
+                ProcessData(defaultDataObj, defaultData);
+            }
+            else
+            {
+                ProcessData(dataStreamer.StreamedData[subjectName], dataStreamer.StreamedRawData[subjectName]);
+            }
         }
 
         protected void SetupWriter()
@@ -161,23 +154,9 @@ namespace ubco.ovilab.ViconUnityStream
         {
         }
 
-        public void UpdateURI()
-        {
-            URI = baseURI + subjectName;
-        }
-
         private string GetPath(string suffix)
         {
-            //#if UNITY_EDITOR
-            //         return Application.dataPath + "/Data/"  + "Saved_Inventory.csv";
-            //         //"Participant " + "   " + DateTime.Now.ToString("dd-MM-yy   hh-mm-ss") + ".csv";
-            // #elif UNITY_ANDROID
             return Application.persistentDataPath + "/stream_" + suffix + "_" + this.transform.name + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".csv";
-            // #elif UNITY_IPHONE
-            //         return Application.persistentDataPath+"/"+"Saved_Inventory.csv";
-            // #else
-            //         return Application.dataPath +"/"+"Saved_Inventory.csv";
-            // #endif
         }
 
         public void WriteData()
@@ -187,7 +166,6 @@ namespace ubco.ovilab.ViconUnityStream
             
             var currentTicks = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             
-            // // Debug.Log(string.Join(",", finalPositionQuaternion.Select(kvp => "[" +kvp.Key + ", " + kvp.Value.ToString("F4") + "]")));
             inputWriter.WriteLine(currentTicks + ", " + "{" + string.Join(",", segments.Select(kvp => "[" +kvp.Key + ", " + kvp.Value.ToString("F6") + "]")) + "}");
             inputWriter.Flush();
 
@@ -205,87 +183,6 @@ namespace ubco.ovilab.ViconUnityStream
                 ", 'forward':" + string.Join(",", finalForwardVectors.Select(kvp => "[" +kvp.Key + ", " + kvp.Value.ToString("F6") + "]")) +
                 "}";
         }
-        
-        
-        
-        
-
-        void ProcessUnityClient(byte[] receivedData)
-        {
-            var currentTime = Time.time;
-            var latency  = currentTime - timeSinceLastRequest;
-            Debug.Log(latency);
-            timeSinceLastRequest = currentTime;
-            // try
-            // {
-            //ProcessData(data, text);
-            processedRequest = true;
-            processFrameFlag = true;
-            // } 
-            // catch(Exception err)
-            // {
-            //     Debug.Log("Exception: " + err.ToString());
-            //     //Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
-            // }   
-        }
-        
-        // void GetRequestUnityClient(string uri)
-        // {
-        //     timeSinceLastRequest = Time.time;
-        //     //using UnityWebRequest webRequest = UnityWebRequest.Get(uri);
-        //     // Request and wait for the desired page.
-        //     timeSinceLastRequest = Time.time;
-        //     // yield return null;
-        //     timeSinceLastRequest = Time.time - timeSinceLastRequest;
-        //     Debug.Log($"Time Since Last Request{timeSinceLastRequest}, Delta Time{Time.fixedDeltaTime}");
-        //     string[] pages = uri.Split('/');
-        //     int page = pages.Length - 1;
-        //     UnityWebRequest webRequest = currentWebRequest;
-        //     
-        //     if (webRequest.result != UnityWebRequest.Result.Success)
-        //     {
-        //         Debug.Log(pages[page] + ": Error: " + webRequest.error);
-        //         Debug.Log(pages[page] + ": Error: " + uri);
-        //     }
-        //     else
-        //     {
-        //         // Debug.Log(data.sensorTriggered.ToString());
-        //
-        //         try
-        //         {
-        //             Data data;
-        //             string text;
-        //             if (useJson)
-        //             {
-        //                 text = webRequest.downloadHandler.text;
-        //                 data = JsonConvert.DeserializeObject<Data>(text);
-        //             }
-        //             else
-        //             {
-        //                 data = MessagePackSerializer.Deserialize<Data>(webRequest.downloadHandler.data);
-        //                 text = JsonConvert.SerializeObject(data);
-        //             }
-        //             ProcessData(data, text);
-        //                 
-        //         } 
-        //         catch(Exception err){
-        //             Debug.Log("Exception: " + err.ToString());
-        //             Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
-        //         }   
-        //     }
-        //     processedRequest = true;
-        //     processFrameFlag = true;
-        //     //webRequests.Clear();
-        // }
-
-        // async void GetRequestHttpClient(string uri)
-        // {
-	
-        //     string content = await client.GetStringAsync(uri);
-        //     Debug.Log(uri + "\nReceived: " + content);
-        //     ProcessData(content);
-        //     processedRequest = true;
-        // }
 
         private List<string> invalidMarkers = new List<string>();
         private List<float> k_curr, k_prev;
@@ -347,14 +244,6 @@ namespace ubco.ovilab.ViconUnityStream
                     }
                     else
                     {
-                        // if (useOneEuroFilter)
-                        // {
-                        //     var _filter = segmentsFilters[segment.Key];
-                        //     for(var i = 0; i < _data.Count; i++)
-                        //     {
-                        //         _data[i] = _filter[i].Filter(_data[i]);
-                        //     }
-                        // }
                         SetPreviousData(marker, _data);
                     }
                     data.data[marker] = _data;
@@ -546,13 +435,10 @@ namespace ubco.ovilab.ViconUnityStream
         protected virtual void ApplyBoneTransform(Transform Bone)
         {
             string BoneName = Bone.gameObject.name;
-            //if (segmentParents.ContainsKey(BoneName) && segments.ContainsKey(BoneName))
             if (segments.TryGetValue(BoneName, out Vector3 segment))
-                //if (segmentChild.ContainsKey(BoneName) && segments.ContainsKey(BoneName))
             {
                 Bone.position = segment * scale_1;
                 Bone.rotation = segmentsRotation[BoneName];
-                // Debug.Log(")))))))))))))))))))))))))))))))))))) " + Bone.position);
             }
             AddBoneDataToWriter(Bone);
         }

@@ -421,10 +421,6 @@ namespace ubco.ovilab.ViconUnityStream
                     baseVectors["R1_right"] = p1p2Vector;
                 }
             }
-            // Vector3.Cross(segments[segment_1D4] - segments[segment_1D3], segments[segment_1D3] - segments[segment_1D2]);
-            // Debug.DrawRay(segments[segment_3D1], normal);
-            //Debug.Log(normal.magnitude);
-            //Debug.Log((normal * 0.01f).magnitude);
 
             /// Using segments to store the normal vector instead of position?
             segments["PalmBase"] = normal;// *0.01f;
@@ -466,16 +462,6 @@ namespace ubco.ovilab.ViconUnityStream
             }
 
             string fingerId = boneName.Substring(0, 2);
-            // List<string> thisFingerSegments;
-            // if (fingerSegments.ContainsKey(fingerId))
-            // {
-            //     thisFingerSegments = fingerSegments[fingerId];
-            // }
-            // else
-            // {
-            //     return Vector3.zero;
-            // }
-            // string thirdWheelName;
 
             string childName, parentName; // Thisrd wheel being the other segment of the 4 segments in the finger
             Vector3 childPos, parentPos, childPosPrevious, parentPosPrevious, segmentPosPrevious;
@@ -523,9 +509,6 @@ namespace ubco.ovilab.ViconUnityStream
                 return Vector3.zero;
             }
 
-            // /// get thirdWheelName
-            // thirdWheelName = thisFingerSegments.Where(x => x != boneName && x != parentName && x != childName).First();
-
             /// Do the actual math
             Vector3 segmentToChildVector = (childPos - segmentPosPrevious);
             Vector3 segmentToParentVector = (parentPos - segmentPosPrevious);
@@ -533,21 +516,6 @@ namespace ubco.ovilab.ViconUnityStream
             float segmentToParentDistance = segmentToParentVector.magnitude;
 
             Vector3 planePerpendicularVector;
-            // if (!string.IsNullOrEmpty(thirdWheelName) && _segments.ContainsKey(thirdWheelName) && _segments[thirdWheelName] != Vector3.zero)
-            // {
-            //     List<Vector3> vectors = thisFingerSegments.Select(x => _segments[x]).Where(x => x != Vector3.zero).ToList();
-            //     if (vectors.Count != 3) // this should never happen at this point. if it does, something is going wrong.
-            //     {
-            //         Debug.LogWarning($"{thirdWheelName}  ummm... ??" + string.Join(", ", thisFingerSegments.Where(x => _segments[x] != Vector3.zero)));
-            //         return Vector3.zero;
-            //     }
-            //     planePerpendicularVector = Vector3.Cross(vectors[0] - vectors[1], vectors[2] - vectors[1]);
-            // }
-            // /// Assuming the plane formed by parent, sgement, child are parallel now and in previous
-            // else
-            // {
-            //     planePerpendicularVector = Vector3.Cross(segmentToChildVector, segmentToParentVector);
-            // }
 
             planePerpendicularVector = Vector3.Cross(segmentToChildVector, segmentToParentVector);
 
@@ -573,37 +541,19 @@ namespace ubco.ovilab.ViconUnityStream
                 /// and cannot resolve with adjacent segments (in FillRelative mode)
                 if (!(gapFillingStrategy == GapFillingStrategy.Ignore || gapFillingStrategy == GapFillingStrategy.FillRelative) || BonePosition != Vector3.zero)
                 {
-                    // bool usePreviousSegments = false;
-                    // if (BonePosition == Vector3.zero && !noHand)
-                    // {
-                    //     if (previousSegments.ContainsKey(BoneName))
-                    //         BonePosition = previousSegments[BoneName];
-                    //     usePreviousSegments = true;
-                    //     Debug.Log(BoneName +"   "+BonePosition + " " + usePreviousSegments + " "+ previousSegments[BoneName]);
-                    // }
-                    // else
-                    // {
-                    //     previousSegments[BoneName] = BonePosition;
-                    // }
-
-                    //string ParentName = segmentParents[BoneName];
-                    // string childName = segmentChild[BoneName];
                     if (BoneName == "PalmBase")
                     {
                         if (!noHand && BonePosition != Vector3.zero)
                             Bone.rotation = Quaternion.LookRotation(-BonePosition.normalized, -palm);
                         Bone.position = Bone.parent.position - Bone.forward * scale_2 - Bone.up * scale_2;
-                        // Debug.Log("===========================  " + Bone.position);
                     }
                     else
                     {
                         string fingerId = BoneName.Substring(0, 2);
                         if (setPosition)
                         {
-                            Bone.position = BonePosition * scale_1; // Bone.parent.InverseTransformPoint();
+                            Bone.position = BonePosition * scale_1;
                         }
-                        // if (fingerId)
-                        // + normal.normalized * normalOffset
                         if (setScale)
                         {
                             Transform p = Bone.parent;
@@ -611,9 +561,6 @@ namespace ubco.ovilab.ViconUnityStream
                             Bone.localScale = Vector3.one * scale_2;
                             Bone.parent = p;
                         }
-                        // Debug.Log("===========================+++++++++  " + Bone.position);
-                        /// This was usePrevious; now handled in the ProcessData in CustomSubjectScript
-                        /// with GapFillingStrategy.UsePrevious
 
                         if (segmentChild.TryGetValue(BoneName, out var value))
                         {
