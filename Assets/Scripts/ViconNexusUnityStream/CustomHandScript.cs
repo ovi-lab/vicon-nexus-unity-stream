@@ -297,8 +297,9 @@ namespace ubco.ovilab.ViconUnityStream
         }
 
         /// <inheritdoc />
-        protected void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             if (activeHandScripts.ContainsKey(handedness))
             {
                 if (activeHandScripts[handedness] != this)
@@ -319,8 +320,9 @@ namespace ubco.ovilab.ViconUnityStream
         }
 
         /// <inheritdoc />
-        protected void OnDisable()
+        protected override void OnDisable()
         {
+            base.OnDisable();
             if (activeHandScripts.ContainsKey(handedness) && activeHandScripts[handedness] == this)
             {
                 activeHandScripts.Remove(handedness);
