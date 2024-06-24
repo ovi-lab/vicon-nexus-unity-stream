@@ -39,7 +39,7 @@ public class SubjectDataManager : MonoBehaviour
     public Dictionary<string, Data> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
 
-    private List<string> subjectList;
+    private List<string> subjectList = new();
     private WebSocket webSocket;
     private Dictionary<string, Data> data = new();
     private Dictionary<string, string> rawData = new();
@@ -56,7 +56,7 @@ public class SubjectDataManager : MonoBehaviour
     /// <inheritdoc />
     private void FixedUpdate()
     {
-        webSocket.DispatchLatestMessage();
+        webSocket?.DispatchLatestMessage();
     }
 
     /// <inheritdoc />
@@ -71,12 +71,14 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     private async void SetupConnection()
     {
-        if (webSocket.State == WebSocketState.Connecting || webSocket.State == WebSocketState.Open)
+        if (webSocket != null)
         {
-            return;
+            if (webSocket.State == WebSocketState.Connecting || webSocket.State == WebSocketState.Open)
+            {
+                return;
+            }
         }
-
-        if (webSocket == null)
+        else
         {
             webSocket = new WebSocket(BaseURI);
             webSocket.OnOpen += () =>
