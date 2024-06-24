@@ -12,7 +12,6 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         internal static Dictionary<Handedness, CustomHandScript> activeHandScripts = new Dictionary<Handedness, CustomHandScript>();
 
-        [HideInInspector] public bool useHandSubsystem = true;
         public float normalOffset = 0.001f;
         public bool setPosition = true;
         public bool setScale = true;
@@ -291,7 +290,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         protected void Awake()
         {
-            if (useHandSubsystem)
+            if (subjectDataManager.UseXRHandSubsystem)
             {
                 ViconHandSubsystem.MaybeInitializeHandSubsystem();
             }
@@ -618,7 +617,7 @@ namespace ubco.ovilab.ViconUnityStream
                                 Bone.position += Bone.forward * normalOffset;
                         }
 
-                        if (useHandSubsystem && segmentToJointMapping.ContainsKey(BoneName))
+                        if (subjectDataManager.UseXRHandSubsystem && segmentToJointMapping.ContainsKey(BoneName))
                         {
                             xrJointPoses.Add(segmentToJointMapping[BoneName], new Pose(Bone.position, Bone.rotation));
                         }
@@ -642,7 +641,7 @@ namespace ubco.ovilab.ViconUnityStream
             xrJointPoses.Clear();  // FIXME: is threadsafety an issue here?
             base.FindAndTransform(iTransform, BoneName);
 
-            if (useHandSubsystem)
+            if (subjectDataManager.UseXRHandSubsystem)
             {
                 ViconHandSubsystem.subsystem.SetHandPoses(handedness, xrJointPoses);
             }
