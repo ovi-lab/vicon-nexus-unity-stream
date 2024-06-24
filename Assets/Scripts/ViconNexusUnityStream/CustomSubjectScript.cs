@@ -128,7 +128,7 @@ namespace ubco.ovilab.ViconUnityStream
                 // TODO: move all of this to SubjectDataManager
                 if (subjectDataManager.StreamedData.TryGetValue(subjectName, out Data subjectDataObj) && subjectDataManager.StreamedRawData.TryGetValue(subjectName, out string subjectRawData))
                 {
-                    ProcessData(subjectDataManager.StreamedData[subjectName], subjectDataManager.StreamedRawData[subjectName]);
+                    ProcessData(subjectDataObj, subjectRawData);
                 }
             }
         }
