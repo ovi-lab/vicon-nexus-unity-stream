@@ -16,13 +16,6 @@ namespace ubco.ovilab.ViconUnityStream
 {
     public class CustomSubjectScript : MonoBehaviour
     {
-        #region data set by CustomSubjectConfig 
-        [HideInInspector] public bool useDefaultData = false;
-        [HideInInspector] public bool useJson = true;
-        [HideInInspector] public bool enableWriteData = true;
-        [HideInInspector] public string URI = "http://127.0.0.1:5000/marker/";
-        #endregion
-
         public string subjectName = "test";
         public float scale_1 = 0.001f;
         public float scale_2 = 0.02f;
@@ -85,11 +78,10 @@ namespace ubco.ovilab.ViconUnityStream
 
         private float timeSinceLastRequest = 0;
 
-        protected DataStreamer dataStreamer;
-        
+        public SubjectDataManager subjectDataManager;
+
         protected virtual void Start()
         {
-            dataStreamer = DataStreamer.instance; 
             timeSinceLastRequest = Time.time;
             
             segmentMarkers = new Dictionary<string, List<string>>() {
@@ -109,13 +101,13 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         protected virtual void OnEnable()
         {
-            DataStreamer.instance.RegisterSubject(subjectName);
+            subjectDataManager.RegisterSubject(subjectName);
         }
         
         /// <inheritdoc />
         protected virtual void OnDisable()
         {
-            DataStreamer.instance.UnRegsiterSubject(subjectName);
+            subjectDataManager.UnRegsiterSubject(subjectName);
         }
 
         protected void SetupMessagePack()
@@ -127,19 +119,19 @@ namespace ubco.ovilab.ViconUnityStream
 
         protected void LateUpdate()
         {
-            if (useDefaultData)
+            if (subjectDataManager.UseDefaultData)
             {
                 ProcessData(defaultDataObj, defaultData);
             }
             else
             {
-                ProcessData(dataStreamer.StreamedData[subjectName], dataStreamer.StreamedRawData[subjectName]);
+                ProcessData(subjectDataManager.StreamedData[subjectName], subjectDataManager.StreamedRawData[subjectName]);
             }
         }
 
         protected void SetupWriter()
         {
-            if (!enableWriteData)
+            if (!subjectDataManager.EnableWriteData)
                 return;
 
             filePaths = new List<string>();
@@ -173,7 +165,7 @@ namespace ubco.ovilab.ViconUnityStream
 
         public void WriteData()
         {
-            if (!enableWriteData || useDefaultData)
+            if (!subjectDataManager.EnableWriteData || subjectDataManager.UseDefaultData)
                 return;
             
             var currentTicks = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -500,7 +492,7 @@ namespace ubco.ovilab.ViconUnityStream
 
         void OnDestroy()
         {
-            if (enableWriteData)
+            if (subjectDataManager.EnableWriteData)
             {
                 Debug.Log("Closing files: \n    " + string.Join("\n    ", filePaths));
                 inputWriter?.Close();

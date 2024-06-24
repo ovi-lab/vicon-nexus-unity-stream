@@ -6,12 +6,39 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-public class DataStreamer : Singleton<DataStreamer>
+public class SubjectDataManager : MonoBehaviour
 {
-    [SerializeField] private string baseURI = "ws://viconmx.hcilab.ok.ubc.ca:5001/";
+    [Tooltip("The Webscoket URL used for connection.")]
+    [SerializeField] private string baseURI = "ws://viconmx.hcilab.ok.ubc.ca:5001/markers/";
+    /// <summary>
+    /// The Webscoket URL used for connection.
+    /// </summary>
+    public string BaseURI { get => baseURI; set => baseURI = value; }
+
+    [Tooltip("Should the subjects use the default data?")]
+    [SerializeField] private bool useDefaultData = false;
+    /// <summary>
+    /// Should the subjects use the default data?
+    /// </summary>
+    public bool UseDefaultData { get => useDefaultData; set => useDefaultData = value; }
+
+    [Tooltip("Enable writing data to disk.")]
+    [SerializeField] private bool enableWriteData = false;
+    /// <summary>
+    /// Enable writing data to disk.
+    /// </summary>
+    public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
+
+    [Tooltip("Ensure XR Hands Subsystem data is provided by approproiate subjects.")]
+    [SerializeField] private bool useXRHandSubsystem = false;
+    /// <summary>
+    /// Ensure XR Hands Subsystem data is provided by approproiate subjects.
+    /// </summary>
+    public bool UseXRHandSubsystem { get => useXRHandSubsystem; set => useXRHandSubsystem = value; }
+
     public Dictionary<string, Data> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
-    
+
     private List<string> subjectList;
     private WebSocket webSocket;
     private Dictionary<string, Data> data = new();
@@ -48,7 +75,7 @@ public class DataStreamer : Singleton<DataStreamer>
 
         if (webSocket == null)
         {
-            webSocket = new WebSocket(baseURI);
+            webSocket = new WebSocket(BaseURI);
             webSocket.OnOpen += () =>
             {
                 Debug.Log("Connection open!");
