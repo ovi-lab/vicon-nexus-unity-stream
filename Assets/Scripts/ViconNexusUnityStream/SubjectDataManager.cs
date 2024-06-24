@@ -5,6 +5,8 @@ using UnityEngine;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Threading.Tasks;
 
 public class SubjectDataManager : MonoBehaviour
 {
@@ -91,9 +93,17 @@ public class SubjectDataManager : MonoBehaviour
                 Debug.Log("Error! " + e);
             };
 
-            webSocket.OnClose += (e) =>
+            webSocket.OnClose += async (e) =>
             {
                 Debug.Log("Connection closed!");
+
+                if (subjectList.Count > 0)
+                {
+                    // Retry in 1 seconds
+                    await Task.Delay(TimeSpan.FromSeconds(1f));
+                    Debug.Log("Trying to connect again");
+                    SetupConnection();
+                }
             };
         }
 
