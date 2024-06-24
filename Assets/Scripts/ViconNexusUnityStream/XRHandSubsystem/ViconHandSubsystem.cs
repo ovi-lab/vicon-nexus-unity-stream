@@ -30,18 +30,18 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public static void MaybeInitializeHandSubsystem()
         {
-            if (subsystem == null && true) // TODO: Get from scriptable object if we want hand subsystem
+            if (subsystem == null)
             {
-                if (false) // TODO: Do we have to disable other hand subsytems? get from a scriptable object.
-                {
-                    List<XRHandSubsystem> currentHandSubsystems = new List<XRHandSubsystem>();
-                    SubsystemManager.GetSubsystems(currentHandSubsystems);
-                    foreach (XRHandSubsystem handSubsystem in currentHandSubsystems)
-                    {
-                        if (handSubsystem.running)
-                            handSubsystem.Stop();
-                    }
-                }
+                // FIXME: Do we have to disable other hand subsytems? get from a scriptable object.
+                // {
+                //     List<XRHandSubsystem> currentHandSubsystems = new List<XRHandSubsystem>();
+                //     SubsystemManager.GetSubsystems(currentHandSubsystems);
+                //     foreach (XRHandSubsystem handSubsystem in currentHandSubsystems)
+                //     {
+                //         if (handSubsystem.running)
+                //             handSubsystem.Stop();
+                //     }
+                // }
 
                 List<XRHandSubsystemDescriptor> descriptors = new List<XRHandSubsystemDescriptor>();
                 SubsystemManager.GetSubsystemDescriptors(descriptors);

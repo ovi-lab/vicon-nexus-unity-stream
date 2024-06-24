@@ -334,7 +334,6 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         protected void OnDestroy()
         {
-            OnDisable(); // FIXME: is this needed here?
             if (activeHandScripts.Count == 0)
             {
                 ViconHandSubsystem.subsystem?.Destroy();
@@ -638,7 +637,7 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 xrJointPoses = new Dictionary<XRHandJointID, Pose>();
             }
-            xrJointPoses.Clear();  // FIXME: is threadsafety an issue here?
+            xrJointPoses.Clear();
             base.FindAndTransform(iTransform, BoneName);
 
             if (subjectDataManager.UseXRHandSubsystem)
