@@ -47,7 +47,10 @@ public class SubjectDataManager : MonoBehaviour
     /// <inheritdoc />
     private void OnEnable()
     {
-        SetupConnection();
+        if (subjectList.Count > 0)
+        {
+            SetupConnection();
+        }
     }
 
     /// <inheritdoc />
