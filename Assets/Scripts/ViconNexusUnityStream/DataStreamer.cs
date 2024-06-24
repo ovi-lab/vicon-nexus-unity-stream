@@ -1,56 +1,78 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using NativeWebSocket;
 using ubco.ovilab.ViconUnityStream;
 using UnityEngine;
 using System.Text;
 using Newtonsoft.Json;
-using MessagePack;
-using MessagePack.Resolvers;
 using Newtonsoft.Json.Linq;
-using UnityEngine.Serialization;
 
 public class DataStreamer : Singleton<DataStreamer>
 {
     [SerializeField] private string baseURI = "ws://viconmx.hcilab.ok.ubc.ca:5001/";
-    public List<string> subjectList;
-    public WebSocket signalStream => webSocket;
     public Dictionary<string, Data> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
     
+    private List<string> subjectList;
     private WebSocket webSocket;
     private Dictionary<string, Data> data = new();
     private Dictionary<string, string> rawData = new();
-    private async void Start()
+
+    /// <inheritdoc />
+    private void OnEnable()
     {
-        var customSubjects = FindObjectsOfType<CustomSubjectScript>();
-        foreach (CustomSubjectScript customSubject in customSubjects)
+        SetupConnection();
+    }
+
+    /// <inheritdoc />
+    private void FixedUpdate()
+    {
+        webSocket.DispatchLatestMessage();
+    }
+
+    /// <inheritdoc />
+    private async void OnDisable()
+    {
+        webSocket.OnMessage -= StreamData;
+        await webSocket.Close();
+    }
+
+    /// <summary>
+    /// Setup websocket connection.
+    /// </summary>
+    private async void SetupConnection()
+    {
+        if (webSocket.State == WebSocketState.Connecting || webSocket.State == WebSocketState.Open)
         {
-            subjectList.Add(customSubject.subjectName);
+            return;
         }
-        webSocket = new WebSocket(baseURI);
-        webSocket.OnOpen += () =>
-        {
-            Debug.Log("Connection open!");
-        };
 
-        webSocket.OnError += (e) =>
+        if (webSocket == null)
         {
-            Debug.Log("Error! " + e);
-        };
+            webSocket = new WebSocket(baseURI);
+            webSocket.OnOpen += () =>
+            {
+                Debug.Log("Connection open!");
+            };
 
-        webSocket.OnClose += (e) =>
-        {
-            webSocket.Close();
-            Debug.Log("Connection closed!");
-        };
+            webSocket.OnError += (e) =>
+            {
+                Debug.Log("Error! " + e);
+            };
+
+            webSocket.OnClose += (e) =>
+            {
+                Debug.Log("Connection closed!");
+            };
+        }
 
         webSocket.OnMessage += StreamData;
         await webSocket.Connect();
     }
 
+
+    /// <summary>
+    /// Process the date from websocket. Is inteaded as callback for the <see cref="WebSocket.OnMessage"/>
+    /// </summary>
     private void StreamData(byte[] receivedData)
     {
         JObject jsonObject = JObject.Parse(Encoding.UTF8.GetString(receivedData));
@@ -60,14 +82,24 @@ public class DataStreamer : Singleton<DataStreamer>
             rawData[subject] = JsonConvert.SerializeObject(data);
         }
     }
-    
-    private void FixedUpdate()
+
+    /// <summary>
+    /// Regsiter a subject to recieve subject data.
+    /// </summary>
+    public void RegisterSubject(string subjectName)
     {
-        webSocket.DispatchLatestMessage();
+        subjectList.Add(subjectName);
+        if (webSocket == null || webSocket.State == WebSocketState.Closed || webSocket.State == WebSocketState.Closing)
+        {
+            SetupConnection();
+        }
     }
 
-    private void OnDisable()
+    /// <summary>
+    /// Unregsiter a subject.
+    /// </summary>
+    public void UnRegsiterSubject(string subjectName)
     {
-        webSocket.OnMessage -= StreamData;
+        subjectList.Remove(subjectName);
     }
 }
