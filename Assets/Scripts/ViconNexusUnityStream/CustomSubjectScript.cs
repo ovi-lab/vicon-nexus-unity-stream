@@ -105,7 +105,19 @@ namespace ubco.ovilab.ViconUnityStream
             SetupFilter();
             
         }
+
+        /// <inheritdoc />
+        protected virtual void OnEnable()
+        {
+            DataStreamer.instance.RegisterSubject(subjectName);
+        }
         
+        /// <inheritdoc />
+        protected virtual void OnDisable()
+        {
+            DataStreamer.instance.UnRegsiterSubject(subjectName);
+        }
+
         protected void SetupMessagePack()
         {
             defaultDataObj = JsonConvert.DeserializeObject<Data>(defaultData);
