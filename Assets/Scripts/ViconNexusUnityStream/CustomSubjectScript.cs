@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -8,9 +7,6 @@ using System.Net.Http;
 using System;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
-using MessagePack;
-using MessagePack.Resolvers;
 
 namespace ubco.ovilab.ViconUnityStream
 {
@@ -63,8 +59,6 @@ namespace ubco.ovilab.ViconUnityStream
 
         string rawData;
 
-        MessagePackSerializerOptions messagePackOptions;
-
         protected Dictionary<string, Vector3> finalPositionVectors = new Dictionary<string, Vector3>();
         protected Dictionary<string, Transform> finalTransforms = new Dictionary<string, Transform>();
         protected Dictionary<string, Vector3> finalUpVectors = new Dictionary<string, Vector3>();
@@ -92,7 +86,6 @@ namespace ubco.ovilab.ViconUnityStream
                 { "base5", new List<string>() { "base5"}}
             };
 
-            SetupMessagePack();
             SetupWriter();
             SetupFilter();
             
@@ -108,13 +101,6 @@ namespace ubco.ovilab.ViconUnityStream
         protected virtual void OnDisable()
         {
             subjectDataManager.UnRegsiterSubject(subjectName);
-        }
-
-        protected void SetupMessagePack()
-        {
-            defaultDataObj = JsonConvert.DeserializeObject<Data>(defaultData);
-            defaultDataBytes = MessagePackSerializer.Serialize(defaultDataObj);
-            messagePackOptions = MessagePackSerializerOptions.Standard.WithResolver(StandardResolver.Instance);
         }
 
         protected void LateUpdate()

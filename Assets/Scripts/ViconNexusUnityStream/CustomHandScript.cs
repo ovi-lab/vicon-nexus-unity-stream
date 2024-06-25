@@ -282,7 +282,6 @@ namespace ubco.ovilab.ViconUnityStream
 
             };
 
-            SetupMessagePack();
             SetupWriter();
             SetupFilter();
         }

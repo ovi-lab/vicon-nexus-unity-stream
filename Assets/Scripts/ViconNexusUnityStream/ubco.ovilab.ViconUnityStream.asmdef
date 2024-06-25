@@ -2,10 +2,8 @@
     "name": "ubco.ovilab.ViconUnityStream",
     "rootNamespace": "ubco.ovilab.ViconUnityStream",
     "references": [
-        "GUID:bbde805d927e795439d7a746d1749cab",
-        "GUID:5a46ad82eac024e4fbb6a0516a5def17",
-        "GUID:ce522b6ed64c8be4c989a1d26d0e3275",
-        "GUID:04376767bc1f3b428aefa3d20743e819"
+        "Unity.XR.Hands",
+        "endel.nativewebsocket"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
