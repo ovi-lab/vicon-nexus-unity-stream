@@ -22,7 +22,15 @@ public class SubjectDataManager : MonoBehaviour
     /// <summary>
     /// Should the subjects use the default data?
     /// </summary>
-    public bool UseDefaultData { get => useDefaultData; set => useDefaultData = value; }
+    public bool UseDefaultData
+    {
+        get => useDefaultData;
+        set
+        {
+            useDefaultData = value;
+            ProcessDefaultDataAndWebSocket();
+        }
+    }
 
     [Tooltip("Enable writing data to disk.")]
     [SerializeField] private bool enableWriteData = false;
@@ -49,10 +57,7 @@ public class SubjectDataManager : MonoBehaviour
     /// <inheritdoc />
     private void OnEnable()
     {
-        if (subjectList.Count > 0)
-        {
-            SetupConnection();
-        }
+        MaybeSetupConnection();
     }
 
     /// <inheritdoc />
@@ -62,25 +67,48 @@ public class SubjectDataManager : MonoBehaviour
     }
 
     /// <inheritdoc />
-    private async void OnDisable()
+    private void OnDisable()
     {
-        webSocket.OnMessage -= StreamData;
-        await webSocket.Close();
+        if (webSocket == null)
+        {
+            webSocket.OnMessage -= StreamData;
+        }
+        MaybeDisableConnection();
+    }
+
+    /// <inheritdoc />
+    private void OnValidate()
+    {
+        ProcessDefaultDataAndWebSocket();
+    }
+
+    /// <summary>
+    /// Ensure that connection is turned off when using default data and vice versa.
+    /// To be called when default data is changed.
+    /// </summary>
+    private void ProcessDefaultDataAndWebSocket()
+    {
+        if (UseDefaultData)
+        {
+            MaybeDisableConnection();
+        }
+        else
+        {
+            MaybeSetupConnection();
+        }
     }
 
     /// <summary>
     /// Setup websocket connection.
     /// </summary>
-    private async void SetupConnection()
+    private async void MaybeSetupConnection()
     {
-        if (webSocket != null)
+        if (UseDefaultData || subjectList.Count == 0 || (webSocket != null && (webSocket.State == WebSocketState.Connecting || webSocket.State == WebSocketState.Open)))
         {
-            if (webSocket.State == WebSocketState.Connecting || webSocket.State == WebSocketState.Open)
-            {
-                return;
-            }
+            return;
         }
-        else
+
+        if (webSocket == null)
         {
             webSocket = new WebSocket(BaseURI);
             webSocket.OnOpen += () =>
@@ -102,13 +130,24 @@ public class SubjectDataManager : MonoBehaviour
                     // Retry in 1 seconds
                     await Task.Delay(TimeSpan.FromSeconds(1f));
                     Debug.Log("Trying to connect again");
-                    SetupConnection();
+                    MaybeSetupConnection();
                 }
             };
         }
 
         webSocket.OnMessage += StreamData;
         await webSocket.Connect();
+    }
+
+    /// <summary>
+    /// Disable connection 
+    /// </summary>
+    private async void MaybeDisableConnection()
+    {
+        if (webSocket != null && (webSocket.State != WebSocketState.Closing || webSocket.State != WebSocketState.Closed))
+        {
+            await webSocket.Close();
+        }
     }
 
 
@@ -141,10 +180,7 @@ public class SubjectDataManager : MonoBehaviour
     public void RegisterSubject(string subjectName)
     {
         subjectList.Add(subjectName);
-        if (webSocket == null || webSocket.State == WebSocketState.Closed || webSocket.State == WebSocketState.Closing)
-        {
-            SetupConnection();
-        }
+        MaybeSetupConnection();
     }
 
     /// <summary>

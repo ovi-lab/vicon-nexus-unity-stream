@@ -7,6 +7,7 @@ using System.Net.Http;
 using System;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace ubco.ovilab.ViconUnityStream
 {
@@ -88,7 +89,6 @@ namespace ubco.ovilab.ViconUnityStream
 
             SetupWriter();
             SetupFilter();
-            
         }
 
         /// <inheritdoc />
@@ -107,6 +107,11 @@ namespace ubco.ovilab.ViconUnityStream
         {
             if (subjectDataManager.UseDefaultData)
             {
+                if (defaultDataObj == null)
+                {
+                    defaultDataObj = JsonConvert.DeserializeObject<Data>(defaultData);
+                    Debug.Log($"{defaultDataObj.data}");
+                }
                 ProcessData(defaultDataObj, defaultData);
             }
             else
