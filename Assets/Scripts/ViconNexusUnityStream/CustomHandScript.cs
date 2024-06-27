@@ -315,7 +315,6 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 activeHandScripts.Add(handedness, this);
             }
-            ViconHandSubsystem.subsystem?.Start();
         }
 
         /// <inheritdoc />
@@ -325,19 +324,6 @@ namespace ubco.ovilab.ViconUnityStream
             if (activeHandScripts.ContainsKey(handedness) && activeHandScripts[handedness] == this)
             {
                 activeHandScripts.Remove(handedness);
-            }
-            if (activeHandScripts.Count == 0)
-            {
-                ViconHandSubsystem.subsystem?.Stop();
-            }
-        }
-
-        /// <inheritdoc />
-        protected void OnDestroy()
-        {
-            if (activeHandScripts.Count == 0)
-            {
-                ViconHandSubsystem.subsystem?.Destroy();
             }
         }
 
@@ -641,6 +627,7 @@ namespace ubco.ovilab.ViconUnityStream
             xrJointPoses.Clear();
             base.FindAndTransform(iTransform, BoneName);
 
+            // TODO: This should be read from the subsystem setups
             if (subjectDataManager.UseXRHandSubsystem)
             {
                 ViconHandSubsystem.subsystem.SetHandPoses(handedness, xrJointPoses);

@@ -27,6 +27,12 @@ namespace ubco.ovilab.ViconUnityStream
             get { return GetLoadedSubsystem<XRInputSubsystem>(); }
         }
 
+        /// <summary>Return the currently active XR Hand Subsystem intance, if any.</summary>
+        public XRHandSubsystem handSubsystem
+        {
+            get { return GetLoadedSubsystem<XRHandSubsystem>(); }
+        }
+
         ViconXRSettings GetSettings()
         {
             ViconXRSettings settings = null;
