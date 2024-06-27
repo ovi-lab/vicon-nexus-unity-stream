@@ -2,7 +2,8 @@
     "name": "ubco.ovilab.ViconUnityStream.Editor",
     "rootNamespace": "ubco.ovilab.ViconUnityStream.Editor",
     "references": [
-        "ubco.ovilab.ViconUnityStream"
+        "ubco.ovilab.ViconUnityStream",
+        "Unity.XR.Management.Editor"
     ],
     "includePlatforms": [
         "Editor"

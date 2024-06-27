@@ -3,7 +3,9 @@
     "rootNamespace": "ubco.ovilab.ViconUnityStream",
     "references": [
         "Unity.XR.Hands",
-        "endel.nativewebsocket"
+        "endel.nativewebsocket",
+        "Unity.XR.Management",
+        "Unity.XR.Management.Editor"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
