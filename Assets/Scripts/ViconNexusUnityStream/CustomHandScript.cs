@@ -289,10 +289,10 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         protected void Awake()
         {
-            if (subjectDataManager.UseXRHandSubsystem)
-            {
-                ViconHandSubsystem.MaybeInitializeHandSubsystem();
-            }
+            // if (subjectDataManager.UseXRHandSubsystem)
+            // {
+            //     ViconHandSubsystem.MaybeInitializeHandSubsystem();
+            // }
         }
 
         /// <inheritdoc />

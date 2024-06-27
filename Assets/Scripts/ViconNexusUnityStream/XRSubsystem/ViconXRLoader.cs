@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
+using UnityEngine.XR.Hands;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -16,8 +17,8 @@ namespace ubco.ovilab.ViconUnityStream
 #endif
     public class ViconXRLoader : XRLoaderHelper
     {
-        static List<XRInputSubsystemDescriptor> s_InputSubsystemDescriptors =
-            new List<XRInputSubsystemDescriptor>();
+        static List<XRInputSubsystemDescriptor> inputSubsystemDescriptors = new ();
+        static List<XRHandSubsystemDescriptor> xrHandsSubsystemDescriptors = new ();
 
         /// <summary>Return the currently active Input Subsystem intance, if any.</summary>
         public XRInputSubsystem inputSubsystem
@@ -50,7 +51,8 @@ namespace ubco.ovilab.ViconUnityStream
             //     // TODO: Pass settings off to plugin prior to subsystem init.
             // }
 
-            CreateSubsystem<XRInputSubsystemDescriptor, XRInputSubsystem>(s_InputSubsystemDescriptors, "InputSubsystemDescriptor");
+            // CreateSubsystem<XRInputSubsystemDescriptor, XRInputSubsystem>(s_InputSubsystemDescriptors, "InputSubsystemDescriptor");
+            CreateSubsystem<XRHandSubsystemDescriptor, XRHandSubsystem>(xrHandsSubsystemDescriptors, ViconHandSubsystem.id);
 
             return false;
         }
