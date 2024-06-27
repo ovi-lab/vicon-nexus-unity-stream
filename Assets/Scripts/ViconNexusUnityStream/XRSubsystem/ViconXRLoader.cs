@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
 using UnityEngine.XR.Hands;
+using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -26,18 +27,18 @@ namespace ubco.ovilab.ViconUnityStream
             get { return GetLoadedSubsystem<XRInputSubsystem>(); }
         }
 
-//         SampleSettings GetSettings()
-//         {
-//             SampleSettings settings = null;
-//             // When running in the Unity Editor, we have to load user's customization of configuration data directly from
-//             // EditorBuildSettings. At runtime, we need to grab it from the static instance field instead.
-// #if UNITY_EDITOR
-//             UnityEditor.EditorBuildSettings.TryGetConfigObject(SampleConstants.k_SettingsKey, out settings);
-// #else
-//             settings = SampleSettings.s_RuntimeInstance;
-// #endif
-//             return settings;
-//         }
+        ViconXRSettings GetSettings()
+        {
+            ViconXRSettings settings = null;
+            // When running in the Unity Editor, we have to load user's customization of configuration data directly from
+            // EditorBuildSettings. At runtime, we need to grab it from the static instance field instead.
+#if UNITY_EDITOR
+            UnityEditor.EditorBuildSettings.TryGetConfigObject(ViconXRConstants.settingsKey, out settings);
+#else
+            settings = ViconXRSettings.s_RuntimeInstance;
+#endif
+            return settings;
+        }
 
 #region XRLoader API Implementation
 
@@ -45,7 +46,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <returns>True if successful, false otherwise</returns>
         public override bool Initialize()
         {
-            // // SampleSettings settings = GetSettings();
+            ViconXRSettings settings = GetSettings();
             // if (settings != null)
             // {
             //     // TODO: Pass settings off to plugin prior to subsystem init.
@@ -54,7 +55,18 @@ namespace ubco.ovilab.ViconUnityStream
             // CreateSubsystem<XRInputSubsystemDescriptor, XRInputSubsystem>(s_InputSubsystemDescriptors, "InputSubsystemDescriptor");
             CreateSubsystem<XRHandSubsystemDescriptor, XRHandSubsystem>(xrHandsSubsystemDescriptors, ViconHandSubsystem.id);
 
-            return false;
+            ViconHandSubsystem.subsystem = GetLoadedSubsystem<XRHandSubsystem>() as ViconHandSubsystem;
+
+            if (ViconHandSubsystem.subsystem == null)
+            {
+                Debug.LogError($"{typeof(ViconHandSubsystem).Name} failed to configure!");
+            }
+            else
+            {
+                Debug.Log($"{typeof(ViconHandSubsystem).Name} configured!");
+            }
+
+            return true;
         }
 
         /// <summary>Implementaion of <see cref="XRLoader.Start"/></summary>
@@ -62,6 +74,7 @@ namespace ubco.ovilab.ViconUnityStream
         public override bool Start()
         {
             StartSubsystem<XRInputSubsystem>();
+            StartSubsystem<XRHandSubsystem>();
             return true;
         }
 
@@ -70,6 +83,7 @@ namespace ubco.ovilab.ViconUnityStream
         public override bool Stop()
         {
             StopSubsystem<XRInputSubsystem>();
+            StopSubsystem<XRHandSubsystem>();
             return true;
         }
 
@@ -78,6 +92,7 @@ namespace ubco.ovilab.ViconUnityStream
         public override bool Deinitialize()
         {
             DestroySubsystem<XRInputSubsystem>();
+            DestroySubsystem<XRHandSubsystem>();
             return base.Deinitialize();
         }
 

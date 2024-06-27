@@ -33,7 +33,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 return new ViconXRPackageMetadata() {
                     packageName = "ViconXR",
                         packageId = ViconXRConstants.packageID,
-                        // settingsType = typeof(SampleSettings).FullName,
+                        settingsType = typeof(ViconXRSettings).FullName,
 
                         loaderMetadata = new List<IXRLoaderMetadata>() {
                             new ViconXRLoaderMetadata()
