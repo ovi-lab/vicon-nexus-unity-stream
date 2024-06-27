@@ -116,6 +116,8 @@ namespace ubco.ovilab.ViconUnityStream
                 {
                     ProcessData(subjectDataObj, subjectRawData);
                 }
+                // TODO: Write empty lines when data not in frame?
+                // else { }
             }
         }
 

@@ -120,8 +120,18 @@ public class SubjectDataManager : MonoBehaviour
         JObject jsonObject = JObject.Parse(Encoding.UTF8.GetString(receivedData));
         foreach (string subject in subjectList)
         {
-            data[subject] = JsonConvert.DeserializeObject<Data>(jsonObject[subject]!.ToString());
-            rawData[subject] = JsonConvert.SerializeObject(data);
+            if (jsonObject.TryGetValue(subject, out JToken jsonDataObject))
+            {
+                string rawJsonDataString = jsonDataObject.ToString();
+                data[subject] = JsonConvert.DeserializeObject<Data>(rawJsonDataString);
+                rawData[subject] = rawJsonDataString;
+            }
+            else
+            {
+                data[subject] = null;
+                rawData[subject] = null;
+                Debug.LogWarning($"Missing subject data in frame for `{subject}`");
+            }
         }
     }
 

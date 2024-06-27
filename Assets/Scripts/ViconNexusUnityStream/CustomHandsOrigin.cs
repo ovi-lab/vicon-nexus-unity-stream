@@ -19,7 +19,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public static Vector3 TransformPosition(Vector3 position)
         {
-            if (handsOrigin.otherOrigin == null)
+            if (handsOrigin?.otherOrigin == null)
             {
                 return position;
             }
@@ -28,7 +28,7 @@ namespace ubco.ovilab.ViconUnityStream
 
         public static Quaternion TransformRotation(Quaternion rotation)
         {
-            if (handsOrigin.otherOrigin == null)
+            if (handsOrigin?.otherOrigin == null)
             {
                 return rotation;
             }
@@ -40,7 +40,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public static Pose InverseTransformPose(Pose pose)
         {
-            if (handsOrigin.otherOrigin != null)
+            if (handsOrigin?.otherOrigin != null)
             {
                 return new Pose(handsOrigin.XROrigin.InverseTransformPoint(pose.position), 
                     Quaternion.Inverse(handsOrigin.XROrigin.rotation) * pose.rotation);
