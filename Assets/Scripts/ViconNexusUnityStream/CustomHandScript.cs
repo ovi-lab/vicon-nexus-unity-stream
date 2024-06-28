@@ -418,10 +418,6 @@ namespace ubco.ovilab.ViconUnityStream
                 if (normal != Vector3.zero)
                 {
                     transform.rotation = Quaternion.LookRotation(-normal, -palm);
-                    if (CustomHandsOrigin.handsOrigin != null)
-                    {
-                        transform.rotation = CustomHandsOrigin.TransformRotation(transform.rotation);
-                    }
                 }
             }
             return segments;
@@ -537,7 +533,7 @@ namespace ubco.ovilab.ViconUnityStream
                         string fingerId = BoneName.Substring(0, 2);
                         if (setPosition)
                         {
-                            Bone.position = BonePosition * scale_1;
+                            Bone.position = BonePosition * viconUnitsToUnityUnits;
                         }
                         if (setScale)
                         {
@@ -572,11 +568,6 @@ namespace ubco.ovilab.ViconUnityStream
                                     }
                                     if (forward != Vector3.zero)
                                         Bone.rotation = Quaternion.LookRotation(forward, upDirection);
-
-                                    if (CustomHandsOrigin.handsOrigin != null)
-                                    {
-                                        Bone.rotation = CustomHandsOrigin.TransformRotation(Bone.rotation);
-                                    }
                                 }
                             }
                         }
@@ -586,11 +577,6 @@ namespace ubco.ovilab.ViconUnityStream
                         }
                         if (setPosition)
                         {
-                            if (CustomHandsOrigin.handsOrigin != null)
-                            {
-                                Bone.position = CustomHandsOrigin.TransformPosition(Bone.position);
-                            }
-
                             if (fingerId == finger_1)
                                 Bone.position += Bone.forward * normalOffset * 0.9f;
                             else if (fingerId == finger_3)
