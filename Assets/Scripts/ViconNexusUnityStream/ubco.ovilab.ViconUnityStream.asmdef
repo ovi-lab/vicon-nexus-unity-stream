@@ -5,7 +5,8 @@
         "Unity.XR.Hands",
         "endel.nativewebsocket",
         "Unity.XR.Management",
-        "Unity.XR.Management.Editor"
+        "Unity.XR.Management.Editor",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
