@@ -12,26 +12,10 @@ namespace ubco.ovilab.ViconUnityStream
 #if UNITY_EDITOR
     [UnityEditor.InitializeOnLoad]
 #endif
-    [Preserve, InputControlLayout(displayName = "Vicon Tracking", commonUsages = new[] { "centerEyePosition", "centerEyeRotation" })]
+    [Preserve, InputControlLayout(displayName = "Vicon Tracking", commonUsages = new[] {"XR", "HMD", "Vicon"})]
     public class ViconXRDevice : XRHMD
     {
         public ViconXRDevice viconXRDevice => device as ViconXRDevice;
-
-        /// <inheritdoc />
-        protected override void FinishSetup()
-        {
-            base.FinishSetup();
-
-            XRDeviceDescriptor deviceDescriptor = XRDeviceDescriptor.FromJson(description.capabilities);
-            if (deviceDescriptor != null)
-            {
-                if ((deviceDescriptor.characteristics & InputDeviceCharacteristics.HeadMounted) != 0)
-                {
-                    InputSystem.SetDeviceUsage(this, UnityEngine.XR.CommonUsages.centerEyePosition.name);
-                    InputSystem.SetDeviceUsage(this, UnityEngine.XR.CommonUsages.centerEyeRotation.name);
-                }
-            }
-        }
 
         /// <summary>
         /// Setup and return a <see cref="ViconXRDevice"/>.
@@ -44,17 +28,12 @@ namespace ubco.ovilab.ViconUnityStream
                 manufacturer = "Vicon",
                 capabilities = new XRDeviceDescriptor
                 {
-                    characteristics = InputDeviceCharacteristics.TrackedDevice,
+                    characteristics = InputDeviceCharacteristics.TrackedDevice | InputDeviceCharacteristics.HeadMounted,
                     inputFeatures = new List<XRFeatureDescriptor>
                     {
                         new XRFeatureDescriptor
                         {
-                            name = "HWD_position",
-                            featureType = FeatureType.Binary
-                        },
-                        new XRFeatureDescriptor
-                        {
-                            name = "HWD_rotation",
+                            name = "sampleFeature",
                             featureType = FeatureType.Binary
                         }
                     }
