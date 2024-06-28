@@ -8,6 +8,5 @@ namespace ubco.ovilab.ViconUnityStream
     {
         public Dictionary<string, List<float>> data;
         public Dictionary<string, List<string>> hierachy;
-        public bool sensorTriggered;
     }
 }

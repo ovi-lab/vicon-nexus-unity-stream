@@ -31,7 +31,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             EditorGUILayout.Space();
 
             EditorGUILayout.PropertyField(subjectDataManagerProperty);
-            SubjectDataManager subjectDataManager = customSubjectScript.subjectDataManager;
+            SubjectDataManager subjectDataManager = subjectDataManagerProperty.objectReferenceValue as SubjectDataManager;
             if (subjectDataManager == null)
             {
                 string buttonText;
@@ -53,7 +53,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                     {
                         subjectDataManager = (new GameObject("SubjectDataManager")).AddComponent<SubjectDataManager>();
                     }
-                    customSubjectScript.subjectDataManager = subjectDataManager;
+                    subjectDataManagerProperty.objectReferenceValue = subjectDataManager;
                     EditorUtility.SetDirty(customSubjectScript);
                 }
             }

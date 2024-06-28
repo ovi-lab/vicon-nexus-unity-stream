@@ -15,6 +15,7 @@ namespace ubco.ovilab.ViconUnityStream
         public float normalOffset = 0.001f;
         public bool setPosition = true;
         public bool setScale = true;
+        public float scaleToSet = 0.02f;
         private Vector3 normal;
         private Vector3 palm;
         private bool noHand = false;
@@ -281,18 +282,6 @@ namespace ubco.ovilab.ViconUnityStream
                 {segment_5D4, XRHandJointID.LittleTip},
 
             };
-
-            SetupWriter();
-            SetupFilter();
-        }
-
-        /// <inheritdoc />
-        protected void Awake()
-        {
-            // if (subjectDataManager.UseXRHandSubsystem)
-            // {
-            //     ViconHandSubsystem.MaybeInitializeHandSubsystem();
-            // }
         }
 
         /// <inheritdoc />
@@ -526,7 +515,7 @@ namespace ubco.ovilab.ViconUnityStream
                     {
                         if (!noHand && BonePosition != Vector3.zero)
                             Bone.rotation = Quaternion.LookRotation(-BonePosition.normalized, -palm);
-                        Bone.position = Bone.parent.position - Bone.forward * scale_2 - Bone.up * scale_2;
+                        Bone.position = Bone.parent.position - Bone.forward * scaleToSet - Bone.up * scaleToSet;
                     }
                     else
                     {
@@ -539,7 +528,7 @@ namespace ubco.ovilab.ViconUnityStream
                         {
                             Transform p = Bone.parent;
                             Bone.parent = null;
-                            Bone.localScale = Vector3.one * scale_2;
+                            Bone.localScale = Vector3.one * scaleToSet;
                             Bone.parent = p;
                         }
 

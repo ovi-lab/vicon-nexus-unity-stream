@@ -40,7 +40,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             foreach (CustomSubjectScript subjectScript in subjectScripts)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"{subjectScript.transform.name} ({subjectScript.subjectName})");
+                EditorGUILayout.LabelField($"{subjectScript.transform.name} ({subjectScript.SubejectName})");
                 if (GUILayout.Button("Goto subject"))
                 {
                     Selection.activeObject = subjectScript;
