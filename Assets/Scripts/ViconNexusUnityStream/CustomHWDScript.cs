@@ -78,11 +78,7 @@ namespace ubco.ovilab.ViconUnityStream
                 segmentsRotation[key] = rotation;
             }
 
-            // TODO: Get configureation from subsystem
-            if (subjectDataManager.UseXRHandSubsystem)
-            {
-                ViconXRDevice.viconDevice.QueueData(segments["base1"] * viconUnitsToUnityUnits, rotation);
-            }
+            ViconXRLoader.TrySetXRDeviceData(segments["base1"] * viconUnitsToUnityUnits, rotation);
             return segments;
         }
     }

@@ -62,7 +62,6 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 EditorGUILayout.LabelField("URI", subjectDataManager.BaseURI);
                 EditorGUILayout.LabelField("Use default data", subjectDataManager.UseDefaultData.ToString());
                 EditorGUILayout.LabelField("Enable Write data", subjectDataManager.EnableWriteData.ToString());
-                EditorGUILayout.LabelField("Use XR Hand Subsystem", subjectDataManager.UseXRHandSubsystem.ToString());
                 if (GUILayout.Button("Modify subject data manager"))
                 {
                     Selection.activeObject = subjectDataManager;

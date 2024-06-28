@@ -1,12 +1,9 @@
 using System.Collections.Generic;
 
 using UnityEngine.XR;
-using UnityEngine.XR.Management;
-using UnityEngine.XR.Hands;
 using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.XR;
 
@@ -15,11 +12,12 @@ namespace ubco.ovilab.ViconUnityStream
 #if UNITY_EDITOR
     [UnityEditor.InitializeOnLoad]
 #endif
-    [Preserve, InputControlLayout(displayName = "Vicon Tracking", commonUsages = new[] { "devicePosition", "deviceRotation" })]
+    [Preserve, InputControlLayout(displayName = "Vicon Tracking", commonUsages = new[] { "centerEyePosition", "centerEyeRotation" })]
     public class ViconXRDevice : XRHMD
     {
-        public static ViconXRDevice viconDevice { get; private set; }
+        public ViconXRDevice viconXRDevice => device as ViconXRDevice;
 
+        /// <inheritdoc />
         protected override void FinishSetup()
         {
             base.FinishSetup();
@@ -29,14 +27,16 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 if ((deviceDescriptor.characteristics & InputDeviceCharacteristics.HeadMounted) != 0)
                 {
-                    // TODO: validate if this usage is correct
-                    InputSystem.SetDeviceUsage(this, UnityEngine.XR.CommonUsages.devicePosition.name);
-                    InputSystem.SetDeviceUsage(this, UnityEngine.XR.CommonUsages.deviceRotation.name);
+                    InputSystem.SetDeviceUsage(this, UnityEngine.XR.CommonUsages.centerEyePosition.name);
+                    InputSystem.SetDeviceUsage(this, UnityEngine.XR.CommonUsages.centerEyeRotation.name);
                 }
             }
         }
 
-        public static void SetupDevice()
+        /// <summary>
+        /// Setup and return a <see cref="ViconXRDevice"/>.
+        /// </summary>
+        public static ViconXRDevice SetupDevice()
         {
             InputDeviceDescription desc = new InputDeviceDescription
             {
@@ -62,12 +62,15 @@ namespace ubco.ovilab.ViconUnityStream
                 }.ToJson()
             };
 
-            viconDevice = InputSystem.AddDevice(desc) as ViconXRDevice;
+            return InputSystem.AddDevice(desc) as ViconXRDevice;
         }
 
-        public static void DestroyDevice()
+        /// <summary>
+        /// Callback when device and related subsystems are getting destroyed/deinit
+        /// </summary>
+        public void DestroyDevice()
         {
-            InputSystem.RemoveDevice(viconDevice);
+            InputSystem.RemoveDevice(viconXRDevice);
         }
 
 #if UNITY_EDITOR
@@ -82,7 +85,10 @@ namespace ubco.ovilab.ViconUnityStream
                     .WithManufacturer("Vicon"));
         }
 
-        public void QueueData(Vector3 pos, Quaternion rot)
+        /// <summary>
+        /// Set data to be passed to the subsystem/device.
+        /// </summary>
+        public void SetDeviceData(Vector3 pos, Quaternion rot)
         {
             InputSystem.QueueDeltaStateEvent(trackingState, InputTrackingState.Position | InputTrackingState.Rotation);
             InputSystem.QueueDeltaStateEvent(isTracked, true);

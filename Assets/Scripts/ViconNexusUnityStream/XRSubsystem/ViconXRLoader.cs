@@ -13,25 +13,33 @@ using UnityEditor.XR.Management;
 namespace ubco.ovilab.ViconUnityStream
 {
 #if UNITY_EDITOR
-    [XRSupportedBuildTarget(BuildTargetGroup.Standalone, new BuildTarget[]{ BuildTarget.StandaloneWindows, BuildTarget.StandaloneWindows64})]
+    [XRSupportedBuildTarget(BuildTargetGroup.Standalone, new BuildTarget[] { BuildTarget.StandaloneWindows, BuildTarget.StandaloneWindows64 })]
     [XRSupportedBuildTarget(BuildTargetGroup.Android)]
 #endif
     public class ViconXRLoader : XRLoaderHelper
     {
-        static List<XRInputSubsystemDescriptor> inputSubsystemDescriptors = new ();
-        static List<XRHandSubsystemDescriptor> xrHandsSubsystemDescriptors = new ();
+        static List<XRInputSubsystemDescriptor> inputSubsystemDescriptors = new();
+        static List<XRHandSubsystemDescriptor> xrHandsSubsystemDescriptors = new();
+        private ViconXRSettings settings;
+        private static ViconXRLoader loader;
 
-        /// <summary>Return the currently active Input Subsystem intance, if any.</summary>
+        /// <summary>
+        /// Return the currently active Input Subsystem intance, if any.
+        /// </summary>
         public XRInputSubsystem inputSubsystem
         {
             get { return GetLoadedSubsystem<XRInputSubsystem>(); }
         }
 
-        /// <summary>Return the currently active XR Hand Subsystem intance, if any.</summary>
-        public XRHandSubsystem handSubsystem
-        {
-            get { return GetLoadedSubsystem<XRHandSubsystem>(); }
-        }
+        /// <summary>
+        /// Return the currently active XR Hand Subsystem intance, if any.
+        /// </summary>
+        public ViconHandSubsystem HandSubsystem { get; private set; }
+
+        /// <summary>
+        /// The associated vicon device the loader is managing.
+        /// </summary>
+        public ViconXRDevice XRDevice { get; private set; }
 
         ViconXRSettings GetSettings()
         {
@@ -46,25 +54,21 @@ namespace ubco.ovilab.ViconUnityStream
             return settings;
         }
 
-#region XRLoader API Implementation
-
+        #region XRLoader API Implementation
         /// <summary>Implementaion of <see cref="XRLoader.Initialize"/></summary>
         /// <returns>True if successful, false otherwise</returns>
         public override bool Initialize()
         {
-            ViconXRSettings settings = GetSettings();
-            // if (settings != null)
-            // {
-            //     // TODO: Pass settings off to plugin prior to subsystem init.
-            // }
+            settings = GetSettings();
+            loader = this;
 
             // CreateSubsystem<XRInputSubsystemDescriptor, XRInputSubsystem>(s_InputSubsystemDescriptors, "InputSubsystemDescriptor");
             CreateSubsystem<XRHandSubsystemDescriptor, XRHandSubsystem>(xrHandsSubsystemDescriptors, ViconHandSubsystem.id);
 
-            ViconHandSubsystem.subsystem = GetLoadedSubsystem<XRHandSubsystem>() as ViconHandSubsystem;
-            ViconXRDevice.SetupDevice();
+            HandSubsystem = GetLoadedSubsystem<XRHandSubsystem>() as ViconHandSubsystem;
+            XRDevice = ViconXRDevice.SetupDevice();
 
-            if (ViconHandSubsystem.subsystem == null)
+            if (HandSubsystem == null)
             {
                 Debug.LogError($"{typeof(ViconHandSubsystem).Name} failed to configure!");
             }
@@ -100,10 +104,35 @@ namespace ubco.ovilab.ViconUnityStream
         {
             DestroySubsystem<XRInputSubsystem>();
             DestroySubsystem<XRHandSubsystem>();
-            ViconXRDevice.DestroyDevice();
+            XRDevice.DestroyDevice();
+            loader = null;
             return base.Deinitialize();
         }
+        #endregion
 
-#endregion
+        #region Passing data to subsystems
+        /// <summary>
+        /// Set hand subsystem data.
+        /// </summary>
+        public static void TrySetHandSbsystemData(Handedness handedness, Dictionary<XRHandJointID, Pose> poses)
+        {
+            if (loader != null)
+            {
+                loader.HandSubsystem.SetHandPoses(handedness, poses);
+            }
+        }
+
+        /// <summary>
+        /// If the loader is setup and configured, set the hwd data in the HMD device.
+        /// </summary>
+        public static void TrySetXRDeviceData(Vector3 pos, Quaternion rot)
+        {
+            if (loader != null)
+            {
+                pos += loader.settings.HMDPositionOffset;
+                loader.XRDevice.SetDeviceData(pos, rot);
+            }
+        }
+        #endregion
     }
 }

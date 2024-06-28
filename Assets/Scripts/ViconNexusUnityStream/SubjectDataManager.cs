@@ -39,13 +39,6 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
 
-    [Tooltip("Ensure XR Hands Subsystem data is provided by approproiate subjects.")]
-    [SerializeField] private bool useXRHandSubsystem = false;
-    /// <summary>
-    /// Ensure XR Hands Subsystem data is provided by approproiate subjects.
-    /// </summary>
-    public bool UseXRHandSubsystem { get => useXRHandSubsystem; set => useXRHandSubsystem = value; }
-
     public Dictionary<string, Data> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
 

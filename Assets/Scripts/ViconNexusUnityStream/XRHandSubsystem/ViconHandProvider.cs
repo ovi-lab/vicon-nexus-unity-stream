@@ -50,7 +50,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         public override void Destroy()
         {
-            subsystemUpdater.Destroy();
+            subsystemUpdater?.Destroy();
             subsystemUpdater = null;
         }
 
@@ -90,21 +90,28 @@ namespace ubco.ovilab.ViconUnityStream
             handJointsInLayout[XRHandJointID.LittleTip.ToIndex()] = handLayout[XRHandJointID.LittleTip];
         }
 
-        /// <inheritdoc />
-        public override void Start()
+        /// <summary>
+        /// Called when associated subsystem is created.
+        /// </summary>
+        public void Setup(XRHandSubsystem subsystem)
         {
             if (subsystemUpdater == null)
             {
-                subsystemUpdater = new XRHandProviderUtility.SubsystemUpdater(ViconHandSubsystem.subsystem);
+                subsystemUpdater = new XRHandProviderUtility.SubsystemUpdater(subsystem);
             }
-            subsystemUpdater.Start();
+        }
+
+        /// <inheritdoc />
+        public override void Start()
+        {
+            subsystemUpdater?.Start();
             handsPoses.Clear();
         }
 
         /// <inheritdoc />
         public override void Stop()
         {
-            subsystemUpdater.Stop();
+            subsystemUpdater?.Stop();
             handsPoses.Clear();
         }
 

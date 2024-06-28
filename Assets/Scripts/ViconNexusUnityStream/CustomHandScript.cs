@@ -578,7 +578,7 @@ namespace ubco.ovilab.ViconUnityStream
                                 Bone.position += Bone.forward * normalOffset;
                         }
 
-                        if (subjectDataManager.UseXRHandSubsystem && segmentToJointMapping.ContainsKey(BoneName))
+                        if (segmentToJointMapping.ContainsKey(BoneName))
                         {
                             xrJointPoses.Add(segmentToJointMapping[BoneName], new Pose(Bone.position, Bone.rotation));
                         }
@@ -602,11 +602,7 @@ namespace ubco.ovilab.ViconUnityStream
             xrJointPoses.Clear();
             base.FindAndTransform(iTransform, BoneName);
 
-            // TODO: This should be read from the subsystem setups
-            if (subjectDataManager.UseXRHandSubsystem)
-            {
-                ViconHandSubsystem.subsystem.SetHandPoses(handedness, xrJointPoses);
-            }
+            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses);
         }
 
         protected override bool TestSegmentsQuality(Dictionary<string, Vector3> segments)
