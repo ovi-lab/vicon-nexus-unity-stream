@@ -134,7 +134,7 @@ GameObject:
   m_Component:
   - component: {fileID: 941707717278274193}
   m_Layer: 0
-  m_Name: MainViconCamera
+  m_Name: MainViconCamera (non-XR Management)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -149,11 +149,10 @@ Transform:
   m_GameObject: {fileID: 941707717278274194}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.0076174736, y: 0.06523228, z: 0.1602025}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 941707717386601863}
   - {fileID: 941707717447344476}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -184,12 +183,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 941707717304283182}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
+  m_LocalPosition: {x: 0.09388017, y: -0.27712137, z: -0.16548772}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 941707717386601863}
+  m_Father: {fileID: 941707717447344476}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!20 &941707717304283155
 Camera:
@@ -294,61 +293,6 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
---- !u!1 &941707717386601857
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 941707717386601863}
-  - component: {fileID: 941707717386601862}
-  m_Layer: 0
-  m_Name: MainViconCameraMount
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &941707717386601863
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 941707717386601857}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.09388017, y: -0.27712137, z: -0.16548772}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 941707717304283154}
-  m_Father: {fileID: 941707717278274193}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &941707717386601862
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 941707717386601857}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73dac8cacbdff2c49a3b647cc47becd6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  base1: {fileID: 941707716005022189}
-  base2: {fileID: 941707715742590654}
-  base3: {fileID: 941707716179073076}
-  base4: {fileID: 941707716453246449}
-  applyPosFilter: 0
-  applyRotFilter: 0
-  rotFilterMinCutoff: 0.1
-  rotFilterBeta: 50
-  posFilterMinCutoff: 0.1
-  posFilterBeta: 50
 --- !u!1 &941707717447344477
 GameObject:
   m_ObjectHideFlags: 0
@@ -380,6 +324,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7638674402925962154}
+  - {fileID: 941707717304283154}
   m_Father: {fileID: 941707717278274193}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &941707717447344451
@@ -394,18 +339,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37514547e115cb343aea89ea888fbe0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  subjectDataManager: {fileID: 0}
   subjectName: HWD
-  scale_1: 0.001
-  scale_2: 0.02
-  rootSegment: base5
-  defaultData: '{"data":{"base1":[25.4562473,334.341736,772.361145],"base2":[-7.27466726,333.620239,765.769043],"base3":[16.7432175,381.851471,772.0162],"base4":[23.23383,289.696472,773.442],"base5":[-1.65132427,371.390961,766.9138]},"hierachy":{"base":["base1","base2","base3","base4","base5"]},"sensorTriggered":false}'
-  useDefaultData: 0
-  useJson: 1
-  enableWriteData: 0
-  baseURI: http://127.0.0.1:5000/marker/
-  URI: http://192.168.43.82:5000/marker/HWD
-  outputText: {fileID: 0}
   gapFillingStrategy: 0
+  defaultData: '{"data":{"base1":[25.4562473,334.341736,772.361145],"base2":[-7.27466726,333.620239,765.769043],"base3":[16.7432175,381.851471,772.0162],"base4":[23.23383,289.696472,773.442],"base5":[-1.65132427,371.390961,766.9138]},"hierachy":{"base":["base1","base2","base3","base4","base5"]},"sensorTriggered":false}'
+  driveSkeleton: 1
+  rootSegment: base5
   dataQualityThreshold: 5
   OnHidingSubject:
     m_PersistentCalls:
@@ -413,6 +352,13 @@ MonoBehaviour:
   OnShowingSubject:
     m_PersistentCalls:
       m_Calls: []
+  xrOrigin: {fileID: 0}
+  applyPosFilter: 0
+  posFilterMinCutoff: 0.1
+  posFilterBeta: 50
+  applyRotFilter: 0
+  rotFilterMinCutoff: 0.1
+  rotFilterBeta: 50
 --- !u!1 &1148834277052024882
 GameObject:
   m_ObjectHideFlags: 0
