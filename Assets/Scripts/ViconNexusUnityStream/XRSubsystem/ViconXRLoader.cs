@@ -62,6 +62,7 @@ namespace ubco.ovilab.ViconUnityStream
             CreateSubsystem<XRHandSubsystemDescriptor, XRHandSubsystem>(xrHandsSubsystemDescriptors, ViconHandSubsystem.id);
 
             ViconHandSubsystem.subsystem = GetLoadedSubsystem<XRHandSubsystem>() as ViconHandSubsystem;
+            ViconXRDevice.SetupDevice();
 
             if (ViconHandSubsystem.subsystem == null)
             {
@@ -99,6 +100,7 @@ namespace ubco.ovilab.ViconUnityStream
         {
             DestroySubsystem<XRInputSubsystem>();
             DestroySubsystem<XRHandSubsystem>();
+            ViconXRDevice.DestroyDevice();
             return base.Deinitialize();
         }
 

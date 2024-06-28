@@ -65,6 +65,11 @@ namespace ubco.ovilab.ViconUnityStream
             viconDevice = InputSystem.AddDevice(desc) as ViconXRDevice;
         }
 
+        public static void DestroyDevice()
+        {
+            InputSystem.RemoveDevice(viconDevice);
+        }
+
 #if UNITY_EDITOR
         static ViconXRDevice() => RegisterLayout();
 #endif
@@ -81,8 +86,8 @@ namespace ubco.ovilab.ViconUnityStream
         {
             InputSystem.QueueDeltaStateEvent(trackingState, InputTrackingState.Position | InputTrackingState.Rotation);
             InputSystem.QueueDeltaStateEvent(isTracked, true);
-            InputSystem.QueueDeltaStateEvent(devicePosition, pos);
-            InputSystem.QueueDeltaStateEvent(deviceRotation, rot);
+            InputSystem.QueueDeltaStateEvent(centerEyePosition, pos);
+            InputSystem.QueueDeltaStateEvent(centerEyeRotation, rot);
         }
     }
 }
