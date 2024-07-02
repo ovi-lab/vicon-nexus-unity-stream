@@ -250,15 +250,7 @@ MonoBehaviour:
       m_SingletonActionBindings:
       - m_Name: 
         m_Id: 73b9972c-19bc-4820-bf3b-038c6afe8faa
-        m_Path: <XRHMD>/centerEyePosition
-        m_Interactions: 
-        m_Processors: 
-        m_Groups: 
-        m_Action: Position
-        m_Flags: 0
-      - m_Name: 
-        m_Id: 59566ea3-ec80-438f-b499-1a791e3af0d5
-        m_Path: <HandheldARInputDevice>/devicePosition
+        m_Path: <ViconXRDevice>/centerEyePosition
         m_Interactions: 
         m_Processors: 
         m_Groups: 
@@ -278,15 +270,7 @@ MonoBehaviour:
       m_SingletonActionBindings:
       - m_Name: 
         m_Id: 17ed8f21-8338-40d9-9b88-fd9fd55ffc6a
-        m_Path: <XRHMD>/centerEyeRotation
-        m_Interactions: 
-        m_Processors: 
-        m_Groups: 
-        m_Action: Rotation
-        m_Flags: 0
-      - m_Name: 
-        m_Id: 530c8d0f-2de2-43fb-940a-d6efa4e54c0e
-        m_Path: <HandheldARInputDevice>/deviceRotation
+        m_Path: <ViconXRDevice>/centerEyeRotation
         m_Interactions: 
         m_Processors: 
         m_Groups: 
@@ -306,7 +290,7 @@ MonoBehaviour:
       m_SingletonActionBindings:
       - m_Name: 
         m_Id: bdb44485-2555-43d1-8ffc-b22bbcbdea20
-        m_Path: <XRHMD>/trackingState
+        m_Path: <ViconXRDevice>/trackingState
         m_Interactions: 
         m_Processors: 
         m_Groups: 
