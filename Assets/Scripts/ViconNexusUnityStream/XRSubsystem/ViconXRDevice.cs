@@ -47,7 +47,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <summary>
         /// Callback when device and related subsystems are getting destroyed/deinit
         /// </summary>
-        public void DestroyDevice()
+        public void Destroy()
         {
             InputSystem.RemoveDevice(viconXRDevice);
         }

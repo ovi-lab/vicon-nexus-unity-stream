@@ -1,35 +1,24 @@
 using System.Collections.Generic;
 
 using UnityEngine.XR;
-using UnityEngine.XR.Management;
 using UnityEngine.XR.Hands;
 using UnityEngine;
-
-#if UNITY_EDITOR
-using UnityEditor;
-using UnityEditor.XR.Management;
-#endif
+using System;
 
 namespace ubco.ovilab.ViconUnityStream
 {
-#if UNITY_EDITOR
-    [XRSupportedBuildTarget(BuildTargetGroup.Standalone, new BuildTarget[] { BuildTarget.StandaloneWindows, BuildTarget.StandaloneWindows64 })]
-    [XRSupportedBuildTarget(BuildTargetGroup.Android)]
-#endif
-    public class ViconXRLoader : XRLoaderHelper
+    public class ViconXRLoader: ScriptableObject
     {
         static List<XRInputSubsystemDescriptor> inputSubsystemDescriptors = new();
         static List<XRHandSubsystemDescriptor> xrHandsSubsystemDescriptors = new();
+
         private ViconXRSettings settings;
         private static ViconXRLoader loader;
 
         /// <summary>
         /// Return the currently active Input Subsystem intance, if any.
         /// </summary>
-        public XRInputSubsystem inputSubsystem
-        {
-            get { return GetLoadedSubsystem<XRInputSubsystem>(); }
-        }
+        public XRInputSubsystem inputSubsystem { get; private set; }
 
         /// <summary>
         /// Return the currently active XR Hand Subsystem intance, if any.
@@ -41,7 +30,42 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public ViconXRDevice XRDevice { get; private set; }
 
-        ViconXRSettings GetSettings()
+        private void Awake()
+        {
+            loader = this;
+        }
+
+        private void OnEnable()
+        {
+            if (loader == null)
+            {
+                loader = this;
+            }
+        }
+
+        /// <inheritdoc />
+        public void Start()
+        {
+            // TODO: Handle the XRDevice
+            HandSubsystem?.Start();
+        }
+
+        /// <inheritdoc />
+        public void Stop()
+        {
+            // TODO: Handle the XRDevice
+            HandSubsystem?.Stop();
+        }
+
+        /// <inheritdoc />
+        public void OnDestroy()
+        {
+            HandSubsystem?.Destroy();
+            XRDevice?.Destroy();
+            loader = null;
+        }
+
+        internal static ViconXRSettings GetSettings()
         {
             ViconXRSettings settings = null;
             // When running in the Unity Editor, we have to load user's customization of configuration data directly from
@@ -49,66 +73,46 @@ namespace ubco.ovilab.ViconUnityStream
 #if UNITY_EDITOR
             UnityEditor.EditorBuildSettings.TryGetConfigObject(ViconXRConstants.settingsKey, out settings);
 #else
-            settings = ViconXRSettings.s_RuntimeInstance;
+            settings = ViconXRSettings.runtimeInstance;
 #endif
             return settings;
         }
 
-        #region XRLoader API Implementation
-        /// <summary>Implementaion of <see cref="XRLoader.Initialize"/></summary>
-        /// <returns>True if successful, false otherwise</returns>
-        public override bool Initialize()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        internal static void Initialize()
         {
-            settings = GetSettings();
-            loader = this;
+            loader.settings = GetSettings();
 
-            // CreateSubsystem<XRInputSubsystemDescriptor, XRInputSubsystem>(s_InputSubsystemDescriptors, "InputSubsystemDescriptor");
-            CreateSubsystem<XRHandSubsystemDescriptor, XRHandSubsystem>(xrHandsSubsystemDescriptors, ViconHandSubsystem.id);
-
-            HandSubsystem = GetLoadedSubsystem<XRHandSubsystem>() as ViconHandSubsystem;
-            XRDevice = ViconXRDevice.SetupDevice();
-
-            if (HandSubsystem == null)
+            if (loader.settings.EnableXRHandSubsystem)
             {
-                Debug.LogError($"{typeof(ViconHandSubsystem).Name} failed to configure!");
+                SubsystemManager.GetSubsystemDescriptors<XRHandSubsystemDescriptor>(xrHandsSubsystemDescriptors);
+
+                if (xrHandsSubsystemDescriptors.Count > 0)
+                {
+                    foreach (var descriptor in xrHandsSubsystemDescriptors)
+                    {
+                        if (String.Compare(descriptor.id, ViconXRConstants.handSubsystemId, true) == 0)
+                        {
+                            loader.HandSubsystem = descriptor.Create() as ViconHandSubsystem;
+                            break;
+                        }
+                    }
+                }
+                if (loader.HandSubsystem == null)
+                {
+                    Debug.LogError($"{typeof(ViconHandSubsystem).Name} failed to configure!");
+                }
+                else
+                {
+                    Debug.Log($"{typeof(ViconHandSubsystem).Name} configured!");
+                }
             }
-            else
+
+            if (loader.settings.EnableViconXRDevice)
             {
-                Debug.Log($"{typeof(ViconHandSubsystem).Name} configured!");
+                loader.XRDevice = ViconXRDevice.SetupDevice();
             }
-
-            return true;
         }
-
-        /// <summary>Implementaion of <see cref="XRLoader.Start"/></summary>
-        /// <returns>True if successful, false otherwise</returns>
-        public override bool Start()
-        {
-            StartSubsystem<XRInputSubsystem>();
-            StartSubsystem<XRHandSubsystem>();
-            return true;
-        }
-
-        /// <summary>Implementaion of <see cref="XRLoader.Stop"/></summary>
-        /// <returns>True if successful, false otherwise</returns>
-        public override bool Stop()
-        {
-            StopSubsystem<XRInputSubsystem>();
-            StopSubsystem<XRHandSubsystem>();
-            return true;
-        }
-
-        /// <summary>Implementaion of <see cref="XRLoader.Deinitialize"/></summary>
-        /// <returns>True if successful, false otherwise</returns>
-        public override bool Deinitialize()
-        {
-            DestroySubsystem<XRInputSubsystem>();
-            DestroySubsystem<XRHandSubsystem>();
-            XRDevice.DestroyDevice();
-            loader = null;
-            return base.Deinitialize();
-        }
-        #endregion
 
         #region Passing data to subsystems
         /// <summary>

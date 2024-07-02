@@ -6,8 +6,6 @@ namespace ubco.ovilab.ViconUnityStream
 {
     public class ViconHandSubsystem: XRHandSubsystem
     {
-        internal static string id = "vicon-hands-subsystem";
-
         private ViconHandProvider handsProvider => provider as ViconHandProvider;
 
         // This method registers the subsystem descriptor with the SubsystemManager
@@ -16,7 +14,7 @@ namespace ubco.ovilab.ViconUnityStream
         {
             var handsSubsystemCinfo = new XRHandSubsystemDescriptor.Cinfo
             {
-                id = id,
+                id = ViconXRConstants.handSubsystemId,
                 providerType = typeof(ViconHandProvider),
                 subsystemTypeOverride = typeof(ViconHandSubsystem)
             };
