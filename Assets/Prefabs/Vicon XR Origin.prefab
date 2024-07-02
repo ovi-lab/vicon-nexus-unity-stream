@@ -66,6 +66,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ActionAssets:
   - {fileID: -944628639613478452, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  - {fileID: -944628639613478452, guid: 4f4c74633d3998a40937f9c571cd1299, type: 3}
 --- !u!114 &5864225050916823909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,7 +240,7 @@ MonoBehaviour:
   m_UpdateType: 0
   m_IgnoreTrackingState: 0
   m_PositionInput:
-    m_UseReference: 0
+    m_UseReference: 1
     m_Action:
       m_Name: Position
       m_Type: 0
@@ -257,9 +258,9 @@ MonoBehaviour:
         m_Action: Position
         m_Flags: 0
       m_Flags: 0
-    m_Reference: {fileID: 0}
+    m_Reference: {fileID: -5225584868818337381, guid: 4f4c74633d3998a40937f9c571cd1299, type: 3}
   m_RotationInput:
-    m_UseReference: 0
+    m_UseReference: 1
     m_Action:
       m_Name: Rotation
       m_Type: 0
@@ -277,9 +278,9 @@ MonoBehaviour:
         m_Action: Rotation
         m_Flags: 0
       m_Flags: 0
-    m_Reference: {fileID: 0}
+    m_Reference: {fileID: -5644079474844949692, guid: 4f4c74633d3998a40937f9c571cd1299, type: 3}
   m_TrackingStateInput:
-    m_UseReference: 0
+    m_UseReference: 1
     m_Action:
       m_Name: Tracking State
       m_Type: 0
@@ -297,7 +298,7 @@ MonoBehaviour:
         m_Action: Tracking State
         m_Flags: 0
       m_Flags: 0
-    m_Reference: {fileID: 0}
+    m_Reference: {fileID: -7194847300011541557, guid: 4f4c74633d3998a40937f9c571cd1299, type: 3}
   m_PositionAction:
     m_Name: 
     m_Type: 0
