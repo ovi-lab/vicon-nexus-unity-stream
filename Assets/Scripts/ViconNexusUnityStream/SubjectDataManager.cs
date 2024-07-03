@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 
 public class SubjectDataManager : MonoBehaviour
 {
-    [Tooltip("The Webscoket URL used for connection.")]
-    [SerializeField] private string baseURI = "ws://viconmx.hcilab.ok.ubc.ca:5001/markers/";
+    [Tooltip("The hostname or ip address of the DataStream server.")]
+    [SerializeField] private string baseURI = "viconmx.hcilab.ok.ubc.ca:801";
     /// <summary>
-    /// The Webscoket URL used for connection.
+    /// The URL used for connection.
     /// </summary>
     public string BaseURI { get => baseURI; set => baseURI = value; }
 
@@ -41,6 +41,8 @@ public class SubjectDataManager : MonoBehaviour
 
     public Dictionary<string, Data> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
+
+    [SerializeField] private bool isRetimed;
 
     private List<string> subjectList = new();
     private WebSocket webSocket;
