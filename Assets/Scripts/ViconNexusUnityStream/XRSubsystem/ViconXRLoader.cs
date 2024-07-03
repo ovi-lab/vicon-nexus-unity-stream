@@ -30,13 +30,17 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public ViconXRDevice XRDevice { get; private set; }
 
+        /// <inheritdoc />
         private void Awake()
         {
             loader = this;
+        }
 
-#if UNITY_EDITOR
-            Initialize();
-#endif
+        /// <inheritdoc />
+        private void OnEnable()
+        {
+            // Duplicate because of how Unity handles these calls!
+            loader = this;
         }
 
         /// <inheritdoc />
@@ -77,6 +81,12 @@ namespace ubco.ovilab.ViconUnityStream
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         internal static void Initialize()
         {
+            if (loader == null)
+            {
+                Debug.LogError($"Loader is not set");
+                return;
+            }
+
             loader.settings = GetSettings();
 
             if (loader.settings.EnableXRHandSubsystem)
