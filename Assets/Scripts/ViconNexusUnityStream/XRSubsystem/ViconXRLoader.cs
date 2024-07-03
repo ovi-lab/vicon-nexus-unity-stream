@@ -33,14 +33,10 @@ namespace ubco.ovilab.ViconUnityStream
         private void Awake()
         {
             loader = this;
-        }
 
-        private void OnEnable()
-        {
-            if (loader == null)
-            {
-                loader = this;
-            }
+#if UNITY_EDITOR
+            Initialize();
+#endif
         }
 
         /// <inheritdoc />
@@ -122,7 +118,7 @@ namespace ubco.ovilab.ViconUnityStream
         {
             if (loader != null)
             {
-                loader.HandSubsystem.SetHandPoses(handedness, poses);
+                loader.HandSubsystem?.SetHandPoses(handedness, poses);
             }
         }
 
@@ -131,10 +127,10 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public static void TrySetXRDeviceData(Vector3 pos, Quaternion rot)
         {
-            if (loader != null)
+            if (loader != null && loader.settings != null)
             {
                 pos += loader.settings.HMDPositionOffset;
-                loader.XRDevice.SetDeviceData(pos, rot);
+                loader.XRDevice?.SetDeviceData(pos, rot);
             }
         }
         #endregion
