@@ -1,9 +1,5 @@
 using UnityEngine;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
 using System.Threading;
 
 using ViconDataStreamSDK.CSharp;
@@ -144,7 +140,7 @@ public delegate void ConnectionCallback(bool i_bConnected);
     }
   }
 
-  private void ConnectClient()
+  private void ConnectClient()  
   {
     bThreadRunning = true;
 
@@ -219,7 +215,7 @@ public delegate void ConnectionCallback(bool i_bConnected);
       Output_Connect OC = m_Client.Connect(CombinedHostnameString);
       print("Connect result: " + OC.Result);
 
-      System.Threading.Thread.Sleep(200);
+      Thread.Sleep(200);
     }
     
     if( UsePreFetch )
