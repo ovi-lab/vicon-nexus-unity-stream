@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using NativeWebSocket;
 using ubco.ovilab.ViconUnityStream;
 using UnityEngine;
 using System.Threading;
 using ViconDataStreamSDK.CSharp;
+
 public class SubjectDataManager : MonoBehaviour
 {
     [Tooltip("The hostname or ip address of the DataStream server.")]
