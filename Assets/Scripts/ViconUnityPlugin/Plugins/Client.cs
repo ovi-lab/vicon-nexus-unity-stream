@@ -9,7 +9,8 @@ namespace ViconDataStreamSDK.CSharp
 	{
 		private IntPtr mImpl;
 		private const string VICON_C_DLL = "ViconDataStreamSDK_C";
-		private const int MAX_STRING = 64; //all strings read from Vicon will be truncated to this length (includes '\0')
+		private const int MAX_STRING = 64;
+		private ClientConfigArgs _clientConfigArgs; //all strings read from Vicon will be truncated to this length (includes '\0')
 		public Client()
 		{
 			mImpl = Client_Create();
@@ -49,24 +50,38 @@ namespace ViconDataStreamSDK.CSharp
 
 		#region IViconClientMethods
 
-		public void ConfigureClient()
+		public void ConfigureClient(ClientConfigArgs args)
 		{
-			Output_ConfigureWireless WifiConfig = ConfigureWireless();
-			if (WifiConfig.Result != Result.Success)
+			_clientConfigArgs = args;
+			if (args.configureWireless)
 			{
-				Debug.Log("Failed to configure wireless: " + WifiConfig.ToString());
-			}
-			else
-			{
-				Debug.Log("Configured adapter for wireless settings");
+				Output_ConfigureWireless WifiConfig = ConfigureWireless();
+				if (WifiConfig.Result != Result.Success)
+				{
+					Debug.Log("Failed to configure wireless: " + WifiConfig.ToString());
+				}
+				else
+				{
+					Debug.Log("Configured adapter for wireless settings");
+				}
 			}
 		}
 
-		public bool ConnectClient(string baseURI)
+		public void ConnectClient(string baseURI)
 		{
 			Output_Connect OC = Connect(baseURI);
 			Debug.LogWarning("Attempt to Connect: " + OC.Result);
-			return IsConnected().Connected;
+			
+			if (OC.Result == Result.Success)
+			{
+				SetStreamMode(_clientConfigArgs.clientStreamMode);
+				GetFrame();
+			}
+		}
+
+		public void GetNewFrame()
+		{
+			GetFrame();
 		}
 			
 
@@ -460,7 +475,7 @@ namespace ViconDataStreamSDK.CSharp
 			outp.Result = Client_GetFrame(mImpl);
 			return outp;
 		}
-		public Output_GetFrameNumber GetFrameNumber()
+		public uint GetFrameNumber()
 		{
 			Output_GetFrameNumber outp = new Output_GetFrameNumber();
 			GCHandle gch = GCHandle.Alloc(outp, GCHandleType.Pinned);
@@ -472,8 +487,10 @@ namespace ViconDataStreamSDK.CSharp
 			{
 				gch.Free();
 			}
-			return outp;
+			return outp.FrameNumber;
 		}
+		
+
 		public Output_GetFrameRate GetFrameRate()
 		{
 			Output_GetFrameRate outp = new Output_GetFrameRate();
@@ -917,6 +934,50 @@ namespace ViconDataStreamSDK.CSharp
 				Marshal.FreeHGlobal(ptr);
 			}
 		}
+
+		public Output_GetSegmentLocalTranslation GetScaledSegmentTranslation(string SubjectName, string SegmentName)
+		{
+			double[] OutputScale = new double[3];
+			OutputScale[0] = OutputScale[1] = OutputScale[2] = 1.0;
+
+			// Check first whether we have a parent, as we don't wish to scale the root node's position
+			Output_GetSegmentParentName Parent = GetSegmentParentName(SubjectName, SegmentName);
+
+			string CurrentSegmentName = SegmentName;
+			if (Parent.Result == Result.Success)
+			{
+
+				do
+				{
+					// We have a parent. First get our scale, and then iterate through the nodes above us
+					Output_GetSegmentStaticScale Scale = GetSegmentStaticScale(SubjectName, CurrentSegmentName);
+					if (Scale.Result == Result.Success)
+					{
+						for (uint i = 0; i < 3; ++i)
+						{
+							if (Scale.Scale[i] != 0.0) OutputScale[i] = OutputScale[i] * Scale.Scale[i];
+						}
+					}
+
+					Parent = GetSegmentParentName(SubjectName, CurrentSegmentName);
+					if (Parent.Result == Result.Success)
+					{
+						CurrentSegmentName = Parent.SegmentName;
+					}
+				} while (Parent.Result == Result.Success);
+			}
+			Output_GetSegmentLocalTranslation Translation = GetSegmentLocalTranslation(SubjectName, SegmentName);
+			if( Translation.Result == Result.Success )
+			{
+				for (uint i = 0; i < 3; ++i)
+				{
+					Translation.Translation[i] = Translation.Translation[i] / OutputScale[i];
+				}
+			}
+			return Translation; 
+				
+		}
+
 		public Output_GetSegmentStaticRotationHelical GetSegmentStaticRotationHelical(string SubjectName, string SegmentName)
 		{
 			Type cType = typeof(Output_GetSegmentStaticRotationHelical);

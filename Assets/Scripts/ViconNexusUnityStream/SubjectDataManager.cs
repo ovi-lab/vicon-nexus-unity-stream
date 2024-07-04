@@ -43,18 +43,17 @@ public class SubjectDataManager : MonoBehaviour
 
     public Dictionary<string, Data> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
-    
-    [Header("Client Config")]
-    [SerializeField] private bool isRetimed = false;
-    [SerializeField] private bool useLightweightData;
-    [SerializeField] private StreamMode clientStreamMode;
-    [SerializeField] private bool configureWireless = true;
+
+    [Header("Client Config")] 
+    [SerializeField] private ClientConfigArgs clientConfig;
     
     private List<string> subjectList = new();
     private WebSocket webSocket;
     private Dictionary<string, Data> data = new();
     private Dictionary<string, string> rawData = new();
+    
     private bool isConnectionThreadRunning;
+    private bool GetFrameThread = true;
     private static bool isConnected;
     
     private IViconClient viconClient;
@@ -76,8 +75,16 @@ public class SubjectDataManager : MonoBehaviour
     }
 
     /// <inheritdoc />
-    private void FixedUpdate()
+    private void LateUpdate()
     {
+        if(!GetFrameThread)
+        {
+            if (!isConnected)
+            {
+                return;
+            }
+            viconClient.GetNewFrame();
+        }
         
     }
 
@@ -110,7 +117,7 @@ public class SubjectDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Setup websocket connection.
+    /// Setup Direct connection.
     /// </summary>
     private void MaybeSetupConnection()
     {
@@ -119,17 +126,10 @@ public class SubjectDataManager : MonoBehaviour
             return;
         }
 
-        if (isRetimed)
-        {
-            viconClient = new RetimingClient();
-        }
-        else
-        {
-            viconClient = new Client();
-        }
-        
-        viconClient.ConfigureClient();
+        viconClient = clientConfig.isRetimed ? new RetimingClient() 
+                                             : new Client();
 
+        viconClient.ConfigureClient(clientConfig);
         connectThread = new Thread(ConnectClient);
         connectThread.Start();
 
@@ -139,65 +139,23 @@ public class SubjectDataManager : MonoBehaviour
     {
         isConnectionThreadRunning = true;
 
-        bool isConnected = false;
+        isConnected = false;
         while (isConnectionThreadRunning && !viconClient.IsConnected().Connected)
         {
             viconClient.ConnectClient(baseURI);
             Thread.Sleep(200);
         }
-        print($"Connected. Retiming Client:{isRetimed}");
+        print($"Connected. Retiming Client:{clientConfig.useLightweightData}");
 
-        if (useLightweightData)
+        if (clientConfig.useLightweightData)
         {
-            var result = viconClient.EnableLightweightSegmentData().Result;
+            Result result = viconClient.EnableLightweightSegmentData().Result;
             Debug.Log($"Lightweight Data Configuration: {result == Result.Success}");
         }
         
         viconClient.SetAxisMapping(Direction.Forward, Direction.Left, Direction.Up);
-        ConnectionHandler( true );
+        ConnectionHandler( true);
         isConnectionThreadRunning = false;
-        return;
-        
-        if (isRetimed)
-        {
-            
-
-            if (useLightweightData)
-            {
-                var isLightWeightData = viconRetimingClient.EnableLightweightSegmentData().Result;
-                Debug.Log($"Attempt to Use lightweightData: {isLightWeightData}");
-            }
-
-            viconRetimingClient.SetAxisMapping(Direction.Forward, Direction.Left, Direction.Up);
-            ConnectionHandler( true);
-            isConnectionThreadRunning = false;
-            return;
-        }
-        else
-        {
-            while (isConnectionThreadRunning && !viconClient.IsConnected().Connected)
-            {
-                Output_Connect OC = viconRetimingClient.Connect(baseURI);
-                Debug.LogWarning("Attempt to Connect: " + OC.Result);
-                Thread.Sleep(200);
-            }
-
-            viconClient.SetStreamMode(clientStreamMode);
-            viconClient.GetFrame();
-
-            if (useLightweightData)
-            {
-                var isLightWeightData = viconClient.EnableLightweightSegmentData().Result;
-                Debug.Log($"Attempt to Use lightweightData: {isLightWeightData}");
-            }
-            else
-            {
-                viconClient.EnableSegmentData();
-            }
-
-            viconClient.SetAxisMapping(Direction.Forward, Direction.Left, Direction.Up);
-            ConnectionHandler( true);
-        }
     }
 
     /// <summary>
@@ -205,10 +163,7 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     private async void MaybeDisableConnection()
     {
-        if (webSocket != null && (webSocket.State != WebSocketState.Closing || webSocket.State != WebSocketState.Closed))
-        {
-            await webSocket.Close();
-        }
+        
     }
 
     

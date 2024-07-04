@@ -413,7 +413,7 @@ public uint GetFrameNumber()
     }
     else
     {
-      return m_Client.GetFrameNumber().FrameNumber;
+      return m_Client.GetFrameNumber();
     }
 }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace ViconDataStreamSDK.CSharp
 {
@@ -11,7 +12,8 @@ namespace ViconDataStreamSDK.CSharp
 		private IntPtr mImpl;
 		private const string VICON_C_DLL = "ViconDataStreamSDK_C";
 		private const int MAX_STRING = 64; //all strings read from Vicon will be truncated to this length (includes '\0')
-
+		private ClientConfigArgs _clientConfigArgs;
+		
 		public RetimingClient()
 		{
 			mImpl = RetimingClient_Create();
@@ -51,16 +53,26 @@ namespace ViconDataStreamSDK.CSharp
 		
 		#region IViconClientMethods
 
-		public void ConfigureClient()
+		public void ConfigureClient(ClientConfigArgs args)
 		{
-				
+			_clientConfigArgs = args;	
 		}
 
-		public void ConnectClient()
+		public void ConnectClient(string baseURI)
 		{
-			
+			Output_Connect OC = Connect(baseURI);
+			Debug.LogWarning("Attempt to Connect: " + OC.Result);
 		}
-			
+		
+		public void GetNewFrame()
+		{
+			UpdateFrame(_clientConfigArgs.retimedOffset);
+		}
+
+		public uint GetFrameNumber()
+		{
+			return 0;
+		}
 
 		#endregion
 		
@@ -169,6 +181,50 @@ namespace ViconDataStreamSDK.CSharp
 				Marshal.FreeHGlobal(ptr);
 			}
 		}
+
+		public Output_GetSegmentLocalTranslation GetScaledSegmentTranslation(string SubjectName, string SegmentName)
+		{
+			double[] OutputScale = new double[3];
+			OutputScale[0] = OutputScale[1] = OutputScale[2] = 1.0;
+
+			// Check first whether we have a parent, as we don't wish to scale the root node's position
+			Output_GetSegmentParentName Parent = GetSegmentParentName(SubjectName, SegmentName);
+
+			string CurrentSegmentName = SegmentName;
+			if ( Parent.Result == Result.Success)
+			{
+
+				do
+				{
+					// We have a parent. First get our scale, and then iterate through the nodes above us
+					Output_GetSegmentStaticScale Scale = GetSegmentStaticScale(SubjectName, CurrentSegmentName);
+					if (Scale.Result == Result.Success)
+					{
+						for (uint i = 0; i < 3; ++i)
+						{
+							if (Scale.Scale[i] != 0.0) OutputScale[i] = OutputScale[i] * Scale.Scale[i];
+						}
+					}
+
+					Parent = GetSegmentParentName(SubjectName, CurrentSegmentName);
+					if( Parent.Result == Result.Success )
+					{
+						CurrentSegmentName = Parent.SegmentName;
+					}
+				} while (Parent.Result == Result.Success);
+			}
+
+			Output_GetSegmentLocalTranslation Translation = GetSegmentLocalTranslation(SubjectName, SegmentName);
+			if( Translation.Result == Result.Success )
+			{
+				for (uint i = 0; i < 3; ++i)
+				{
+					Translation.Translation[i] = Translation.Translation[i] / OutputScale[i];
+				}
+			}
+			return Translation;
+		}
+
 		public Output_GetSubjectRootSegmentName GetSubjectRootSegmentName(string SubjectName)
 		{
 			Output_GetSubjectRootSegmentName outp = new Output_GetSubjectRootSegmentName();
