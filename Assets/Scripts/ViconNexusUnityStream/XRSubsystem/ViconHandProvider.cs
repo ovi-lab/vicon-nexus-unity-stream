@@ -98,13 +98,13 @@ namespace ubco.ovilab.ViconUnityStream
             if (subsystemUpdater == null)
             {
                 subsystemUpdater = new XRHandProviderUtility.SubsystemUpdater(subsystem);
+                subsystemUpdater?.Start();
             }
         }
 
         /// <inheritdoc />
         public override void Start()
         {
-            subsystemUpdater?.Start();
             handsPoses.Clear();
         }
 

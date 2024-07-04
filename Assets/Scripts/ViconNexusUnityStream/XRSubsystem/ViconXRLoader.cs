@@ -110,6 +110,7 @@ namespace ubco.ovilab.ViconUnityStream
                 }
                 else
                 {
+                    loader.HandSubsystem?.Start();
                     Debug.Log($"{typeof(ViconHandSubsystem).Name} configured!");
                 }
             }
