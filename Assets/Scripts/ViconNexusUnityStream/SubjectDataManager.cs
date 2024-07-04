@@ -1,14 +1,9 @@
+using System;
 using System.Collections.Generic;
 using NativeWebSocket;
 using ubco.ovilab.ViconUnityStream;
 using UnityEngine;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
 using System.Threading;
-using System.Threading.Tasks;
-using UnityEngine.Serialization;
 using ViconDataStreamSDK.CSharp;
 public class SubjectDataManager : MonoBehaviour
 {
@@ -44,20 +39,16 @@ public class SubjectDataManager : MonoBehaviour
     public Dictionary<string, Data> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
 
-    [Header("Client Config")] 
     [SerializeField] private ClientConfigArgs clientConfig;
     
     private List<string> subjectList = new();
-    private WebSocket webSocket;
     private Dictionary<string, Data> data = new();
     private Dictionary<string, string> rawData = new();
     
     private bool isConnectionThreadRunning;
-    private bool GetFrameThread = true;
     private static bool isConnected;
     
     private IViconClient viconClient;
-    private RetimingClient viconRetimingClient;
     private Thread connectThread;
     
     public delegate void ConnectionCallback(bool i_bConnected);
@@ -77,21 +68,28 @@ public class SubjectDataManager : MonoBehaviour
     /// <inheritdoc />
     private void LateUpdate()
     {
-        if(!GetFrameThread)
+        if (!isConnected)
         {
-            if (!isConnected)
-            {
-                return;
-            }
-            viconClient.GetNewFrame();
+            return;
         }
+        viconClient.GetNewFrame();
         
     }
 
     /// <inheritdoc />
     private void OnDisable()
     {
+        if (isConnectionThreadRunning)
+        {
+            isConnectionThreadRunning = false;
+            connectThread.Join();
+        }
+    }
+
+    private void OnDestroy()
+    {
         MaybeDisableConnection();
+        viconClient = null;
     }
 
     /// <inheritdoc />
@@ -121,7 +119,7 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     private void MaybeSetupConnection()
     {
-        if (UseDefaultData || subjectList.Count == 0)
+        if (UseDefaultData || subjectList.Count == 0 || isConnectionThreadRunning)
         {
             return;
         }
@@ -161,14 +159,15 @@ public class SubjectDataManager : MonoBehaviour
     /// <summary>
     /// Disable connection 
     /// </summary>
-    private async void MaybeDisableConnection()
+    private void MaybeDisableConnection()
     {
-        
+        Result disconnectionStatus = viconClient.Disconnect().Result;
+        Debug.Log($"Disconnected:{disconnectionStatus}");
     }
 
     
     /// <summary>
-    /// Regsiter a subject to recieve subject data.
+    /// Register a subject to receive subject data.
     /// </summary>
     public void RegisterSubject(string subjectName)
     {
@@ -177,9 +176,9 @@ public class SubjectDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Unregsiter a subject.
+    /// Unregister a subject.
     /// </summary>
-    public void UnRegsiterSubject(string subjectName)
+    public void UnRegisterSubject(string subjectName)
     {
         subjectList.Remove(subjectName);
     }

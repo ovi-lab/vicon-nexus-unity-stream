@@ -403,7 +403,7 @@ public delegate void ConnectionCallback(bool i_bConnected);
 		{
 			m_Client.GetFrame();
 		}
-	UpdateSubjectFilter();
+		UpdateSubjectFilter();
 }
 public uint GetFrameNumber()
 	{

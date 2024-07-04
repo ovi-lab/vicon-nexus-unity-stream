@@ -111,7 +111,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         protected virtual void OnDisable()
         {
-            subjectDataManager.UnRegsiterSubject(subjectName);
+            subjectDataManager.UnRegisterSubject(subjectName);
         }
 
         /// <inheritdoc />
