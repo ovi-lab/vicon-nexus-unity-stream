@@ -314,7 +314,7 @@ public delegate void ConnectionCallback(bool i_bConnected);
 	}
 
 	/// Returns the local translation for a bone, scaled according to its scale and the scale of the bones above it 
-	/// in the heirarchy, apart from the root translation
+	/// in the hierarchy, apart from the root translation
 	public Output_GetSegmentLocalTranslation GetScaledSegmentTranslation( string SubjectName, string SegmentName )
 	{
 		double[] OutputScale = new double[3];

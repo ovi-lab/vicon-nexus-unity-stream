@@ -39,6 +39,8 @@ public class SubjectDataManager : MonoBehaviour
     public Dictionary<string, Data> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
 
+    public IViconClient ViconClient => viconClient;
+
     [SerializeField] private ClientConfigArgs clientConfig;
     
     private List<string> subjectList = new();
@@ -73,7 +75,6 @@ public class SubjectDataManager : MonoBehaviour
             return;
         }
         viconClient.GetNewFrame();
-        
     }
 
     /// <inheritdoc />

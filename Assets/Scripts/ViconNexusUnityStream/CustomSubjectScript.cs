@@ -58,7 +58,8 @@ namespace ubco.ovilab.ViconUnityStream
 
         #region Data processing related private vars
         protected float viconUnitsToUnityUnits = 0.001f;  // This into vicon units = unity units
-
+        protected IViconClient viconClient;
+            
         protected Dictionary<string, Vector3> finalPositionVectors = new Dictionary<string, Vector3>();
         protected Dictionary<string, Transform> finalTransforms = new Dictionary<string, Transform>();
         protected Dictionary<string, Vector3> finalUpVectors = new Dictionary<string, Vector3>();
@@ -106,12 +107,14 @@ namespace ubco.ovilab.ViconUnityStream
         protected virtual void OnEnable()
         {
             subjectDataManager.RegisterSubject(subjectName);
+            viconClient = subjectDataManager.ViconClient;
         }
         
         /// <inheritdoc />
         protected virtual void OnDisable()
         {
             subjectDataManager.UnRegisterSubject(subjectName);
+            viconClient = null;
         }
 
         /// <inheritdoc />

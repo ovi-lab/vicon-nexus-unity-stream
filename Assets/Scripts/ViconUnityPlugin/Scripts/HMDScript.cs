@@ -121,7 +121,7 @@ public class HMDScript : BasePoseProvider
             // If we don't get a result, or the pose returned from the datastream is occluded, then we will use the last known good position that we received.
             bool bViconPoseValid = true;
 
-            if (Rot.Result != ViconDataStreamSDK.CSharp.Result.Success || Rot.Occluded || Translation.Occluded)
+            if (Rot.Result != Result.Success || Rot.Occluded || Translation.Occluded)
             {
                 // We use this flag to determine whether to initialize the fusion algorithm; we don't want to initialize it on occluded frames
                 bViconPoseValid = false;

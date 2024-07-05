@@ -37,18 +37,3 @@ public class ClientConfigArgs
     public bool useLightweightData;
 }
 
-
-[Serializable]
-public class ClientConfigArgs
-{
-    [Header("Retimed Client Config")]
-    public bool isRetimed = false;
-    public float retimedOffset = 0;
-    
-    [Header("Normal Client Config")]
-    public StreamMode clientStreamMode;
-    public bool configureWireless = true;
-    
-    [Header("CommonConfig")]
-    public bool useLightweightData;
-}
