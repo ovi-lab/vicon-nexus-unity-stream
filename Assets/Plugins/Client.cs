@@ -74,7 +74,7 @@ namespace ViconDataStreamSDK.CSharp
 			
 			if (OC.Result == Result.Success)
 			{
-				SetStreamMode(_clientConfigArgs.clientStreamMode);
+					SetStreamMode(_clientConfigArgs.clientStreamMode);
 				GetFrame();
 			}
 		}

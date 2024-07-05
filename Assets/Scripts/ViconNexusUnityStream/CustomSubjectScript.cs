@@ -130,7 +130,7 @@ namespace ubco.ovilab.ViconUnityStream
             else
             {
                 // TODO: move all of this to SubjectDataManager
-                if (subjectDataManager.StreamedData.TryGetValue(subjectName, out Data subjectDataObj) && subjectDataManager.StreamedRawData.TryGetValue(subjectName, out string subjectRawData))
+                if (subjectDataManager.StreamedStreamedData.TryGetValue(subjectName, out Data subjectDataObj) && subjectDataManager.StreamedRawData.TryGetValue(subjectName, out string subjectRawData))
                 {
                     ProcessData(subjectDataObj, subjectRawData);
                 }
@@ -228,7 +228,7 @@ namespace ubco.ovilab.ViconUnityStream
 
                 foreach (string marker in segment.Value)
                 {
-                    var _data = data.data[marker];
+                    var _data = data.position[marker];
 
                     /// Need to run gap fillling stratergy
                     if (_data[0] == 0)
@@ -261,7 +261,7 @@ namespace ubco.ovilab.ViconUnityStream
                     {
                         SetPreviousData(marker, _data);
                     }
-                    data.data[marker] = _data;
+                    data.position[marker] = _data;
                 }
 
                 if (gapFillingStrategy == GapFillingStrategy.FillRelative && !dataValid && segment.Value.Count > 1)
@@ -304,7 +304,7 @@ namespace ubco.ovilab.ViconUnityStream
                             previousData[t_marker].Last.Value[2] = t_current_vector.y;
 
                             /// Set that to the current data object
-                            data.data[t_marker] = GetPreviousData(t_marker);
+                            data.position[t_marker] = GetPreviousData(t_marker);
                         }
                         dataValid = true; /// Data is now valid
                     }
@@ -314,7 +314,7 @@ namespace ubco.ovilab.ViconUnityStream
                 {
                     foreach (string marker in segment.Value)
                     {
-                        List<float> _pos = data.data[marker];
+                        List<float> _pos = data.position[marker];
                         pos += ListToVector(_pos);
                         //break;
                         if (_pos.Count > 3)
@@ -504,11 +504,5 @@ namespace ubco.ovilab.ViconUnityStream
         }
     }
 
-    public enum GapFillingStrategy
-    {
-        UseRemote,
-        Ignore,
-        UsePrevious,
-        FillRelative
-    }
+    
 }

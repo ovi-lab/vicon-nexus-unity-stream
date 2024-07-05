@@ -240,6 +240,7 @@ namespace ViconDataStreamSDK.CSharp
 				Marshal.FreeHGlobal(ptr);
 			}
 		}
+		
 		public Output_GetSegmentCount GetSegmentCount(string SubjectName)
 		{
 			Output_GetSegmentCount outp = new Output_GetSegmentCount();
@@ -269,6 +270,23 @@ namespace ViconDataStreamSDK.CSharp
 				Marshal.FreeHGlobal(ptr);
 			}
 		}
+		
+		//DK if this will work
+		public Output_GetMarkerName GetMarkerName(string SubjectName, uint MarkerIndex)
+		{
+			Output_GetMarkerName outp = new Output_GetMarkerName();
+			IntPtr ptr = Marshal.AllocHGlobal(MAX_STRING);
+			try
+			{
+				outp.Result = RetimingClient_GetMarkerName(mImpl, SubjectName, MarkerIndex, MAX_STRING, ptr);
+				outp.MarkerName = Marshal.PtrToStringAnsi(ptr);
+				return outp;
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(ptr);
+			}
+		}
 		public Output_GetSegmentChildCount GetSegmentChildCount(string SubjectName, string SegmentName)
 		{
 			Output_GetSegmentChildCount outp = new Output_GetSegmentChildCount();
@@ -283,6 +301,37 @@ namespace ViconDataStreamSDK.CSharp
 			}
 			return outp;
 		}
+
+		public Output_GetMarkerCount GetMarkerCount(string SubjectName)
+		{
+			Output_GetMarkerCount outp = new Output_GetMarkerCount();
+			GCHandle gch = GCHandle.Alloc(outp, GCHandleType.Pinned);
+			try
+			{
+				RetimingClient_GetMarkerCount(mImpl, SubjectName, gch.AddrOfPinnedObject());
+			}
+			finally
+			{
+				gch.Free();
+			}
+			return outp;
+		}
+
+		public Output_GetMarkerGlobalTranslation GetMarkerGlobalTranslation(string SubjectName, string MarkerName)
+		{
+			Type cType = typeof(Output_GetMarkerGlobalTranslation);
+			IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(cType));
+			try
+			{
+				RetimingClient_GetMarkerGlobalTranslation(mImpl, SubjectName, MarkerName, ptr);
+				return (Output_GetMarkerGlobalTranslation)Marshal.PtrToStructure(ptr, cType);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(ptr);
+			}
+		}
+
 		public Output_GetSegmentChildName GetSegmentChildName(string SubjectName, string SegmentName, uint SegmentIndex)
 		{
 			Output_GetSegmentChildName outp = new Output_GetSegmentChildName();
@@ -665,7 +714,9 @@ namespace ViconDataStreamSDK.CSharp
 		[DllImport(VICON_C_DLL, CallingConvention = CallingConvention.Cdecl)]
 		static private extern void RetimingClient_GetSegmentChildCount(IntPtr client, [MarshalAs(UnmanagedType.LPStr)]string SubjectName,
 																											[MarshalAs(UnmanagedType.LPStr)]string SegmentName, IntPtr outptr);
-
+		[DllImport(VICON_C_DLL, CallingConvention = CallingConvention.Cdecl)]
+		static private extern void RetimingClient_GetMarkerCount(IntPtr client, [MarshalAs(UnmanagedType.LPStr)]string SubjectName, IntPtr outptr);
+		
 		[DllImport(VICON_C_DLL, CallingConvention = CallingConvention.Cdecl)]
 		static private extern Result RetimingClient_GetSegmentChildName(IntPtr client, [MarshalAs(UnmanagedType.LPStr)]string SubjectName,
 																										[MarshalAs(UnmanagedType.LPStr)]string SegmentName,
@@ -756,6 +807,15 @@ namespace ViconDataStreamSDK.CSharp
 		static private extern Result RetimingClient_AddToSubjectFilter(IntPtr client, [MarshalAs(UnmanagedType.LPStr)]string i_rSubjectName);
 		[DllImport(VICON_C_DLL, CallingConvention = CallingConvention.Cdecl)]
 		static private extern Result RetimingClient_SetTimingLogFile(IntPtr client, [MarshalAs(UnmanagedType.LPStr)]string i_rClientLog, [MarshalAs(UnmanagedType.LPStr)]string i_rStreamLog);
+		
+		[DllImport(VICON_C_DLL, CallingConvention = CallingConvention.Cdecl)]
+		static private extern Result RetimingClient_GetMarkerName(IntPtr client, [MarshalAs(UnmanagedType.LPStr)]string SubjectName,
+			uint MarkerIndex, int sizeOffBuffer, IntPtr outstr);
+		
+		[DllImport(VICON_C_DLL, CallingConvention = CallingConvention.Cdecl)]
+		static private extern void RetimingClient_GetMarkerGlobalTranslation(IntPtr client, [MarshalAs(UnmanagedType.LPStr)]string SubjectName,
+			[MarshalAs(UnmanagedType.LPStr)]string MarkerName, IntPtr outptr);
+
 
 		#endregion PInvokes
 	}

@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ubco.ovilab.ViconUnityStream;
 using UnityEngine;
 using System.Threading;
+using HMDUtils;
 using ViconDataStreamSDK.CSharp;
+
+
 
 public class SubjectDataManager : MonoBehaviour
 {
@@ -35,22 +39,26 @@ public class SubjectDataManager : MonoBehaviour
     /// Enable writing data to disk.
     /// </summary>
     public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
-    public Dictionary<string, Data> StreamedData => data;
+    public Dictionary<string, Data> StreamedStreamedData => streamedData;
     public Dictionary<string, string> StreamedRawData => rawData;
     public IViconClient ViconClient => viconClient;
 
     [SerializeField] private ClientConfigArgs clientConfig;
     
     private List<string> subjectList = new();
-    private Dictionary<string, Data> data = new();
+    private Dictionary<string, Data> streamedData = new();
     private Dictionary<string, string> rawData = new();
     
     private bool isConnectionThreadRunning;
     private static bool isConnected;
     
     private IViconClient viconClient;
+    private Client viconClient2;
     private Thread connectThread;
+    private FusionService coordinateUtils;
+    public List<string> markerNames;
     
+    //Not sure if a callback is needed -- Copied over from sample code
     public delegate void ConnectionCallback(bool i_bConnected);
     public static void OnConnected(bool i_bConnected)
     {
@@ -63,6 +71,7 @@ public class SubjectDataManager : MonoBehaviour
     private void OnEnable()
     {
         MaybeSetupConnection();
+        
     }
 
     /// <inheritdoc />
@@ -71,6 +80,25 @@ public class SubjectDataManager : MonoBehaviour
         if (!isConnected)
             return;
         viconClient.GetNewFrame();
+        
+        foreach (string subject in subjectList)
+        {
+            Output_GetMarkerCount markerCount = viconClient.GetMarkerCount(subject);
+            //Debug.Log(markerCount.Translation[0]);
+            if (markerCount.Result != Result.Success)
+            {
+                Debug.LogWarning($"Could not Get {subject}'s data this frame");
+                return;
+            }
+            
+            Data viconPositionData = new()
+            {
+                position = ProcessData(subject, markerCount.MarkerCount)
+            };
+            if(!streamedData.TryAdd(subject, viconPositionData));
+            streamedData[subject] = viconPositionData;
+            
+        }
     }
 
     /// <inheritdoc />
@@ -121,13 +149,18 @@ public class SubjectDataManager : MonoBehaviour
             return;
         }
 
-        viconClient = clientConfig.isRetimed ? new RetimingClient() 
-                                             : new Client();
+        if (clientConfig.gapFillingStrategy == GapFillingStrategy.ReTimed)
+        {
+            viconClient = new RetimingClient();
+        }
+        else
+        {
+            viconClient = new Client();
+        }
 
         viconClient.ConfigureClient(clientConfig);
         connectThread = new Thread(ConnectClient);
         connectThread.Start();
-
     }
 
     private void ConnectClient()
@@ -153,6 +186,59 @@ public class SubjectDataManager : MonoBehaviour
         isConnectionThreadRunning = false;
     }
 
+    private Dictionary<string, List<float>> ProcessData(string subject, uint markerCount)
+    {
+        Dictionary<string, List<float>> markerPositionsDict = new();
+        for(uint i = 0; i < markerCount; i++)
+        {
+            string markerName = viconClient.GetMarkerName(subject, i).MarkerName;
+             var globalTranslation = viconClient.GetMarkerGlobalTranslation(subject, markerName);
+             // if (globalTranslation.Result != Result.Success)
+             // {
+             //     Debug.LogWarning("Failed");
+             // }
+            markerPositionsDict[markerName] = new List<float>()
+            {
+                (float)globalTranslation.Translation[0],
+                (float)globalTranslation.Translation[1],
+                (float)globalTranslation.Translation[2]
+            };
+            Debug.Log($"{markerName}: {globalTranslation.Translation[0]}");
+        }
+        
+        return markerPositionsDict;
+    }
+    
+    private void ProcessData(string subject, string segmentName)
+    {
+        double[] translationData = viconClient.GetSegmentLocalTranslation(subject, segmentName).Translation;
+        double[] orientationData = viconClient.GetSegmentLocalRotationQuaternion(subject, segmentName).Rotation;
+        FusionService.Quat viconOrientation = new(orientationData[0], orientationData[1], orientationData[2], orientationData[3]);
+        FusionService.Vec viconTranslation = new(translationData[0], translationData[1], translationData[2]);
+        FusionService.Pose posData = FusionService.GetMappedVicon(viconOrientation, viconTranslation);
+        List<float> positionData = new()
+            {(float)posData.Position.X, (float)posData.Position.Y, (float)posData.Position.Z};
+        Output_GetSegmentChildCount childCount = viconClient.GetSegmentChildCount(subject, segmentName);
+        streamedData[subject].position[segmentName] = positionData;
+        if(childCount.SegmentCount <= 0) return;
+        for (uint i = 0; i < childCount.SegmentCount; i++)
+        {
+            Output_GetSegmentChildName childSegment = viconClient.GetSegmentChildName(subject, segmentName, i);
+            ProcessData(subject, childSegment.SegmentName);
+        }
+    }
+
+    private void ProcessChildData(string subject, string segmentName)
+    {
+        
+        
+        coordinateUtils.Create();
+        //HMDUtils.FusionService.Pose ViconInHMD = FusionService.GetMappedVicon(ViconOrientation, translationData);
+        
+        
+       
+    }
+
     /// <summary>
     /// Disable connection 
     /// </summary>
@@ -161,7 +247,7 @@ public class SubjectDataManager : MonoBehaviour
         Result disconnectionStatus = viconClient.Disconnect().Result;
         Debug.Log($"Disconnected:{disconnectionStatus}");
     }
-
+    
     
     /// <summary>
     /// Register a subject to receive subject data.
