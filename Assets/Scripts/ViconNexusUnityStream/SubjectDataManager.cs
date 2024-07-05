@@ -35,10 +35,8 @@ public class SubjectDataManager : MonoBehaviour
     /// Enable writing data to disk.
     /// </summary>
     public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
-
     public Dictionary<string, Data> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
-
     public IViconClient ViconClient => viconClient;
 
     [SerializeField] private ClientConfigArgs clientConfig;
@@ -71,9 +69,7 @@ public class SubjectDataManager : MonoBehaviour
     private void LateUpdate()
     {
         if (!isConnected)
-        {
             return;
-        }
         viconClient.GetNewFrame();
     }
 
