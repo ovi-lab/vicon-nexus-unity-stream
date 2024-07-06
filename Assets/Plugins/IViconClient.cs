@@ -33,18 +33,11 @@ public interface IViconClient
 [Serializable]
 public class ClientConfigArgs
 {
-    //Too lazy to create a editor drawer based on gapfilling strategies
-    [Header("CommonConfig")]
+    [Header("Client Config")]
     public bool useLightweightData;
-    public GapFillingStrategy gapFillingStrategy;
-    
-    [Header("Retimed Client Config")]
-    public float retimedOffset = 0;
-    
-    [Header("Normal Client Config")]
-    public StreamMode clientStreamMode;
     public bool configureWireless = true;
-    
+    public StreamMode clientStreamMode;
+
 }
 
 //Temporary Fix -- Assembly definition issue 

@@ -52,8 +52,7 @@ public class SubjectDataManager : MonoBehaviour
     private bool isConnectionThreadRunning;
     private static bool isConnected;
     
-    private IViconClient viconClient;
-    private Client viconClient2;
+    private Client viconClient;
     private Thread connectThread;
     private FusionService coordinateUtils;
     public List<string> markerNames;
@@ -95,8 +94,10 @@ public class SubjectDataManager : MonoBehaviour
             {
                 position = ProcessData(subject, markerCount.MarkerCount)
             };
-            if(!streamedData.TryAdd(subject, viconPositionData));
-            streamedData[subject] = viconPositionData;
+            if (!streamedData.TryAdd(subject, viconPositionData))
+            {
+                streamedData[subject] = viconPositionData;
+            }
             //Debug.Log(streamedData[subject].position["base1"][0]);
             
         }
@@ -150,16 +151,7 @@ public class SubjectDataManager : MonoBehaviour
             return;
         }
 
-        if (clientConfig.gapFillingStrategy == GapFillingStrategy.ReTimed)
-        {
-            viconClient = new RetimingClient();
-        }
-        else
-        {
-            viconClient = new Client();
-        }
-
-        
+        viconClient = new Client();
         viconClient.ConfigureClient(clientConfig);
         
         connectThread = new Thread(ConnectClient);
