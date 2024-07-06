@@ -1,19 +1,20 @@
+using System;
 using System.Collections.Generic;
-using NativeWebSocket;
+using System.Linq;
 using ubco.ovilab.ViconUnityStream;
 using UnityEngine;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Threading.Tasks;
+using System.Threading;
+using HMDUtils;
+using ViconDataStreamSDK.CSharp;
+
+
 
 public class SubjectDataManager : MonoBehaviour
 {
-    [Tooltip("The Webscoket URL used for connection.")]
-    [SerializeField] private string baseURI = "ws://viconmx.hcilab.ok.ubc.ca:5001/markers/";
+    [Tooltip("The hostname or ip address of the DataStream server.")]
+    [SerializeField] private string baseURI = "viconmx.hcilab.ok.ubc.ca:801";
     /// <summary>
-    /// The Webscoket URL used for connection.
+    /// The URL used for connection.
     /// </summary>
     public string BaseURI { get => baseURI; set => baseURI = value; }
 
@@ -38,35 +39,83 @@ public class SubjectDataManager : MonoBehaviour
     /// Enable writing data to disk.
     /// </summary>
     public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
+    public Dictionary<string, Data> StreamedData => streamedData;
+    public IViconClient ViconClient => viconClient;
 
-    public Dictionary<string, Data> StreamedData => data;
-    public Dictionary<string, string> StreamedRawData => rawData;
-
+    [SerializeField] private ClientConfigArgs clientConfig;
+    
     private List<string> subjectList = new();
-    private WebSocket webSocket;
-    private Dictionary<string, Data> data = new();
+    private Dictionary<string, Data> streamedData = new();
     private Dictionary<string, string> rawData = new();
+    
+    private bool isConnectionThreadRunning;
+    private static bool isConnected;
+    
+    private Client viconClient;
+    private Thread connectThread;
+    private FusionService coordinateUtils;
+    public List<string> markerNames;
+    
+    //Not sure if a callback is needed -- Copied over from sample code
+    public delegate void ConnectionCallback(bool i_bConnected);
+    public static void OnConnected(bool i_bConnected)
+    {
+        isConnected = i_bConnected;
+    }
 
+    ConnectionCallback ConnectionHandler = OnConnected;
+    
     /// <inheritdoc />
     private void OnEnable()
     {
         MaybeSetupConnection();
+        
     }
 
     /// <inheritdoc />
-    private void FixedUpdate()
+    private void Update()
     {
-        webSocket?.DispatchLatestMessage();
+        if (!isConnected)
+            return;
+        viconClient.GetNewFrame();
+        
+        foreach (string subject in subjectList)
+        {
+            Output_GetMarkerCount markerCount = viconClient.GetMarkerCount(subject);
+            //Debug.Log(markerCount.Translation[0]);
+            if (markerCount.Result != Result.Success)
+            {
+                Debug.LogWarning($"Could not Get {subject}'s data this frame");
+                return;
+            }
+            
+            Data viconPositionData = new()
+            {
+                position = ProcessData(subject, markerCount.MarkerCount)
+            };
+            if (!streamedData.TryAdd(subject, viconPositionData))
+            {
+                streamedData[subject] = viconPositionData;
+            }
+            //Debug.Log(streamedData[subject].position["base1"][0]);
+            
+        }
     }
 
     /// <inheritdoc />
     private void OnDisable()
     {
-        if (webSocket == null)
+        if (isConnectionThreadRunning)
         {
-            webSocket.OnMessage -= StreamData;
+            isConnectionThreadRunning = false;
+            connectThread.Join();
         }
+    }
+
+    private void OnDestroy()
+    {
         MaybeDisableConnection();
+        viconClient = null;
     }
 
     /// <inheritdoc />
@@ -92,83 +141,77 @@ public class SubjectDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Setup websocket connection.
+    /// Setup Direct connection.
     /// </summary>
-    private async void MaybeSetupConnection()
+    private void MaybeSetupConnection()
     {
-        if (UseDefaultData || subjectList.Count == 0 || (webSocket != null && (webSocket.State == WebSocketState.Connecting || webSocket.State == WebSocketState.Open)))
+        if (UseDefaultData || subjectList.Count == 0 || isConnectionThreadRunning)
         {
             return;
         }
 
-        if (webSocket == null)
-        {
-            webSocket = new WebSocket(BaseURI);
-            webSocket.OnOpen += () =>
-            {
-                Debug.Log("Connection open!");
-            };
-
-            webSocket.OnError += (e) =>
-            {
-                Debug.Log("Error! " + e);
-            };
-
-            webSocket.OnClose += async (e) =>
-            {
-                Debug.Log("Connection closed!");
-
-                if (subjectList.Count > 0)
-                {
-                    // Retry in 1 seconds
-                    await Task.Delay(TimeSpan.FromSeconds(1f));
-                    Debug.Log("Trying to connect again");
-                    MaybeSetupConnection();
-                }
-            };
-        }
-
-        webSocket.OnMessage += StreamData;
-        await webSocket.Connect();
+        viconClient = new Client();
+        viconClient.ConfigureClient(clientConfig);
+        
+        connectThread = new Thread(ConnectClient);
+        connectThread.Start();
     }
 
+    private void ConnectClient()
+    {
+        isConnectionThreadRunning = true;
+
+        isConnected = false;
+        while (isConnectionThreadRunning && !viconClient.IsConnected().Connected)
+        {
+            viconClient.ConnectClient(baseURI);
+            Thread.Sleep(200);
+        }
+        print($"Connected. Retiming Client:{clientConfig.useLightweightData}");
+
+        if (clientConfig.useLightweightData)
+        {
+            Result result = viconClient.EnableLightweightSegmentData().Result;
+            Debug.Log($"Lightweight Data Configuration: {result == Result.Success}");
+        }
+        
+        viconClient.SetAxisMapping(Direction.Forward, Direction.Left, Direction.Up);
+        ConnectionHandler( true);
+        viconClient.EnableMarkerData();
+        //Debug.Log("Marker Data Status: " + viconClient.IsMarkerDataEnabled().Enabled);
+        isConnectionThreadRunning = false;
+    }
+
+    private Dictionary<string, List<float>> ProcessData(string subject, uint markerCount)
+    {
+        Dictionary<string, List<float>> markerPositionsDict = new();
+        for(uint i = 0; i < markerCount; i++)
+        {
+            string markerName = viconClient.GetMarkerName(subject, i).MarkerName;
+            Output_GetMarkerGlobalTranslation globalTranslation = viconClient.GetMarkerGlobalTranslation(subject, markerName);
+            markerPositionsDict[markerName] = new List<float>()
+            {
+                (float)globalTranslation.Translation[0],
+                (float)globalTranslation.Translation[1],
+                (float)globalTranslation.Translation[2]
+            };
+        }
+        return markerPositionsDict;
+    }
+    
     /// <summary>
     /// Disable connection 
     /// </summary>
-    private async void MaybeDisableConnection()
+    private void MaybeDisableConnection()
     {
-        if (webSocket != null && (webSocket.State != WebSocketState.Closing || webSocket.State != WebSocketState.Closed))
-        {
-            await webSocket.Close();
-        }
+        if(viconClient == null) return;
+        Result disconnectionStatus = viconClient.Disconnect().Result;
+        Debug.Log($"Disconnected:{disconnectionStatus}");
     }
-
-
+    
+    
     /// <summary>
-    /// Process the date from websocket. Is inteaded as callback for the <see cref="WebSocket.OnMessage"/>
-    /// </summary>
-    private void StreamData(byte[] receivedData)
-    {
-        JObject jsonObject = JObject.Parse(Encoding.UTF8.GetString(receivedData));
-        foreach (string subject in subjectList)
-        {
-            if (jsonObject.TryGetValue(subject, out JToken jsonDataObject))
-            {
-                string rawJsonDataString = jsonDataObject.ToString();
-                data[subject] = JsonConvert.DeserializeObject<Data>(rawJsonDataString);
-                rawData[subject] = rawJsonDataString;
-            }
-            else
-            {
-                data[subject] = null;
-                rawData[subject] = null;
-                Debug.LogWarning($"Missing subject data in frame for `{subject}`");
-            }
-        }
-    }
-
-    /// <summary>
-    /// Regsiter a subject to recieve subject data.
+    /// Register a subject to receive subject data.
     /// </summary>
     public void RegisterSubject(string subjectName)
     {
@@ -177,9 +220,9 @@ public class SubjectDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Unregsiter a subject.
+    /// Unregister a subject.
     /// </summary>
-    public void UnRegsiterSubject(string subjectName)
+    public void UnRegisterSubject(string subjectName)
     {
         subjectList.Remove(subjectName);
     }

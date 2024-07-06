@@ -7,11 +7,12 @@
         "Unity.XR.Management",
         "Unity.XR.Management.Editor",
         "Unity.InputSystem",
-        "Unity.XR.CoreUtils"
+        "Unity.XR.CoreUtils",
+        "ViconPluginUtils"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": true,
     "precompiledReferences": [
         "Newtonsoft.Json.dll"
