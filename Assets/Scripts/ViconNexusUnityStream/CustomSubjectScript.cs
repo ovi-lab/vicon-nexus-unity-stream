@@ -125,14 +125,15 @@ namespace ubco.ovilab.ViconUnityStream
             if (subjectDataManager.UseDefaultData)
             {
                 defaultDataObj ??= JsonConvert.DeserializeObject<Data>(defaultData);
-                ProcessData(defaultDataObj, defaultData);
+                //ProcessData(defaultDataObj, defaultData);
             }
             else
             {
                 // TODO: move all of this to SubjectDataManager
-                if (subjectDataManager.StreamedStreamedData.TryGetValue(subjectName, out Data subjectDataObj) && subjectDataManager.StreamedRawData.TryGetValue(subjectName, out string subjectRawData))
+                if (subjectDataManager.StreamedData.TryGetValue(subjectName, out Data subjectDataObj))
                 {
-                    ProcessData(subjectDataObj, subjectRawData);
+                    
+                    ProcessData(subjectDataObj);
                 }
                 // TODO: Write empty lines when data not in frame?
                 // else { }
@@ -213,9 +214,9 @@ namespace ubco.ovilab.ViconUnityStream
         }
         #endregion
 
-        void ProcessData(Data data, string text)
+        void ProcessData(Data data)
         {
-            rawData = text;
+            //rawData = text;
 	
             int zeroMarkers = 0;
 
@@ -347,9 +348,8 @@ namespace ubco.ovilab.ViconUnityStream
                     break;
                 }
             }
-
+            
             segments = ProcessSegments(segments, data);
-
             if (driveSkeleton)
             {
                 ///Retest the data quality

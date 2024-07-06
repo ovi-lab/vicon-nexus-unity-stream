@@ -70,7 +70,7 @@ namespace ViconDataStreamSDK.CSharp
 		public void ConnectClient(string baseURI)
 		{
 			Output_Connect OC = Connect(baseURI);
-			Debug.LogWarning("Attempt to Connect: " + OC.Result);
+			Debug.Log("Attempt to Connect: " + OC.Result);
 			
 			if (OC.Result == Result.Success)
 			{

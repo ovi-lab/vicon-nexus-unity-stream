@@ -39,7 +39,7 @@ public class SubjectDataManager : MonoBehaviour
     /// Enable writing data to disk.
     /// </summary>
     public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
-    public Dictionary<string, Data> StreamedStreamedData => streamedData;
+    public Dictionary<string, Data> StreamedData => streamedData;
     public Dictionary<string, string> StreamedRawData => rawData;
     public IViconClient ViconClient => viconClient;
 
@@ -97,6 +97,7 @@ public class SubjectDataManager : MonoBehaviour
             };
             if(!streamedData.TryAdd(subject, viconPositionData));
             streamedData[subject] = viconPositionData;
+            //Debug.Log(streamedData[subject].position["base1"][0]);
             
         }
     }
@@ -248,6 +249,7 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     private void MaybeDisableConnection()
     {
+        if(viconClient == null) return;
         Result disconnectionStatus = viconClient.Disconnect().Result;
         Debug.Log($"Disconnected:{disconnectionStatus}");
     }
