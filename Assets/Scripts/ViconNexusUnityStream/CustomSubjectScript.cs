@@ -213,7 +213,9 @@ namespace ubco.ovilab.ViconUnityStream
                 "}";
         }
         #endregion
-
+        
+        
+        //TO DO: Removed the rawData parameter. It might break things in future
         void ProcessData(Data data)
         {
             //rawData = text;
