@@ -22,6 +22,8 @@ public interface IViconClient
     public Output_GetMarkerCount GetMarkerCount(string SubjectName);
     public Output_GetMarkerGlobalTranslation GetMarkerGlobalTranslation(string SubjectName, string MarkerName);
     public Output_SetAxisMapping SetAxisMapping(Direction X, Direction Y, Direction Z);
+    public Output_IsMarkerDataEnabled IsMarkerDataEnabled();
+    public Output_EnableMarkerData EnableMarkerData();
     public void GetNewFrame();
     public uint GetFrameNumber();
     public Output_Disconnect Disconnect();

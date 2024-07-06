@@ -75,7 +75,7 @@ public class SubjectDataManager : MonoBehaviour
     }
 
     /// <inheritdoc />
-    private void LateUpdate()
+    private void Update()
     {
         if (!isConnected)
             return;
@@ -158,7 +158,9 @@ public class SubjectDataManager : MonoBehaviour
             viconClient = new Client();
         }
 
+        
         viconClient.ConfigureClient(clientConfig);
+        
         connectThread = new Thread(ConnectClient);
         connectThread.Start();
     }
@@ -183,6 +185,8 @@ public class SubjectDataManager : MonoBehaviour
         
         viconClient.SetAxisMapping(Direction.Forward, Direction.Left, Direction.Up);
         ConnectionHandler( true);
+        viconClient.EnableMarkerData();
+        //Debug.Log("Marker Data Status: " + viconClient.IsMarkerDataEnabled().Enabled);
         isConnectionThreadRunning = false;
     }
 
@@ -203,7 +207,7 @@ public class SubjectDataManager : MonoBehaviour
                 (float)globalTranslation.Translation[1],
                 (float)globalTranslation.Translation[2]
             };
-            Debug.Log($"{markerName}: {globalTranslation.Translation[0]}");
+            //Debug.Log($"{markerName}: {globalTranslation.Translation[0]}");
         }
         
         return markerPositionsDict;

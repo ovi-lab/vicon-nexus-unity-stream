@@ -63,7 +63,17 @@ namespace ViconDataStreamSDK.CSharp
 			Output_Connect OC = Connect(baseURI);
 			Debug.LogWarning("Attempt to Connect: " + OC.Result);
 		}
-		
+
+		public Output_IsMarkerDataEnabled IsMarkerDataEnabled()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Output_EnableMarkerData EnableMarkerData()
+		{
+			throw new NotImplementedException();
+		}
+
 		public void GetNewFrame()
 		{
 			UpdateFrame(_clientConfigArgs.retimedOffset);

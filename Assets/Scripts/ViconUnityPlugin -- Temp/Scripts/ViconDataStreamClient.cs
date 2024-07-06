@@ -34,7 +34,7 @@ public class ViconDataStreamClient : MonoBehaviour
 	private Client m_Client;
 	private RetimingClient m_RetimingClient;
 
-	private bool UseLightweightData = true;
+	private bool UseLightweightData = false;
 	private bool GetFrameThread = true;
 	private static bool bConnected = false;
 	private bool bSubjectFilterSet = false;
@@ -381,6 +381,11 @@ public delegate void ConnectionCallback(bool i_bConnected);
 			return m_Client.GetSegmentParentName(SubjectName, SegmentName);
 		}
 
+	}
+	
+	public Output_GetMarkerGlobalTranslation GetMarkerGlobalTranslation(string SubjectName, string SegmentName)
+	{
+		return m_Client.GetMarkerGlobalTranslation("HWD", "base1");
 	}
 	public Output_SetAxisMapping SetAxisMapping( Direction X, Direction Y, Direction Z)
 	{

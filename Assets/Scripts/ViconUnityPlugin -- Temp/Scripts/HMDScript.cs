@@ -108,7 +108,8 @@ public class HMDScript : BasePoseProvider
             //position
             Output_GetSubjectRootSegmentName RootName = Client.GetSubjectRootSegmentName(HmdName);
             Output_GetSegmentLocalTranslation Translation = Client.GetSegmentTranslation(HmdName, RootName.SegmentName);
-
+            Output_GetMarkerGlobalTranslation trnas = Client.GetMarkerGlobalTranslation(HmdName, "base1");
+            Debug.Log($"Marker: {trnas.Translation[0]} Segment:{Translation.Translation[0]}");
             // Raw Vicon position, scale is in mm. The data here is in the datastream default; x-forward, y-left, z-up for the global coordinate system
             HMDUtils.FusionService.Vec ViconPosition = new HMDUtils.FusionService.Vec(Translation.Translation[0], Translation.Translation[1], Translation.Translation[2]);
 
