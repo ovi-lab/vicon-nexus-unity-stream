@@ -40,7 +40,6 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
     public Dictionary<string, Data> StreamedData => streamedData;
-    public Dictionary<string, string> StreamedRawData => rawData;
     public IViconClient ViconClient => viconClient;
 
     [SerializeField] private ClientConfigArgs clientConfig;
@@ -98,8 +97,6 @@ public class SubjectDataManager : MonoBehaviour
             {
                 streamedData[subject] = viconPositionData;
             }
-            //Debug.Log(streamedData[subject].position["base1"][0]);
-            
         }
     }
 
@@ -168,7 +165,6 @@ public class SubjectDataManager : MonoBehaviour
             viconClient.ConnectClient(baseURI);
             Thread.Sleep(200);
         }
-        print($"Connected. Retiming Client:{clientConfig.useLightweightData}");
 
         if (clientConfig.useLightweightData)
         {
@@ -179,7 +175,6 @@ public class SubjectDataManager : MonoBehaviour
         viconClient.SetAxisMapping(Direction.Forward, Direction.Left, Direction.Up);
         ConnectionHandler( true);
         viconClient.EnableMarkerData();
-        //Debug.Log("Marker Data Status: " + viconClient.IsMarkerDataEnabled().Enabled);
         isConnectionThreadRunning = false;
     }
 
@@ -189,53 +184,17 @@ public class SubjectDataManager : MonoBehaviour
         for(uint i = 0; i < markerCount; i++)
         {
             string markerName = viconClient.GetMarkerName(subject, i).MarkerName;
-             var globalTranslation = viconClient.GetMarkerGlobalTranslation(subject, markerName);
-             // if (globalTranslation.Result != Result.Success)
-             // {
-             //     Debug.LogWarning("Failed");
-             // }
+            Output_GetMarkerGlobalTranslation globalTranslation = viconClient.GetMarkerGlobalTranslation(subject, markerName);
             markerPositionsDict[markerName] = new List<float>()
             {
                 (float)globalTranslation.Translation[0],
                 (float)globalTranslation.Translation[1],
                 (float)globalTranslation.Translation[2]
             };
-            //Debug.Log($"{markerName}: {globalTranslation.Translation[0]}");
         }
-        
         return markerPositionsDict;
     }
     
-    private void ProcessData(string subject, string segmentName)
-    {
-        double[] translationData = viconClient.GetSegmentLocalTranslation(subject, segmentName).Translation;
-        double[] orientationData = viconClient.GetSegmentLocalRotationQuaternion(subject, segmentName).Rotation;
-        FusionService.Quat viconOrientation = new(orientationData[0], orientationData[1], orientationData[2], orientationData[3]);
-        FusionService.Vec viconTranslation = new(translationData[0], translationData[1], translationData[2]);
-        FusionService.Pose posData = FusionService.GetMappedVicon(viconOrientation, viconTranslation);
-        List<float> positionData = new()
-            {(float)posData.Position.X, (float)posData.Position.Y, (float)posData.Position.Z};
-        Output_GetSegmentChildCount childCount = viconClient.GetSegmentChildCount(subject, segmentName);
-        streamedData[subject].position[segmentName] = positionData;
-        if(childCount.SegmentCount <= 0) return;
-        for (uint i = 0; i < childCount.SegmentCount; i++)
-        {
-            Output_GetSegmentChildName childSegment = viconClient.GetSegmentChildName(subject, segmentName, i);
-            ProcessData(subject, childSegment.SegmentName);
-        }
-    }
-
-    private void ProcessChildData(string subject, string segmentName)
-    {
-        
-        
-        coordinateUtils.Create();
-        //HMDUtils.FusionService.Pose ViconInHMD = FusionService.GetMappedVicon(ViconOrientation, translationData);
-        
-        
-       
-    }
-
     /// <summary>
     /// Disable connection 
     /// </summary>

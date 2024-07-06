@@ -125,7 +125,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <summary>
         /// Set hand subsystem data.
         /// </summary>
-        public static void TrySetHandSbsystemData(Handedness handedness, Dictionary<XRHandJointID, Pose> poses)
+        public static void TrySetHandSubsystemData(Handedness handedness, Dictionary<XRHandJointID, Pose> poses)
         {
             if (loader != null)
             {

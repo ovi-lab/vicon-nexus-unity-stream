@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.XR.Hands;
@@ -96,7 +97,6 @@ namespace ubco.ovilab.ViconUnityStream
 
         protected Dictionary<string, string> segmentChild;
         protected Dictionary<string, string> segmentParents;
-        protected Dictionary<string, List<string>> fingerSegments;
 
         protected Dictionary<string, XRHandJointID> segmentToJointMapping;
         protected Dictionary<XRHandJointID, Pose> xrJointPoses;
@@ -242,7 +242,7 @@ namespace ubco.ovilab.ViconUnityStream
                 {    segment_5D4, new List<string>(){marker_PF3}}
             };
 
-            fingerSegments = new Dictionary<string, List<string>>()
+            new Dictionary<string, List<string>>()
             {
                 {finger_1, new List<string>{segment_1D1, segment_1D2, segment_1D3, segment_1D4}},
                 {finger_2, new List<string>{segment_2D1, segment_2D2, segment_2D3, segment_2D4}},
@@ -373,8 +373,8 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 var p1 = data.position[marker_TH3P];
                 var p2 = data.position[marker_TH3];
-                Vector3 p1Position = new Vector3(p1[0], p1[2], p1[1]);
-                Vector3 p2Position = new Vector3(p2[0], p2[2], p2[1]);
+                Vector3 p1Position = new(p1[0], p1[2], p1[1]);
+                Vector3 p2Position = new(p2[0], p2[2], p2[1]);
 
                 /// If one of the datapoints is missing, use the previous values, do this by not modifying the baseVectors
                 if (p1[0] != 0 || p2[0] != 0)
@@ -382,12 +382,12 @@ namespace ubco.ovilab.ViconUnityStream
                     /// Ensure p1 and p2 are not switched, as it can happen when accuracy is low
                     /// PalmBase's Transform.up should be pointing into the palm.
                     /// This is based on the assumption that the RTH3P->RTH3 vector, relative to
-                    /// PlamBase.up will be negative (pointing up from palm)
+                    /// PalmBase.up will be negative (pointing up from palm)
 
                     Vector3 p1p2Vector = p2Position - p1Position;
-                    float dotPrduct = Vector3.Dot(p1p2Vector, isRightHand() ? normal : -normal);
+                    float dotProduct = Vector3.Dot(p1p2Vector, isRightHand() ? normal : -normal);
 
-                    if (dotPrduct < 0)
+                    if (dotProduct < 0)
                     {
                         p1p2Vector = -p1p2Vector;
                     }
@@ -433,14 +433,14 @@ namespace ubco.ovilab.ViconUnityStream
 
             string fingerId = boneName.Substring(0, 2);
 
-            string childName, parentName; // Thisrd wheel being the other segment of the 4 segments in the finger
+            string childName, parentName; // Third wheel being the other segment of the 4 segments in the finger
             Vector3 childPos, parentPos, childPosPrevious, parentPosPrevious, segmentPosPrevious;
             segmentChild.TryGetValue(boneName, out childName);
             segmentParents.TryGetValue(boneName, out parentName);
 
-            if (previousSegments.ContainsKey(boneName))
+            if (previousSegments.TryGetValue(boneName, out Vector3 segment))
             {
-                segmentPosPrevious = previousSegments[boneName];
+                segmentPosPrevious = segment;
                 if (segmentPosPrevious == Vector3.zero)
                 {
                     return Vector3.zero;
@@ -591,6 +591,8 @@ namespace ubco.ovilab.ViconUnityStream
             if (Bone.name == segment_Hand)
                 handWorldToLocalMatrix = Bone.worldToLocalMatrix;
         }
+        
+        
 
         /// <inheritdoc />
         protected override void FindAndTransform(Transform iTransform, string BoneName)
@@ -602,7 +604,7 @@ namespace ubco.ovilab.ViconUnityStream
             xrJointPoses.Clear();
             base.FindAndTransform(iTransform, BoneName);
 
-            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses);
+            ViconXRLoader.TrySetHandSubsystemData(handedness, xrJointPoses);
         }
 
         protected override bool TestSegmentsQuality(Dictionary<string, Vector3> segments)

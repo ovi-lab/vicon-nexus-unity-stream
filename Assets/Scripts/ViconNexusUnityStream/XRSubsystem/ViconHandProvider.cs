@@ -175,6 +175,7 @@ namespace ubco.ovilab.ViconUnityStream
 
                 if (handPoseCache.TryGetValue(jointID, out Pose pose))
                 {
+                    
                     if (recompute)
                     {
                         pose.rotation = Quaternion.LookRotation(pose.up, -pose.forward);  // Accounting for the different coordinate system used.
