@@ -587,6 +587,9 @@ namespace ubco.ovilab.ViconUnityStream
                 }
                 previousSegments[BoneName] = BonePosition;
             }
+
+            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses);
+
             AddBoneDataToWriter(Bone);
             if (Bone.name == segment_Hand)
                 handWorldToLocalMatrix = Bone.worldToLocalMatrix;
@@ -601,8 +604,6 @@ namespace ubco.ovilab.ViconUnityStream
             }
             xrJointPoses.Clear();
             base.FindAndTransform(iTransform, BoneName);
-
-            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses);
         }
 
         protected override bool TestSegmentsQuality(Dictionary<string, Vector3> segments)
