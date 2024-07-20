@@ -10,6 +10,8 @@ namespace ubco.ovilab.ViconUnityStream
         [Header("HWD Settings")]
         [Tooltip("If set or game object has XROrigin will configure the XROrigin.")]
         [SerializeField] private XROrigin xrOrigin;
+        [Tooltip("Estimate \"True\" centre of the HMD based on vicon tracker markers. A good value seems to be (0,0,-100) to start with")]
+        [SerializeField] private Vector3 HMDCentreOffset;
 
         [Header("SWD One Euro filter settings")]
         [Tooltip("Enables filter for position")]
@@ -29,7 +31,6 @@ namespace ubco.ovilab.ViconUnityStream
 
         private OneEuroFilter<Quaternion> rotFilter;
         private OneEuroFilter<Vector3> posFilter;
-        [SerializeField] private float HMDCentreOffset;
 
         protected override void Start()
         {
@@ -60,7 +61,8 @@ namespace ubco.ovilab.ViconUnityStream
         protected override Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, Data data)
         {
             Vector3 forward = segments["base2"] - segments["base1"];
-            Vector3 up = Vector3.Cross(forward, segments["base3"] - segments["base4"]);
+            Vector3 right = segments["base3"] - segments["base4"];
+            Vector3 up = Vector3.Cross(forward, right);
             if (forward == Vector3.zero || up == Vector3.zero) return segments;
             Quaternion rotation = Quaternion.LookRotation(forward, up);
 
@@ -78,7 +80,7 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 segmentsRotation[key] = rotation;
             }
-            Vector3 imaginaryCentre = segments["base1"] + forward.normalized * HMDCentreOffset;
+            Vector3 imaginaryCentre = segments["base1"] + (forward.normalized * HMDCentreOffset.z + up.normalized * HMDCentreOffset.y + right.normalized * HMDCentreOffset.x);
             ViconXRLoader.TrySetXRDeviceData(imaginaryCentre * viconUnitsToUnityUnits, rotation);
             return segments;
         }
