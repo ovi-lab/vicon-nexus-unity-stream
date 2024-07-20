@@ -16,7 +16,6 @@ namespace ubco.ovilab.ViconUnityStream.Editor
 
         class Styles
         {
-            public static GUIContent HMDPositionOffset = new GUIContent("HMD Position Offset", "Offset to be applied to the XRDevice (HMD) data before setting the centerEyePosition.");
             public static GUIContent EnableHandSubsystem = new GUIContent("Enable Hand Subsystem", "Enable XRHandSubsystem.");
             public static GUIContent EnableViconXRDevice = new GUIContent("Enable Vicon XR Device", "Enable Vicon XR Device which provides HMD positions through Input system.");
         }
@@ -33,7 +32,6 @@ namespace ubco.ovilab.ViconUnityStream.Editor
         /// <inheritdoc />
         public override void OnGUI(string searchContext)
         {
-            EditorGUILayout.PropertyField(viconXRSettingsObject.FindProperty("_HMDPositionOffset"), Styles.HMDPositionOffset);
             EditorGUILayout.PropertyField(viconXRSettingsObject.FindProperty("enableXRHandSubsystem"), Styles.EnableHandSubsystem);
             EditorGUILayout.PropertyField(viconXRSettingsObject.FindProperty("enableViconXRDevice"), Styles.EnableViconXRDevice);
             viconXRSettingsObject.ApplyModifiedPropertiesWithoutUndo();
