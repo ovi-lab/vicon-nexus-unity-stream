@@ -29,6 +29,7 @@ namespace ubco.ovilab.ViconUnityStream
 
         private OneEuroFilter<Quaternion> rotFilter;
         private OneEuroFilter<Vector3> posFilter;
+        [SerializeField] private float HMDCentreOffset;
 
         protected override void Start()
         {
@@ -77,8 +78,8 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 segmentsRotation[key] = rotation;
             }
-
-            ViconXRLoader.TrySetXRDeviceData(segments["base1"] * viconUnitsToUnityUnits, rotation);
+            Vector3 imaginaryCentre = segments["base1"] + forward.normalized * HMDCentreOffset;
+            ViconXRLoader.TrySetXRDeviceData(imaginaryCentre * viconUnitsToUnityUnits, rotation);
             return segments;
         }
     }
