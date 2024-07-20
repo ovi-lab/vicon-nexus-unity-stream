@@ -62,7 +62,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 AssetDatabase.SaveAssets();
                 try
                 {
-                    EditorBuildSettings.AddConfigObject(ViconXRConstants.settingsKey, settings, false);
+                    EditorBuildSettings.AddConfigObject(ViconXRConstants.settingsKey, settings, true);
                 }
                 catch(System.Exception e)
                 {
@@ -89,7 +89,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 AssetDatabase.SaveAssets();
                 try
                 {
-                    EditorBuildSettings.AddConfigObject(ViconXRConstants.loaderKey, loader, false);
+                    EditorBuildSettings.AddConfigObject(ViconXRConstants.loaderKey, loader, true);
                 }
                 catch(System.Exception e)
                 {
