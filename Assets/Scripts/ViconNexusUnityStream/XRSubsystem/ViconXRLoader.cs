@@ -140,7 +140,6 @@ namespace ubco.ovilab.ViconUnityStream
         {
             if (loader != null && loader.settings != null)
             {
-                pos += loader.settings.HMDPositionOffset;
                 loader.XRDevice?.SetDeviceData(pos, rot);
             }
         }
