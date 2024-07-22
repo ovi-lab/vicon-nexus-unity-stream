@@ -214,7 +214,7 @@ MonoBehaviour:
       m_SingletonActionBindings:
       - m_Name: 
         m_Id: f1e53c8f-285a-46a6-bf5b-770680b09670
-        m_Path: <XRHMD>/centerEyePosition
+        m_Path: <OpenXRHmd>/centerEyePosition
         m_Interactions: 
         m_Processors: 
         m_Groups: 
@@ -389,13 +389,13 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   xrOrigin: {fileID: 0}
+  HMDCentreOffset: {x: 0, y: 0, z: 0}
   applyPosFilter: 1
   posFilterMinCutoff: 0.1
   posFilterBeta: 50
   applyRotFilter: 1
   rotFilterMinCutoff: 0.1
   rotFilterBeta: 50
-  HMDCentreOffset: -107
 --- !u!1 &5886202901341316216
 GameObject:
   m_ObjectHideFlags: 0

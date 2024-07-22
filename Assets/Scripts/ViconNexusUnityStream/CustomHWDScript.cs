@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Unity.XR.CoreUtils;
@@ -31,7 +32,7 @@ namespace ubco.ovilab.ViconUnityStream
 
         private OneEuroFilter<Quaternion> rotFilter;
         private OneEuroFilter<Vector3> posFilter;
-
+        private Vector3 imaginaryCentre;
         protected override void Start()
         {
             base.Start();
@@ -80,9 +81,15 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 segmentsRotation[key] = rotation;
             }
-            Vector3 imaginaryCentre = segments["base1"] + (forward.normalized * HMDCentreOffset.z + up.normalized * HMDCentreOffset.y + right.normalized * HMDCentreOffset.x);
+            imaginaryCentre = segments["base1"] + (forward.normalized * HMDCentreOffset.z + up.normalized * HMDCentreOffset.y + right.normalized * HMDCentreOffset.x);
             ViconXRLoader.TrySetXRDeviceData(imaginaryCentre * viconUnitsToUnityUnits, rotation);
             return segments;
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.DrawSphere(imaginaryCentre * viconUnitsToUnityUnits, 0.1f);
+            Gizmos.DrawWireSphere(segments["base1"] * viconUnitsToUnityUnits, 0.1f);
         }
     }
 }
