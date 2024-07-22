@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace ubco.ovilab.ViconUnityStream
 {
-    public class CustomSubjectScript : MonoBehaviour
+    public abstract class CustomSubjectScript : MonoBehaviour
     {
         #region out facing interface
         [Tooltip("SubjectDataManager used to get data.")]
@@ -363,6 +363,7 @@ namespace ubco.ovilab.ViconUnityStream
                 if (!SubjectHidden)
                 {
                     transform.position = segments[rootSegment] * viconUnitsToUnityUnits;
+                    transform.rotation = segmentsRotation[rootSegment];
                     FindAndTransform(transform, rootSegment);
 
                 }
@@ -414,10 +415,7 @@ namespace ubco.ovilab.ViconUnityStream
             }
         }
 
-        protected virtual Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, Data data)
-        {
-            return segments;
-        }
+        protected abstract Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, Data data);
 
         protected virtual void FindAndTransform(Transform iTransform, string BoneName)
         {

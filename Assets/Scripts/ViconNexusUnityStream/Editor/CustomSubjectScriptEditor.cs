@@ -8,13 +8,13 @@ namespace ubco.ovilab.ViconUnityStream.Editor
     [CanEditMultipleObjects]
     public class CustomSubjectScriptEditor: UnityEditor.Editor
     {
-        private static readonly string[] excludedSerializedNames = new string[]{"m_Script", "subjectDataManager"};
+        protected virtual string[] excludedSerializedNames => new string[]{"m_Script", "subjectDataManager"};
         private CustomSubjectScript customSubjectScript;
 
         private SerializedProperty scriptProperty;
         private SerializedProperty subjectDataManagerProperty;
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             customSubjectScript = target as CustomSubjectScript;
 
