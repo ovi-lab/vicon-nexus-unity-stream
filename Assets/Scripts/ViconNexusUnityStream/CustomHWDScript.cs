@@ -88,8 +88,12 @@ namespace ubco.ovilab.ViconUnityStream
 
         private void OnDrawGizmos()
         {
-            Gizmos.DrawSphere(imaginaryCentre * viconUnitsToUnityUnits, 0.1f);
-            Gizmos.DrawWireSphere(segments["base1"] * viconUnitsToUnityUnits, 0.1f);
+            if (Application.isPlaying)
+            {
+                Gizmos.DrawSphere(imaginaryCentre * viconUnitsToUnityUnits, 0.1f);
+                Gizmos.DrawWireSphere(segments["base1"] * viconUnitsToUnityUnits, 0.1f);
+            }
+            
         }
     }
 }
