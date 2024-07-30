@@ -15,7 +15,7 @@ namespace ubco.ovilab.ViconUnityStream.Samples
 
         public void OnGesture(HPUIGestureEventArgs args)
         {
-            text.text = $"Gesture @ {args.Position} in {args.CumilativeDirection}";
+            text.text = $"Gesture @ {args.Position} in {args.CumulativeDirection}";
         }
     }
 }
