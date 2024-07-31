@@ -426,6 +426,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 914437548679323981}
+  - {fileID: 852196375819316174}
   - {fileID: 3060369845262919239}
   m_Father: {fileID: 4216063260718955183}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -571,6 +572,76 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 811110014903720383, guid: 9be4c166b2ff0d14bbb444e856617e8d, type: 3}
   m_PrefabInstance: {fileID: 572265401712802034}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &2371557732479465253
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3295407117147454893}
+    m_Modifications:
+    - target: {fileID: 2457651829054295460, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2457651829054295460, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: subjectDataManager
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.1176
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4071023778742951905, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+      propertyPath: m_Name
+      value: better_right_hand_with_3_finger_split_mesh
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+--- !u!4 &852196375819316174 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3115060648830115051, guid: f8e6554c4b0150d4d91afbf5016e3dac, type: 3}
+  m_PrefabInstance: {fileID: 2371557732479465253}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2788408747952949769
 PrefabInstance:
