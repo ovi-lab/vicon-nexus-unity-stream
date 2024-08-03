@@ -14,15 +14,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <see cref="SampleBuildProcessor"/>
         public static ViconXRSettings runtimeInstance = null;
 #endif
-
-        [SerializeField, Tooltip("Offset to be applied to the XRDevice (HMD) data before setting the centerEyePosition.")]
-        private Vector3 _HMDPositionOffset;
-
-        /// <summary>
-        /// Offset to be applied to the XRDevice (HMD) data before setting the centerEyePosition.
-        /// </summary>
-        public Vector3 HMDPositionOffset { get => _HMDPositionOffset; set => _HMDPositionOffset = value; }
-
+        
         [SerializeField, Tooltip("Enable XRHandSubsystem.")]
         private bool enableXRHandSubsystem;
 
