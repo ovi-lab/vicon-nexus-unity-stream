@@ -62,7 +62,7 @@ public class SubjectDataManager : MonoBehaviour
     /// <inheritdoc />
     private void OnDisable()
     {
-        if (webSocket == null)
+        if (webSocket != null)
         {
             webSocket.OnMessage -= StreamData;
         }
