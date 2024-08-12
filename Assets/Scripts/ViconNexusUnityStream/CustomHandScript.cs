@@ -398,6 +398,8 @@ namespace ubco.ovilab.ViconUnityStream
 
             /// Using segments to store the normal vector instead of position?
             segments["PalmBase"] = normal;// *0.01f;
+            // Setting here so that the rootsegment gets the correct rotation.
+            segmentsRotation[segment_Arm] = Quaternion.LookRotation(-normal, -palm);
 
             if (palm == Vector3.zero)
                 noHand = true;
