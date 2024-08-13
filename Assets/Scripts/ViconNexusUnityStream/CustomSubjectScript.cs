@@ -240,7 +240,6 @@ namespace ubco.ovilab.ViconUnityStream
                         else if(gapFillingStrategy == GapFillingStrategy.Ignore)
                         {
                             dataValid = false;
-                            break;
                         }
                         else if (gapFillingStrategy == GapFillingStrategy.FillRelative)
                         {
@@ -339,12 +338,11 @@ namespace ubco.ovilab.ViconUnityStream
                 {
                     zeroMarkers += 1;
                 }
+            }
 
-                if(zeroMarkers > dataQualityThreshold)
-                {
-                    HideSubject();
-                    break;
-                }
+            if(zeroMarkers > dataQualityThreshold)
+            {
+                HideSubject();
             }
 
             segments = ProcessSegments(segments, data);
