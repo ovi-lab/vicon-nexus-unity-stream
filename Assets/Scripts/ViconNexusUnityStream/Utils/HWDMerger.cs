@@ -4,20 +4,20 @@ using UnityEngine.Events;
 namespace ubco.ovilab.ViconUnityStream.Utils
 {
     /// <summary>
-    /// Repositions the XROrigin transform such that the difference
+    /// Repositions the MergerOffsetTransform transform such that the difference
     /// between the gloabl position and rotation difference between the
     /// xrHWD object and viconHWD object are below distanceThreshold
     /// and angleThreshold respectively.
     /// </summary>
     public class HWDMerger : MonoBehaviour
     {
-        [Tooltip("The XR Origin transform"), SerializeField]
-        private Transform _xrOrigin;
+        [Tooltip("The transform to which the offset is applied to. Ideally, this is a GameObject under the CameraOffset. The main camera transform in xrHWD should be in a child GameObject of this."), SerializeField]
+        private Transform _mergerOffsetTransform;
 
         /// <summary>
         /// The XR Origin transform
         /// </summary>
-        public Transform xrOrigin => _xrOrigin;
+        public Transform mergerOffsetTransform => _mergerOffsetTransform;
 
         [Tooltip("The Vicon HWD. Should be the transform that has the CustomHWDScript. Make sure to have the Vicon XR Devices disabled when using this component."), SerializeField]
         private Transform _viconHWD;
@@ -27,11 +27,11 @@ namespace ubco.ovilab.ViconUnityStream.Utils
         /// </summary>
         public Transform viconHWD => _viconHWD;
 
-        [Tooltip("The transform with the camera component that follows the HWD position and rotation."), SerializeField]
+        [Tooltip("The transform with the camera component that follows the HWD position and rotation. Generally, this the Main Camera under the XR Origin."), SerializeField]
         private Transform _xrHWD;
 
         /// <summary>
-        /// The transform with the camera component that follows the HWD position and rotation.
+        /// The transform with the camera component that follows the HWD position and rotation. Generally, this the Main Camera under the XR Origin.
         /// </summary>
         public Transform xrHWD => _xrHWD;
 
@@ -51,19 +51,26 @@ namespace ubco.ovilab.ViconUnityStream.Utils
         /// </summary>
         public float AngleThreshold => distanceThreshold;
 
-        [Tooltip("Called when successfully got the differences below the respective thresholds."), SerializeField] private UnityEvent onSuccess;
+        [Tooltip("Called when successfully got the differences below the respective thresholds."), SerializeField] private UnityEvent onMergeSuccess;
 
         /// <summary>
         /// Called when successfully got the differences below the respective thresholds.
         /// </summary>
-        public UnityEvent OnSuccess => onSuccess;
+        public UnityEvent OnMergeSuccess => onMergeSuccess;
 
-        [Tooltip("Called when failed to get the differences below the respective thresholds."), SerializeField] private UnityEvent onFail;
+        [Tooltip("Called when failed to get the differences below the respective thresholds."), SerializeField] private UnityEvent onMergeFail;
 
         /// <summary>
         /// Called when failed to get the differences below the respective thresholds.
         /// </summary>
-        public UnityEvent OnFail => onFail;
+        public UnityEvent OnMergeFail => onMergeFail;
+
+        [Tooltip("Called when the differences is above the respective thresholds."), SerializeField] private UnityEvent onDifferenceAboveThreshold;
+
+        /// <summary>
+        /// Called when the differences is above the respective thresholds.
+        /// </summary>
+        public UnityEvent OnDifferenceAboveThreshold => onDifferenceAboveThreshold;
 
         /// <summary>
         /// Move the XR origin such that the Vicon HWD and XR HWD transforms are within specified thresholds.
@@ -73,21 +80,38 @@ namespace ubco.ovilab.ViconUnityStream.Utils
             bool success = false;
             for (int i = 0; i < 5; ++i)
             {
-                Vector3 posDiff = xrHWD.position - viconHWD.position;
-                Quaternion rotDiff = xrHWD.rotation * Quaternion.Inverse(viconHWD.rotation);
-                xrOrigin.position = xrOrigin.position - posDiff;
-                xrOrigin.rotation = xrOrigin.rotation * Quaternion.Inverse(rotDiff);
-                if (Vector3.Angle(viconHWD.forward, xrHWD.forward) < AngleThreshold && (viconHWD.position - xrHWD.position).magnitude < DistanceThreshold)
+                Vector3 posDiff = viconHWD.position - xrHWD.position;
+                Quaternion rotDiff = viconHWD.rotation * Quaternion.Inverse(xrHWD.rotation);
+                mergerOffsetTransform.position = posDiff;
+                mergerOffsetTransform.rotation = rotDiff;
+                if (IsBelowThreshold())
                 {
                     success = true;
-                    OnSuccess.Invoke();
+                    OnMergeSuccess.Invoke();
                     break;
                 }
             }
             if (!success)
             {
-                OnFail.Invoke();
+                OnMergeFail.Invoke();
                 Debug.LogError($"Failed to merge vicon and xr");
+            }
+        }
+
+        /// <summary>
+        /// Returns true if differences between the viconHWD and xrHWD are below thresholds.
+        /// </summary>
+        public bool IsBelowThreshold()
+        {
+            return Vector3.Angle(viconHWD.forward, xrHWD.forward) < AngleThreshold && (viconHWD.position - xrHWD.position).magnitude < DistanceThreshold;
+        }
+
+        /// <inheritdoc />
+        protected void Update()
+        {
+            if (!IsBelowThreshold())
+            {
+                OnDifferenceAboveThreshold.Invoke();
             }
         }
     }
