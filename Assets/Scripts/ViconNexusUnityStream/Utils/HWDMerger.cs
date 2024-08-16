@@ -80,10 +80,20 @@ namespace ubco.ovilab.ViconUnityStream.Utils
             bool success = false;
             for (int i = 0; i < 5; ++i)
             {
-                Vector3 posDiff = viconHWD.position - xrHWD.position;
-                Quaternion rotDiff = viconHWD.rotation * Quaternion.Inverse(xrHWD.rotation);
-                mergerOffsetTransform.position = posDiff;
-                mergerOffsetTransform.rotation = rotDiff;
+                mergerOffsetTransform.localPosition = Vector3.zero;
+                mergerOffsetTransform.localRotation = Quaternion.identity;
+
+                Transform parent = mergerOffsetTransform.parent;
+                Vector3 localXRPosRelToParent = parent.InverseTransformPoint(xrHWD.position);
+                Vector3 localViconPosRelToParent = parent.InverseTransformPoint(viconHWD.position);
+                Quaternion localXRRotRelToParent = Quaternion.Inverse(parent.rotation) * xrHWD.rotation;
+                Quaternion localViconRotRelToParent = Quaternion.Inverse(parent.rotation) * viconHWD.rotation;
+
+                Vector3 posDiff = localViconPosRelToParent - localXRPosRelToParent;
+                Quaternion rotDiff = localViconRotRelToParent * Quaternion.Inverse(localXRRotRelToParent);
+                mergerOffsetTransform.localPosition = posDiff;
+                mergerOffsetTransform.localRotation = rotDiff;
+
                 if (IsBelowThreshold())
                 {
                     success = true;
@@ -104,6 +114,12 @@ namespace ubco.ovilab.ViconUnityStream.Utils
         public bool IsBelowThreshold()
         {
             return Vector3.Angle(viconHWD.forward, xrHWD.forward) < AngleThreshold && (viconHWD.position - xrHWD.position).magnitude < DistanceThreshold;
+        }
+
+        /// <inheritdoc />
+        protected void OnEnable()
+        {
+            Debug.Assert(xrHWD.parent == mergerOffsetTransform, "mergerOffsetTransform's should be the parent of xrHWD");
         }
 
         /// <inheritdoc />
