@@ -49,7 +49,7 @@ namespace ubco.ovilab.ViconUnityStream.Utils
         /// <summary>
         /// The angle threshold to achieve.
         /// </summary>
-        public float AngleThreshold => distanceThreshold;
+        public float AngleThreshold => angleThreshold;
 
         [Tooltip("Called when successfully got the differences below the respective thresholds."), SerializeField] private UnityEvent onMergeSuccess;
 
