@@ -19,6 +19,11 @@
         "displayName": "Sample scene with HPUI",
         "description": "Sample scene that uses HPUI. Require <a href=\"https://github.com/ovi-lab/HPUI-Core\">HPUI-Core</a> package to be loaded.",
         "path": "Samples~/SampleSceneWithHPUI"
+      },
+      {
+        "displayName": "Sample scene with HWDMerger",
+        "description": "Sample scene which uses HWDMerger.",
+        "path": "Samples~/SampleSceneWithHWDMerger"
       }
     ]
 }
