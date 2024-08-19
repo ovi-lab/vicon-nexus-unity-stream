@@ -67,9 +67,11 @@ namespace ubco.ovilab.ViconUnityStream
             if (forward == Vector3.zero || up == Vector3.zero) return segments;
             Quaternion rotation = Quaternion.LookRotation(forward, up);
 
+            Vector3 base1Pos = segments["base1"];
+
             if (applyPosFilter)
             {
-                segments["base1"] = posFilter.Filter(segments["base1"], Time.realtimeSinceStartup);
+                base1Pos = posFilter.Filter(base1Pos, Time.realtimeSinceStartup);
             }
 
             if (applyRotFilter)
@@ -81,19 +83,11 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 segmentsRotation[key] = rotation;
             }
-            imaginaryCentre = segments["base1"] + (forward.normalized * HMDCentreOffset.z + up.normalized * HMDCentreOffset.y + right.normalized * HMDCentreOffset.x);
-            ViconXRLoader.TrySetXRDeviceData(imaginaryCentre * viconUnitsToUnityUnits, rotation);
-            return segments;
-        }
+            base1Pos += (forward.normalized * HMDCentreOffset.z + up.normalized * HMDCentreOffset.y + right.normalized * HMDCentreOffset.x);
 
-        private void OnDrawGizmos()
-        {
-            if (Application.isPlaying)
-            {
-                Gizmos.DrawSphere(imaginaryCentre * viconUnitsToUnityUnits, 0.1f);
-                Gizmos.DrawWireSphere(segments["base1"] * viconUnitsToUnityUnits, 0.1f);
-            }
-            
+            ViconXRLoader.TrySetXRDeviceData(base1Pos * viconUnitsToUnityUnits, rotation);
+            segments["base1"] = base1Pos;
+            return segments;
         }
     }
 }
