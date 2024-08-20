@@ -29,7 +29,13 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public bool EnableViconXRDevice { get => enableViconXRDevice; set => enableViconXRDevice = value; }
 
+        // FIXME: Is the awake needed?
         void Awake()
+        {
+            runtimeInstance = this;
+        }
+
+        void OnEnable()
         {
             runtimeInstance = this;
         }

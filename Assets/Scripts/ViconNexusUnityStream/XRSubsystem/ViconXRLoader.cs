@@ -30,6 +30,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public ViconXRDevice XRDevice { get; private set; }
 
+        // FIXME: Is the awake needed?
         /// <inheritdoc />
         private void Awake()
         {
