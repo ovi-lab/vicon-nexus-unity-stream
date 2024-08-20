@@ -69,6 +69,11 @@ namespace ubco.ovilab.ViconUnityStream
 
             Vector3 base1Pos = segments["base1"];
 
+            if ((applyPosFilter && posFilter == null) || (applyRotFilter && rotFilter == null))
+            {
+                OnValidate();
+            }
+
             if (applyPosFilter)
             {
                 base1Pos = posFilter.Filter(base1Pos, Time.realtimeSinceStartup);
