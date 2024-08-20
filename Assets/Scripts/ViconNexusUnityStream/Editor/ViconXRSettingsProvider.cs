@@ -68,8 +68,23 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 }
             }
 
-            EnsureLoaderIsCreated();
+            if (settings != null)
+            {
+                EnsureObjectInPreLoadedAssets(settings);
+            }
+
             return settings;
+        }
+
+        internal static bool EnsureObjectInPreLoadedAssets(Object obj)
+        {
+            List<Object> preLoadedAssets = UnityEditor.PlayerSettings.GetPreloadedAssets().ToList();
+            if (!preLoadedAssets.Contains(obj))
+            {
+                preLoadedAssets.Add(obj);
+                UnityEditor.PlayerSettings.SetPreloadedAssets(preLoadedAssets.ToArray());
+            }
+            return UnityEditor.PlayerSettings.GetPreloadedAssets().Contains(obj);
         }
 
         internal static SerializedObject GetSerializedSettings()
@@ -77,7 +92,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             return new SerializedObject(GetOrCreateSettings());
         }
 
-        internal static void EnsureLoaderIsCreated()
+        internal static bool EnsureLoaderIsCreated()
         {
             ViconXRLoader loader = AssetDatabase.LoadAssetAtPath<ViconXRLoader>(ViconXRConstants.loaderPath);
             if (loader == null)
@@ -97,27 +112,41 @@ namespace ubco.ovilab.ViconUnityStream.Editor
 
             if (loader != null)
             {
-                List<Object> preLoadedAssets = UnityEditor.PlayerSettings.GetPreloadedAssets().ToList();
-                if (!preLoadedAssets.Contains(loader))
-                {
-                    preLoadedAssets.Add(loader);
-                    UnityEditor.PlayerSettings.SetPreloadedAssets(preLoadedAssets.ToArray());
-                }
+                return EnsureObjectInPreLoadedAssets(loader);
             }
+            return false;
         }
 
-        public static bool IsSettingsAvailable()
+        internal static bool IsSettingsAvailable()
         {
             return File.Exists(ViconXRConstants.settingsPath);
         }
 
+        internal static bool IsLoaderAvailable()
+        {
+            return File.Exists(ViconXRConstants.loaderPath);
+        }
+
+        internal static void EnsureViconXRSettingsAndLoaderAreLoaded()
+        {
+            if (GetOrCreateSettings() == null)
+            {
+                Debug.LogError("Failed to load Vicon XR Settings asset");
+            }
+
+            if (!EnsureLoaderIsCreated())
+            {
+                Debug.LogError("Vicon settings failed to be loaded!");
+            }
+        }
+
         // Register the SettingsProvider
         [SettingsProvider]
-        public static SettingsProvider CreateMyCustomSettingsProvider()
+        public static SettingsProvider CreateViconCustomSettingsProvider()
         {
             if (IsSettingsAvailable())
             {
-                GetOrCreateSettings();
+                EnsureViconXRSettingsAndLoaderAreLoaded();
             }
 
             ViconXRSettingsProvider provider = new ViconXRSettingsProvider("Project/Vicon", SettingsScope.Project);

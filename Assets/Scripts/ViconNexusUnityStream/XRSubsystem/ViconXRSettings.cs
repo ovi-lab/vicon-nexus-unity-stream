@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine;
 
 namespace ubco.ovilab.ViconUnityStream
@@ -9,11 +8,9 @@ namespace ubco.ovilab.ViconUnityStream
     [System.Serializable]
     public class ViconXRSettings : ScriptableObject
     {
-#if !UNITY_EDITOR
-        /// <summary>Static instance that will hold the runtime asset instance we created in our build process.</summary>
+        /// <summary>Static instance that will hold the asset instance.</summary>
         /// <see cref="SampleBuildProcessor"/>
         public static ViconXRSettings runtimeInstance = null;
-#endif
         
         [SerializeField, Tooltip("Enable XRHandSubsystem.")]
         private bool enableXRHandSubsystem;
@@ -34,9 +31,7 @@ namespace ubco.ovilab.ViconUnityStream
 
         void Awake()
         {
-            #if !UNITY_EDITOR
             runtimeInstance = this;
-            #endif
         }
     }
 }

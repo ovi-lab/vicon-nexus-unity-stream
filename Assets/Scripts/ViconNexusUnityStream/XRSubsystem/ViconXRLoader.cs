@@ -68,13 +68,7 @@ namespace ubco.ovilab.ViconUnityStream
         internal static ViconXRSettings GetSettings()
         {
             ViconXRSettings settings = null;
-            // When running in the Unity Editor, we have to load user's customization of configuration data directly from
-            // EditorBuildSettings. At runtime, we need to grab it from the static instance field instead.
-#if UNITY_EDITOR
-            UnityEditor.EditorBuildSettings.TryGetConfigObject(ViconXRConstants.settingsKey, out settings);
-#else
             settings = ViconXRSettings.runtimeInstance;
-#endif
             return settings;
         }
 
@@ -88,6 +82,11 @@ namespace ubco.ovilab.ViconUnityStream
             }
 
             loader.settings = GetSettings();
+            if (loader.settings == null)
+            {
+                Debug.LogError($"Vicon XR Setting not loaded!");
+                return;
+            }
 
             if (loader.settings.EnableXRHandSubsystem)
             {
