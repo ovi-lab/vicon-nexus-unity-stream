@@ -11,8 +11,10 @@ namespace ubco.ovilab.ViconUnityStream
         [Header("HWD Settings")]
         [Tooltip("If set or game object has XROrigin will configure the XROrigin.")]
         [SerializeField] private XROrigin xrOrigin;
-        [Tooltip("Estimate \"True\" centre of the HMD based on vicon tracker markers. A good value seems to be (0,0,-100) to start with")]
-        [SerializeField] private Vector3 HMDCentreOffset;
+        [Tooltip("Position offset to get \"True\" centre of the HMD based on vicon tracker markers.")]
+        [SerializeField] private Vector3 hmdPositionOffset;
+        [Tooltip("Rotation offset to get  \"True\" centre of the HMD based on vicon tracker markers.")]
+        [SerializeField] private Quaternion hmdRotationOffset;
 
         [Header("SWD One Euro filter settings")]
         [Tooltip("Enables filter for position")]
@@ -84,13 +86,19 @@ namespace ubco.ovilab.ViconUnityStream
                 rotation = rotFilter.Filter(rotation, Time.realtimeSinceStartup);
             }
 
+            rotation = rotation * hmdRotationOffset;
+
+            Vector3 scaledHMWDPositionOffset = hmdPositionOffset / viconUnitsToUnityUnits;
+
+            base1Pos += (forward.normalized * scaledHMWDPositionOffset.z + up.normalized * scaledHMWDPositionOffset.y + right.normalized * scaledHMWDPositionOffset.x) * viconUnitsToUnityUnits;
+
+            ViconXRLoader.TrySetXRDeviceData(base1Pos, rotation);
+
             foreach (var key in segmentsRotation.Keys.ToArray())
             {
                 segmentsRotation[key] = rotation;
             }
-            base1Pos += (forward.normalized * HMDCentreOffset.z + up.normalized * HMDCentreOffset.y + right.normalized * HMDCentreOffset.x);
 
-            ViconXRLoader.TrySetXRDeviceData(base1Pos * viconUnitsToUnityUnits, rotation);
             segments["base1"] = base1Pos;
             return segments;
         }
