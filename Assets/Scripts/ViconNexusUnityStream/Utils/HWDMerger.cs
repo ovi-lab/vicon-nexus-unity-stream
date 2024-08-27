@@ -84,15 +84,14 @@ namespace ubco.ovilab.ViconUnityStream.Utils
                 mergerOffsetTransform.localRotation = Quaternion.identity;
 
                 Transform parent = mergerOffsetTransform.parent;
-                Vector3 localXRPosRelToParent = parent.InverseTransformPoint(xrHWD.position);
-                Vector3 localViconPosRelToParent = parent.InverseTransformPoint(viconHWD.position);
+
                 Quaternion localXRRotRelToParent = Quaternion.Inverse(parent.rotation) * xrHWD.rotation;
                 Quaternion localViconRotRelToParent = Quaternion.Inverse(parent.rotation) * viconHWD.rotation;
+                mergerOffsetTransform.localRotation = localViconRotRelToParent * Quaternion.Inverse(localXRRotRelToParent);
 
-                Vector3 posDiff = localViconPosRelToParent - localXRPosRelToParent;
-                Quaternion rotDiff = localViconRotRelToParent * Quaternion.Inverse(localXRRotRelToParent);
-                mergerOffsetTransform.localPosition = posDiff;
-                mergerOffsetTransform.localRotation = rotDiff;
+                Vector3 localXRPosRelToParent = parent.InverseTransformPoint(xrHWD.position);
+                Vector3 localViconPosRelToParent = parent.InverseTransformPoint(viconHWD.position);
+                mergerOffsetTransform.localPosition = localViconPosRelToParent - localXRPosRelToParent;
 
                 if (IsBelowThreshold())
                 {
