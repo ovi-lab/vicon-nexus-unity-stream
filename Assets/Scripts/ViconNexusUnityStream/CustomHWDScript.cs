@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Unity.XR.CoreUtils;
@@ -11,7 +10,7 @@ namespace ubco.ovilab.ViconUnityStream
         [Header("HWD Settings")]
         [Tooltip("If set or game object has XROrigin will configure the XROrigin.")]
         [SerializeField] private XROrigin xrOrigin;
-        [Tooltip("Position offset to get \"True\" centre of the HMD based on vicon tracker markers.")]
+        [Tooltip("Position offset to get \"True\" centre of the HMD based on vicon tracker markers. (in mm or 1/1000th of a Unity unit distance)")]
         [SerializeField] private Vector3 hmdPositionOffset;
         [Tooltip("Rotation offset to get  \"True\" centre of the HMD based on vicon tracker markers.")]
         [SerializeField] private Quaternion hmdRotationOffset;
@@ -88,11 +87,9 @@ namespace ubco.ovilab.ViconUnityStream
 
             rotation = rotation * hmdRotationOffset;
 
-            Vector3 scaledHMWDPositionOffset = hmdPositionOffset / viconUnitsToUnityUnits;
+            base1Pos += (forward.normalized * hmdPositionOffset.z + up.normalized * hmdPositionOffset.y + right.normalized * hmdPositionOffset.x);
 
-            base1Pos += (forward.normalized * scaledHMWDPositionOffset.z + up.normalized * scaledHMWDPositionOffset.y + right.normalized * scaledHMWDPositionOffset.x) * viconUnitsToUnityUnits;
-
-            ViconXRLoader.TrySetXRDeviceData(base1Pos, rotation);
+            ViconXRLoader.TrySetXRDeviceData(base1Pos * viconUnitsToUnityUnits, rotation);
 
             foreach (var key in segmentsRotation.Keys.ToArray())
             {
