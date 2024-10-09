@@ -13,7 +13,7 @@ namespace ubco.ovilab.ViconUnityStream
         [Tooltip("Position offset to get \"True\" centre of the HMD based on vicon tracker markers. (in mm or 1/1000th of a Unity unit distance)")]
         [SerializeField] private Vector3 hmdPositionOffset;
         [Tooltip("Rotation offset to get  \"True\" centre of the HMD based on vicon tracker markers.")]
-        [SerializeField] private Quaternion hmdRotationOffset;
+        [SerializeField] private Quaternion hmdRotationOffset = Quaternion.identity;
 
         [Header("SWD One Euro filter settings")]
         [Tooltip("Enables filter for position")]
