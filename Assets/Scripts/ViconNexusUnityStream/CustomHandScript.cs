@@ -5,12 +5,30 @@ using UnityEngine.XR.Hands;
 
 namespace ubco.ovilab.ViconUnityStream
 {
+    [System.Serializable]
+    public struct XRHandJointRadius
+    {
+        public XRHandJointID joint;
+        [Tooltip("The radius of the joint in unity units.")]
+        public float radius;
+    }
+
     public class CustomHandScript : CustomSubjectScript
     {
         /// <summary>
         /// The <see cref="CustomHandScript"/> objects for each hands currently active in the scene. Will be used by the hand subsystem provider.
         /// </summary>
         internal static Dictionary<Handedness, CustomHandScript> activeHandScripts = new Dictionary<Handedness, CustomHandScript>();
+
+        [SerializeField]
+        [Tooltip("The radius of each joint to be reported by the xr hands. Joints not in this list will not report radius.")]
+        private List<XRHandJointRadius> xrHandJointRadiiList = new();
+
+        /// <summary>
+        /// The radius of each joint to be reported by the xr hands. Joints not in this list will not report radius.
+        /// </summary>
+        /// <value></value>
+        public List<XRHandJointRadius> XRHandJointRadiiList { get => xrHandJointRadiiList; set => xrHandJointRadiiList = value; }
 
         public float normalOffset = 0.001f;
         public bool setPosition = true;

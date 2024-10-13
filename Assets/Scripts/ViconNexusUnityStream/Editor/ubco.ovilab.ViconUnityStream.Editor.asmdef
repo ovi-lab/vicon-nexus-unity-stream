@@ -3,7 +3,8 @@
     "rootNamespace": "ubco.ovilab.ViconUnityStream.Editor",
     "references": [
         "ubco.ovilab.ViconUnityStream",
-        "Unity.XR.Management.Editor"
+        "Unity.XR.Management.Editor",
+        "Unity.XR.Hands"
     ],
     "includePlatforms": [
         "Editor"

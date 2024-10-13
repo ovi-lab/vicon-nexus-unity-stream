@@ -24,6 +24,13 @@ namespace ubco.ovilab.ViconUnityStream.Editor
 
         public override void OnInspectorGUI()
         {
+            DrawSubjectHeader();
+            DrawPropertiesExcluding(serializedObject, excludedSerializedNames);
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        public virtual void DrawSubjectHeader()
+        {
             GUI.enabled = false;
             EditorGUILayout.PropertyField(scriptProperty);
             GUI.enabled = true;
@@ -70,9 +77,6 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             }
 
             EditorGUILayout.Space();
-
-            DrawPropertiesExcluding(serializedObject, excludedSerializedNames);
-            serializedObject.ApplyModifiedProperties();
         }
     }
 }
