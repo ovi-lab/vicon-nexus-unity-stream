@@ -24,9 +24,9 @@ namespace ubco.ovilab.ViconUnityStream
         /// <summary>
         /// Set the hand poses to provide through the subsystem.
         /// </summary>
-        public void SetHandPoses(Handedness handedness, Dictionary<XRHandJointID, Pose> poses)
+        public void SetHandJointPoses(Handedness handedness, Dictionary<XRHandJointID, Pose> poses, List<XRHandJointRadius> radii)
         {
-            handsProvider.SetHandPoses(handedness, poses);
+            handsProvider.SetHandJointPoses(handedness, poses, radii);
         }
 
         /// <inheritdoc />

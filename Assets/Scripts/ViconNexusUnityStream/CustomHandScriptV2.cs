@@ -486,7 +486,8 @@ namespace ubco.ovilab.ViconUnityStream
                 previousSegments[segmentName] = segmentPosition;
             }
 
-            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses);
+            // FIXME: pass radius
+            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses, null);
 
             return segments;
         }

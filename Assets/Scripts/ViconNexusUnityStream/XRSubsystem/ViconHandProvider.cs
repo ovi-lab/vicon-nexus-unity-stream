@@ -8,7 +8,8 @@ namespace ubco.ovilab.ViconUnityStream
 {
     public class ViconHandProvider : XRHandSubsystemProvider
     {
-        private Dictionary<Handedness, Dictionary<XRHandJointID, Pose>> handsPoses = new Dictionary<Handedness, Dictionary<XRHandJointID, Pose>>();
+        private Dictionary<Handedness, Dictionary<XRHandJointID, Pose>> jointsPoses = new Dictionary<Handedness, Dictionary<XRHandJointID, Pose>>();
+        private List<XRHandJointRadius> radii;
         private Dictionary<Handedness, bool> recomputeHandsPoses = new Dictionary<Handedness, bool>();
 
         private XRHandProviderUtility.SubsystemUpdater subsystemUpdater;
@@ -105,14 +106,14 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         public override void Start()
         {
-            handsPoses.Clear();
+            jointsPoses.Clear();
         }
 
         /// <inheritdoc />
         public override void Stop()
         {
             subsystemUpdater?.Stop();
-            handsPoses.Clear();
+            jointsPoses.Clear();
         }
 
         /// <inheritdoc />
@@ -145,9 +146,10 @@ namespace ubco.ovilab.ViconUnityStream
         /// <summary>
         /// Update the poses of the joints.
         /// </summary>
-        internal void SetHandPoses(Handedness handedness, Dictionary<XRHandJointID, Pose> poses)
+        internal void SetHandJointPoses(Handedness handedness, Dictionary<XRHandJointID, Pose> poses, List<XRHandJointRadius> radii)
         {
-            this.handsPoses[handedness] = poses;
+            this.jointsPoses[handedness] = poses;
+            this.radii = radii;
             recomputeHandsPoses[handedness] = true;
         }
 
@@ -156,12 +158,12 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         protected bool UpdateJointData(Handedness handedness, NativeArray<XRHandJoint> handJoints, ref Pose handRootPose)
         {
-            if (!handsPoses.ContainsKey(handedness))
+            if (!jointsPoses.ContainsKey(handedness))
             {
                 return false;
             }
 
-            var handPoseCache = handsPoses[handedness];
+            var handPoseCache = jointsPoses[handedness];
             bool recompute = recomputeHandsPoses[handedness];
 
             for (int jointIndex = XRHandJointID.BeginMarker.ToIndex(); jointIndex < XRHandJointID.EndMarker.ToIndex(); ++jointIndex)
@@ -181,7 +183,15 @@ namespace ubco.ovilab.ViconUnityStream
                         handPoseCache[jointID] = pose;
                     }
 
-                    handJoints[jointIndex] = XRHandProviderUtility.CreateJoint(handedness, XRHandJointTrackingState.Pose, jointID, pose);
+                    float radius = 0;
+                    XRHandJointTrackingState status = XRHandJointTrackingState.Pose;
+                    if (radii != null && radii.Count > jointIndex)
+                    {
+                        radius = radii[jointIndex].radius;
+                        status |= XRHandJointTrackingState.Radius;
+                    }
+
+                    handJoints[jointIndex] = XRHandProviderUtility.CreateJoint(handedness, status, jointID, pose, radius:radius);
                 }
             }
 

@@ -555,9 +555,9 @@ namespace ubco.ovilab.ViconUnityStream
                             Bone.parent = p;
                         }
 
-                        if (segmentChild.TryGetValue(BoneName, out var value))
+                        if (segmentChild.TryGetValue(BoneName, out string childSegmentName))
                         {
-                            Vector3 childSegment = segments[value];
+                            Vector3 childSegment = segments[childSegmentName];
 
                             /// Avoid setting rotation if childsegment is zero
                             if (childSegment != Vector3.zero && baseVectors.ContainsKey(fingerId))
@@ -570,7 +570,6 @@ namespace ubco.ovilab.ViconUnityStream
                                     if (fingerId == finger_1)
                                     {
                                         right = baseVectors["R1_right"];
-                                        //right = Vector3.Cross(normal, baseVectors[fingerId]);
                                         forward = Vector3.Cross(upDirection, right);
                                     }
                                     else
@@ -578,8 +577,11 @@ namespace ubco.ovilab.ViconUnityStream
                                         right = Vector3.Cross(normal, baseVectors[fingerId]);
                                         forward = Vector3.Cross(upDirection, right);
                                     }
+
                                     if (forward != Vector3.zero)
+                                    {
                                         Bone.rotation = Quaternion.LookRotation(forward, upDirection);
+                                    }
                                 }
                             }
                         }
@@ -605,13 +607,12 @@ namespace ubco.ovilab.ViconUnityStream
                         {
                             xrJointPoses.Add(segmentToJointMapping[BoneName], new Pose(Bone.position, Bone.rotation));
                         }
-                        
                     }
                 }
                 previousSegments[BoneName] = BonePosition;
             }
 
-            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses);
+            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses, xrHandJointRadiiList);
 
             AddBoneDataToWriter(Bone);
             if (Bone.name == segment_Hand)
