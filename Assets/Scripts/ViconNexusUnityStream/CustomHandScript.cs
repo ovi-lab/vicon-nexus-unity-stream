@@ -24,12 +24,6 @@ namespace ubco.ovilab.ViconUnityStream
         [Tooltip("The radius of each joint to be reported by the xr hands. Joints not in this list will not report radius.")]
         private List<XRHandJointRadius> xrHandJointRadiiList = new();
 
-        /// <summary>
-        /// The radius of each joint to be reported by the xr hands. Joints not in this list will not report radius.
-        /// </summary>
-        /// <value></value>
-        public List<XRHandJointRadius> XRHandJointRadiiList { get => xrHandJointRadiiList; set => xrHandJointRadiiList = value; }
-
         public float normalOffset = 0.001f;
         public bool setPosition = true;
         public bool setScale = true;
@@ -652,6 +646,27 @@ namespace ubco.ovilab.ViconUnityStream
                 // TODO quality check when specific markers are missing
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Set the radius value of a joint
+        /// </summary>
+        public void SetHandJointRadius(XRHandJointID joint, float radius)
+        {
+            if (xrHandJointRadiiList == null || xrHandJointRadiiList.Count == 0)
+            {
+                if (xrHandJointRadiiList == null)
+                {
+                    xrHandJointRadiiList = new();
+                }
+
+                for (int i = XRHandJointIDUtility.ToIndex(XRHandJointID.BeginMarker); i < XRHandJointIDUtility.ToIndex(XRHandJointID.EndMarker); ++i)
+                {
+                    xrHandJointRadiiList.Add(new XRHandJointRadius() { joint = XRHandJointIDUtility.FromIndex(i), radius = 0 });
+                }
+            }
+
+            xrHandJointRadiiList[XRHandJointIDUtility.ToIndex(joint)] = new XRHandJointRadius() { joint = joint, radius = radius };
         }
     }
 }
