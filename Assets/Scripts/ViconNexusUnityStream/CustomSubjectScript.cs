@@ -99,7 +99,6 @@ namespace ubco.ovilab.ViconUnityStream
             };
 
             SetupWriter();
-            SetupFilter();
         }
 
         /// <inheritdoc />
@@ -175,10 +174,6 @@ namespace ubco.ovilab.ViconUnityStream
             rawWriter = new StreamWriter(filePath, true);
             filePaths.Add(filePath);
             Debug.Log("Writing to:  " + filePath);
-        }
-
-        protected void SetupFilter()
-        {
         }
 
         private string GetPath(string suffix)
@@ -370,12 +365,22 @@ namespace ubco.ovilab.ViconUnityStream
 
             PostTransformCallback?.Invoke(finalTransforms);
 
+            // commiting previous data
             // FIXME: Should this be executed conditionally?
-            CommitPreviousData();
+            foreach (LinkedList<List<float>> _previousData in previousData.Values)
+            {
+                if (_previousData.Count > previousDataQueueLimit)
+                {
+                    _previousData.RemoveFirst();
+                }
+            }
 
             WriteData();
         }
 
+        /// <summary>
+        /// Convert a list of vectors from vicon to Vector3
+        /// </summary>
         private Vector3 ListToVector(List<float> list)
         {
             /// The vicon output uses a different coordinate system
@@ -383,12 +388,17 @@ namespace ubco.ovilab.ViconUnityStream
             return new Vector3(list[0], list[2], list[1]);
         }
 
+        /// <summary>
+        /// Get previous data for given marker
+        /// </summary>
         private List<float> GetPreviousData(string marker)
         {
             return previousData[marker].Last();
         }
 
+        /// <summary>
         /// makes sure the length of the queue is going to be fixed (by previousDataQueueLimit)
+        /// </summary>
         private void SetPreviousData(string marker, List<float> value)
         {
             LinkedList<List<float>> _previousData;
@@ -403,19 +413,16 @@ namespace ubco.ovilab.ViconUnityStream
             _previousData.AddLast(value);
         }
 
-        private void CommitPreviousData()
-        {
-            foreach (LinkedList<List<float>> _previousData in previousData.Values)
-            {
-                if (_previousData.Count > previousDataQueueLimit)
-                {
-                    _previousData.RemoveFirst();
-                }
-            }
-        }
-
+        /// <summary>
+        /// Executes after computing the segment positions based on the marker data.
+        /// This method can be extended to do additional processing on the segment data.
+        /// Also provides the data recieved for this frame.
+        /// </summary>
         protected abstract Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, Data data);
 
+        /// <summary>
+        /// Recursively assign the transform pose starting from the BoneName passed in.
+        /// </summary>
         protected virtual void FindAndTransform(Transform iTransform, string BoneName)
         {
             int ChildCount = iTransform.childCount;
@@ -433,6 +440,9 @@ namespace ubco.ovilab.ViconUnityStream
             }
         }
 
+        /// <summary>
+        /// Recursively assign the pose of the children starting from the transform passed in.
+        /// </summary>
         protected void TransformChildren(Transform iTransform)
         {
             int childCount = iTransform.childCount;
@@ -444,6 +454,9 @@ namespace ubco.ovilab.ViconUnityStream
             }
         }
 
+        /// <summary>
+        /// Apply the pose for the transform passed based on the transform name
+        /// </summary>
         protected virtual void ApplyBoneTransform(Transform Bone)
         {
             string BoneName = Bone.gameObject.name;
@@ -455,6 +468,9 @@ namespace ubco.ovilab.ViconUnityStream
             AddBoneDataToWriter(Bone);
         }
 
+        /// <summary>
+        /// Add the bones information to the writers
+        /// </summary>
         protected void AddBoneDataToWriter(Transform Bone)
         {
             finalPositionVectors[Bone.name] = Bone.position;
@@ -464,6 +480,9 @@ namespace ubco.ovilab.ViconUnityStream
             finalForwardVectors[Bone.name] = Bone.forward;
         }
 
+        /// <summary>
+        /// Read the method name
+        /// </summary>
         protected void HideSubject()
         {
             if (SubjectHidden) return;
@@ -477,6 +496,9 @@ namespace ubco.ovilab.ViconUnityStream
             }
         }
 
+        /// <summary>
+        /// Read the method name
+        /// </summary>
         protected void ShowSubject()
         {
             if (!SubjectHidden) return;

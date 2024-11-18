@@ -333,6 +333,7 @@ namespace ubco.ovilab.ViconUnityStream
             return handedness == Handedness.Right;
         }
 
+        /// <inheritdoc />
         protected override Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, Data data)
         {
             /// Filling any gaps that can be filled
@@ -441,6 +442,9 @@ namespace ubco.ovilab.ViconUnityStream
                 "]]";
         }
 
+        /// <summary>
+        /// When a segment is missing, try to assertain its position based on the adjacent segment data.
+        /// </summary>
         private Vector3 FillWithRelativeAdjacent(string boneName, Dictionary<string, Vector3> _segments)
         {
             if (gapFillingStrategy != GapFillingStrategy.FillRelative)
