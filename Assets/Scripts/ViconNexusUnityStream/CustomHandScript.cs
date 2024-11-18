@@ -448,13 +448,7 @@ namespace ubco.ovilab.ViconUnityStream
                 return Vector3.zero;
             }
 
-            string fingerId = boneName.Substring(0, 2);
-
-            string childName, parentName; // Thisrd wheel being the other segment of the 4 segments in the finger
-            Vector3 childPos, parentPos, childPosPrevious, parentPosPrevious, segmentPosPrevious;
-            segmentChild.TryGetValue(boneName, out childName);
-            segmentParents.TryGetValue(boneName, out parentName);
-
+            Vector3 segmentPosPrevious;
             if (previousSegments.ContainsKey(boneName))
             {
                 segmentPosPrevious = previousSegments[boneName];
@@ -468,18 +462,25 @@ namespace ubco.ovilab.ViconUnityStream
                 return Vector3.zero;
             }
 
+            string childName, parentName; // Thisrd wheel being the other segment of the 4 segments in the finger
+            segmentChild.TryGetValue(boneName, out childName);
+            segmentParents.TryGetValue(boneName, out parentName);
+
+            Vector3 childPos = Vector3.zero, parentPos, childPosPrevious, parentPosPrevious;
+            bool canUseChild = true;
+
             if (!string.IsNullOrEmpty(childName) && _segments.ContainsKey(childName) && previousSegments.ContainsKey(childName))
             {
                 childPos = _segments[childName];
                 childPosPrevious = previousSegments[childName];
                 if (childPos == Vector3.zero || childPosPrevious == Vector3.zero)
                 {
-                    return Vector3.zero;
+                    canUseChild = false;
                 }
             }
             else
             {
-                return Vector3.zero;
+                canUseChild = false;
             }
 
             if (!string.IsNullOrEmpty(parentName) && _segments.ContainsKey(parentName) && previousSegments.ContainsKey(parentName))
@@ -497,21 +498,31 @@ namespace ubco.ovilab.ViconUnityStream
             }
 
             /// Do the actual math
-            Vector3 segmentToChildVector = (childPos - segmentPosPrevious);
-            Vector3 segmentToParentVector = (parentPos - segmentPosPrevious);
-            float segmentToChildDistance = segmentToChildVector.magnitude;
-            float segmentToParentDistance = segmentToParentVector.magnitude;
+            if (canUseChild)
+            {
+                /// If we have both parent and child, then we assume the current segment, the parent and child would be in
+                /// the same plane and use the distances in the previous frame to compute the current segments position
+                Vector3 segmentToChildVector = (childPos - segmentPosPrevious);
+                Vector3 segmentToParentVector = (parentPos - segmentPosPrevious);
+                float segmentToChildDistance = segmentToChildVector.magnitude;
+                float segmentToParentDistance = segmentToParentVector.magnitude;
 
-            Vector3 planePerpendicularVector;
+                Vector3 planePerpendicularVector;
 
-            planePerpendicularVector = Vector3.Cross(segmentToChildVector, segmentToParentVector);
+                planePerpendicularVector = Vector3.Cross(segmentToChildVector, segmentToParentVector);
 
-            Vector3 parentToChildVector = childPos - parentPos;
-            Vector3 projectionOfSegmentFromParent = parentToChildVector * segmentToParentDistance / (segmentToParentDistance + segmentToChildDistance);
-            float projectionToSegmentDistance = (float) System.Math.Sqrt((System.Math.Pow(segmentToParentDistance, 2) - System.Math.Pow(projectionOfSegmentFromParent.magnitude, 2)));
-            Vector3 projectionVector = Vector3.Cross(parentToChildVector, planePerpendicularVector).normalized * projectionToSegmentDistance;
+                Vector3 parentToChildVector = childPos - parentPos;
+                Vector3 projectionOfSegmentFromParent = parentToChildVector * segmentToParentDistance / (segmentToParentDistance + segmentToChildDistance);
+                float projectionToSegmentDistance = (float)System.Math.Sqrt((System.Math.Pow(segmentToParentDistance, 2) - System.Math.Pow(projectionOfSegmentFromParent.magnitude, 2)));
+                Vector3 projectionVector = Vector3.Cross(parentToChildVector, planePerpendicularVector).normalized * projectionToSegmentDistance;
 
-            return parentPos + projectionOfSegmentFromParent + projectionVector;
+                return parentPos + projectionOfSegmentFromParent + projectionVector;
+            }
+            /// We try and keep the parent to current segment relative vector fixed
+            else
+            {
+                return parentPos + (segmentPosPrevious - parentPosPrevious);
+            }
         }
 
         protected override void ApplyBoneTransform(Transform Bone)
