@@ -42,7 +42,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             if (subjectDataManager == null)
             {
                 string buttonText;
-                subjectDataManager = FindObjectOfType<SubjectDataManager>();
+                subjectDataManager = FindAnyObjectByType<SubjectDataManager>(FindObjectsInactive.Include);
                 if (subjectDataManager != null)
                 {
                     EditorGUILayout.HelpBox("SubjectDataManager is not assigned. A SubjectDataManager is in the scene", MessageType.Error);

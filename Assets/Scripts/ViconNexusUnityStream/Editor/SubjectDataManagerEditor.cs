@@ -17,7 +17,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
 
         private void OnEnable()
         {
-            subjectScripts.AddRange(FindObjectsOfType<CustomSubjectScript>());
+            subjectScripts.AddRange(FindObjectsByType<CustomSubjectScript>(FindObjectsSortMode.None));
 
             subjectDataManager = target as SubjectDataManager;
 
