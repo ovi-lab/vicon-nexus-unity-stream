@@ -26,6 +26,18 @@ namespace ubco.ovilab.ViconUnityStream
         private List<XRHandJointRadius> xrHandJointRadiiList = new();
 
         public float normalOffset = 0.001f;
+
+        [Range(0, 0.09f)]
+        [SerializeField] public float indexNormalOffset = 0.001f;
+        [Range(0, 0.09f)]
+        [SerializeField] public float middleNormalOffset = 0.0018f;
+        [Range(0, 0.09f)]
+        [SerializeField] public float ringNormalOffset = 0.0013f;
+        [Range(0, 0.09f)]
+        [SerializeField] public float littleNormalOffset = 0.0012f;
+        [Range(0, 0.09f)]
+        [SerializeField] public float thumbNormalOffset = 0.00009f;
+
         public bool setPosition = true;
         public bool setScale = true;
         public float scaleToSet = 0.02f;
