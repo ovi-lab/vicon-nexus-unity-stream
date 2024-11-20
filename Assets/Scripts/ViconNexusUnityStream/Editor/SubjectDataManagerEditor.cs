@@ -73,7 +73,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             }
             Debug.Log($"Updated {subjectScripts.Count} subject script(s):"+
                       $"\n    Enabled:            {CustomSubjectConfig.instance.Enabled};"+
-                      $"\n    Using default data: {subjectDataManager.UseDefaultData};"+
+                      $"\n    StreamType: {subjectDataManager.StreamType.ToString()};"+
                       $"\n    Writing data:       {subjectDataManager.EnableWriteData};"+
                       $"\n    Scripts updated: \n         " +
                       string.Join(",\n         ", subjectScripts));
