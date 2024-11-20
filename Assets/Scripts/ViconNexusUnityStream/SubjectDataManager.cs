@@ -6,6 +6,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 public class SubjectDataManager : MonoBehaviour
@@ -17,18 +18,16 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     public string BaseURI { get => baseURI; set => baseURI = value; }
 
-    [Tooltip("Should the subjects use the default data?")]
-    [SerializeField] private bool useDefaultData = false;
-    /// <summary>
-    /// Should the subjects use the default data?
-    /// </summary>
-    public bool UseDefaultData
+    [Tooltip("Should the subjects use default, recorded or live streamed data")] [SerializeField]
+    private StreamType streamType;
+    public StreamType StreamType
     {
-        get => useDefaultData;
+        get => streamType;
         set
         {
-            useDefaultData = value;
+            streamType = value;
             ProcessDefaultDataAndWebSocket();
+            LoadRecordedJson();
         }
     }
 
@@ -38,14 +37,24 @@ public class SubjectDataManager : MonoBehaviour
     /// Enable writing data to disk.
     /// </summary>
     public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
-
+    
+    [Tooltip("Path to write the subject data file.")]
+    [SerializeField] private string pathToDataFile;
     public Dictionary<string, ViconStreamData> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
 
     private List<string> subjectList = new();
     private WebSocket webSocket;
-    private Dictionary<string, ViconStreamData> data = new();
-    private Dictionary<string, string> rawData = new();
+    private Dictionary<string, ViconStreamData> data = new Dictionary<string, ViconStreamData>();
+    private Dictionary<string, string> rawData = new Dictionary<string, string>();
+    
+    private string pathToRecordedData;
+    private Dictionary<string, Dictionary<string, ViconStreamData>> recordedData;
+
+    private void Awake()
+    {
+        pathToRecordedData = Path.Combine(Application.dataPath, pathToDataFile);
+    }
 
     /// <inheritdoc />
     private void OnEnable()
@@ -56,6 +65,10 @@ public class SubjectDataManager : MonoBehaviour
     /// <inheritdoc />
     private void FixedUpdate()
     {
+        if (streamType == StreamType.Recorded)
+        {
+            StreamLocalData();
+        }
         webSocket?.DispatchLatestMessage();
     }
 
@@ -81,7 +94,7 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     private void ProcessDefaultDataAndWebSocket()
     {
-        if (UseDefaultData)
+        if (streamType != StreamType.LiveStream)
         {
             MaybeDisableConnection();
         }
@@ -90,13 +103,29 @@ public class SubjectDataManager : MonoBehaviour
             MaybeSetupConnection();
         }
     }
+    
+    private void LoadRecordedJson()
+    {
+        if(streamType != StreamType.Recorded) return;
+        
+        
+        string json = File.ReadAllText(pathToRecordedData);
+        if (string.IsNullOrEmpty(json))
+        {
+            Debug.LogWarning($"No recorded data found at {pathToRecordedData}.");
+            return;
+        }
+        
+        JObject recordedJson = JObject.Parse(json);
+        recordedData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ViconStreamData>>>(recordedJson.ToString());
+    }
 
     /// <summary>
     /// Setup websocket connection.
     /// </summary>
     private async void MaybeSetupConnection()
     {
-        if (UseDefaultData || subjectList.Count == 0 || (webSocket != null && (webSocket.State == WebSocketState.Connecting || webSocket.State == WebSocketState.Open)))
+        if (streamType != StreamType.LiveStream || subjectList.Count == 0 || (webSocket != null && (webSocket.State == WebSocketState.Connecting || webSocket.State == WebSocketState.Open)))
         {
             return;
         }
@@ -150,6 +179,7 @@ public class SubjectDataManager : MonoBehaviour
     private void StreamData(byte[] receivedData)
     {
         JObject jsonObject = JObject.Parse(Encoding.UTF8.GetString(receivedData));
+        long currentTicks = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         foreach (string subject in subjectList)
         {
             if (jsonObject.TryGetValue(subject, out JToken jsonDataObject))
@@ -163,6 +193,25 @@ public class SubjectDataManager : MonoBehaviour
                 data[subject] = null;
                 rawData[subject] = null;
                 Debug.LogWarning($"Missing subject data in frame for `{subject}`");
+            }
+        }
+
+        if (enableWriteData)
+        {
+            Dictionary<string, Dictionary<string, ViconStreamData>> dataToWrite = new();
+            dataToWrite[currentTicks.ToString()] = data;
+            string jsonData = JsonConvert.SerializeObject(dataToWrite);
+            File.WriteAllText(pathToRecordedData, jsonData);
+        }
+    }
+
+    private void StreamLocalData()
+    {
+        foreach (KeyValuePair<string, Dictionary<string, ViconStreamData>> frame in recordedData)
+        {
+            foreach (KeyValuePair<string, ViconStreamData> subject in frame.Value)
+            {
+                data[subject.Key] = subject.Value;
             }
         }
     }
@@ -179,8 +228,16 @@ public class SubjectDataManager : MonoBehaviour
     /// <summary>
     /// Unregsiter a subject.
     /// </summary>
-    public void UnRegsiterSubject(string subjectName)
+    public void UnRegisterSubject(string subjectName)
     {
         subjectList.Remove(subjectName);
     }
+}
+
+[Serializable]
+public enum StreamType
+{
+    Default = 0,
+    Recorded = 1,
+    LiveStream = 2
 }

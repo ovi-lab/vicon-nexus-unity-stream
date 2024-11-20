@@ -67,7 +67,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             else
             {
                 EditorGUILayout.LabelField("URI", subjectDataManager.BaseURI);
-                EditorGUILayout.LabelField("Use default data", subjectDataManager.UseDefaultData.ToString());
+                EditorGUILayout.LabelField("Use default data", subjectDataManager.StreamType.ToString());
                 EditorGUILayout.LabelField("Enable Write data", subjectDataManager.EnableWriteData.ToString());
                 if (GUILayout.Button("Modify subject data manager"))
                 {
