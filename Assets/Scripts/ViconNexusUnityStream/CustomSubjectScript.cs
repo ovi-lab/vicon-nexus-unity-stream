@@ -59,18 +59,18 @@ namespace ubco.ovilab.ViconUnityStream
         #region Data processing related private vars
         protected float viconUnitsToUnityUnits = 0.001f;  // This into vicon units = unity units
 
-        protected Dictionary<string, Vector3> finalPositionVectors = new Dictionary<string, Vector3>();
-        protected Dictionary<string, Transform> finalTransforms = new Dictionary<string, Transform>();
-        protected Dictionary<string, Vector3> finalUpVectors = new Dictionary<string, Vector3>();
-        protected Dictionary<string, Vector3> finalForwardVectors = new Dictionary<string, Vector3>();
+        protected Dictionary<string, Vector3> finalPositionVectors = new();
+        protected Dictionary<string, Transform> finalTransforms = new();
+        protected Dictionary<string, Vector3> finalUpVectors = new();
+        protected Dictionary<string, Vector3> finalForwardVectors = new();
 
-        protected Dictionary<string, Vector3> segments = new Dictionary<string, Vector3>();
-        protected Dictionary<string, Quaternion> segmentsRotation = new Dictionary<string, Quaternion>();
+        protected Dictionary<string, Vector3> segments = new();
+        protected Dictionary<string, Quaternion> segmentsRotation = new();
         protected Dictionary<string, List<string>> segmentMarkers;
 
         // Used with the gap filling stratergies.
         private int previousDataQueueLimit = 3;
-        private Dictionary<string, LinkedList<List<float>>> previousData = new Dictionary<string, LinkedList<List<float>>>();
+        private Dictionary<string, LinkedList<List<float>>> previousData = new();
 
         private StreamWriter inputWriter;
         private StreamWriter finalWriter;

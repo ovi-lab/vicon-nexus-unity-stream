@@ -54,8 +54,8 @@ namespace ubco.ovilab.ViconUnityStream
         {
             if (Application.isPlaying)
             {
-                rotFilter = new OneEuroFilter<Quaternion>(90, rotFilterMinCutoff, rotFilterBeta);
-                posFilter = new OneEuroFilter<Vector3>(90, posFilterMinCutoff, posFilterBeta);
+                rotFilter = new(90, rotFilterMinCutoff, rotFilterBeta);
+                posFilter = new(90, posFilterMinCutoff, posFilterBeta);
             }
         }
 

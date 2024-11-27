@@ -42,10 +42,10 @@ public class SubjectDataManager : MonoBehaviour
     public Dictionary<string, ViconStreamData> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
 
-    private List<string> subjectList = new List<string>();
+    private List<string> subjectList = new();
     private WebSocket webSocket;
-    private Dictionary<string, ViconStreamData> data = new Dictionary<string, ViconStreamData>();
-    private Dictionary<string, string> rawData = new Dictionary<string, string>();
+    private Dictionary<string, ViconStreamData> data = new();
+    private Dictionary<string, string> rawData = new();
 
     /// <inheritdoc />
     private void OnEnable()
