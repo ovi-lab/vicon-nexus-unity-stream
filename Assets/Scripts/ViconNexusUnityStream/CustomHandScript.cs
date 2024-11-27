@@ -65,7 +65,7 @@ namespace ubco.ovilab.ViconUnityStream
         protected string marker_FA1 = "FA1";
         protected string marker_WRA = "WRA";
         protected string marker_WRB = "WRB";
-    
+
         // thumb markers
         protected string marker_TH1 = "TH1";
         protected string marker_TH2 = "TH2";
@@ -178,15 +178,15 @@ namespace ubco.ovilab.ViconUnityStream
                 {segment_1D1, segment_1D2},
                 {segment_1D2, segment_1D3},
                 {segment_1D3, segment_1D4},
-        
+
                 {segment_2D1, segment_2D2},
                 {segment_2D2, segment_2D3},
                 {segment_2D3, segment_2D4},
-        
+
                 {segment_3D1, segment_3D2},
                 {segment_3D2, segment_3D3},
                 {segment_3D3, segment_3D4},
-        
+
                 {segment_4D1, segment_4D2},
                 {segment_4D2, segment_4D3},
                 {segment_4D3, segment_4D4},
@@ -211,13 +211,13 @@ namespace ubco.ovilab.ViconUnityStream
                 {segment_3D2, segment_3D1},
                 {segment_4D2, segment_4D1},
                 {segment_5D2, segment_5D1},
-        
+
                 {segment_1D3, segment_1D2},
                 {segment_2D3, segment_2D2},
                 {segment_3D3, segment_3D2},
                 {segment_4D3, segment_4D2},
                 {segment_5D3, segment_5D2},
-        
+
                 {segment_1D4, segment_1D3},
                 {segment_2D4, segment_2D3},
                 {segment_3D4, segment_3D3},
@@ -227,29 +227,29 @@ namespace ubco.ovilab.ViconUnityStream
 
             segmentMarkers = new Dictionary<string, List<string>>() {
                 { segment_Arm, new List<string>() {marker_FA2, marker_FA1}} ,//{ marker_WRB, marker_FA2, marker_FA1, marker_WRA } } ,
-                {    segment_Hand, new List<string>() { marker_WRB, marker_WRA }} ,//{"RH1", marker_H3, "RH6"}}, 
+                {    segment_Hand, new List<string>() { marker_WRB, marker_WRA }} ,//{"RH1", marker_H3, "RH6"}},
                 {    segment_1D1,  new List<string>(){marker_TH1}},
                 {    segment_1D2, new List<string>(){marker_TH2}},
                 {    segment_1D3, new List<string>(){marker_TH3, marker_TH3P}},
                 {    segment_1D4, new List<string>{marker_TH4}},
 
                 {    segment_2D1, new List<string>{marker_H2}},
-                {    segment_2D2, new List<string>{marker_IF1}}, 
+                {    segment_2D2, new List<string>{marker_IF1}},
                 {    segment_2D3, new List<string>{marker_IF2}},
-                {    segment_2D4, new List<string>{marker_IF3}}, 
-        
+                {    segment_2D4, new List<string>{marker_IF3}},
+
                 {    segment_3D1, new List<string>{marker_H3}},
                 {    segment_3D2, new List<string>{marker_TF1}},
                 {    segment_3D3, new List<string>{marker_TF2}},
                 {    segment_3D4, new List<string>{marker_TF3}},
-        
+
                 {    segment_4D1, new List<string>{marker_H4}},
                 {    segment_4D2, new List<string>{marker_RF2}},
                 {    segment_4D3, new List<string>{marker_RF3}},
                 {    segment_4D4, new List<string>{marker_RF4}},
-        
-                {   segment_5D1, new List<string>(){marker_H5}}, 
-                {    segment_5D2,  new List<string>(){marker_PF1}}, 
+
+                {   segment_5D1, new List<string>(){marker_H5}},
+                {    segment_5D2,  new List<string>(){marker_PF1}},
                 {    segment_5D3, new List<string>(){marker_PF2}},
                 {    segment_5D4, new List<string>(){marker_PF3}}
             };
@@ -334,7 +334,7 @@ namespace ubco.ovilab.ViconUnityStream
         }
 
         /// <inheritdoc />
-        protected override Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, Data data)
+        protected override Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, ViconStreamData data)
         {
             /// Filling any gaps that can be filled
             if (gapFillingStrategy == GapFillingStrategy.FillRelative)
@@ -431,7 +431,7 @@ namespace ubco.ovilab.ViconUnityStream
         }
 
         private Matrix4x4 handWorldToLocalMatrix;
-    
+
         protected override string ConstructFinalWriterString()
         {
             return "[" + base.ConstructFinalWriterString() + ", [" +
