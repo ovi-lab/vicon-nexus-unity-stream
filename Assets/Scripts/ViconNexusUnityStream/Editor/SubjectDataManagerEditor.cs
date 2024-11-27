@@ -58,7 +58,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             }
 
             DrawPropertiesExcluding(serializedObject, excludedSerializedNames);
-    
+
             serializedObject.ApplyModifiedProperties();
         }
 

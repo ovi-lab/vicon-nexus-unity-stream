@@ -47,7 +47,7 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 if (segmentMarkers == null)
                 {
-                    segmentMarkers = new();
+                    segmentMarkers = new Dictionary<string, List<string>>();
                 }
                 segmentMarkers.Clear();
                 foreach (SegmentMarkerPattern pattern in patterns)
@@ -58,7 +58,7 @@ namespace ubco.ovilab.ViconUnityStream
         }
 
         /// <inheritdoc />
-        protected override Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, Data data)
+        protected override Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, ViconStreamData viconStreamData)
         {
             Vector3 forward;
             Vector3 right;
@@ -100,7 +100,7 @@ namespace ubco.ovilab.ViconUnityStream
                     return segments;
                 }
             }
-            
+
             Quaternion rot = Quaternion.LookRotation(forward, up);
             foreach(string segmentName in segments.Keys)
             {
