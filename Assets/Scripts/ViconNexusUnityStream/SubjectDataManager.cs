@@ -46,17 +46,23 @@ public class SubjectDataManager : MonoBehaviour
 
     private List<string> subjectList = new();
     private WebSocket webSocket;
-    private Dictionary<string, ViconStreamData> data = new Dictionary<string, ViconStreamData>();
-    private Dictionary<string, string> rawData = new Dictionary<string, string>();
+    private Dictionary<string, ViconStreamData> data = new();
+    private Dictionary<string, string> rawData = new();
 
+    private Dictionary<string, Dictionary<string, ViconStreamData>> recordedData = new();
+    private Dictionary<string, Dictionary<string, ViconStreamData>> dataToWrite = new();
     private string pathToRecordedData;
-    private Dictionary<string, Dictionary<string, ViconStreamData>> recordedData;
-    Dictionary<string, Dictionary<string, ViconStreamData>> dataToWrite = new();
     [SerializeField] private int currentFrame = 0;
     private int totalFrames = 0;
+    private string fileName = "Session";
+    private List<string> recordedSessions = new List<string>();
     private void Awake()
     {
         pathToRecordedData = Path.Combine(Application.dataPath, pathToDataFile);
+        if (!Directory.Exists(pathToRecordedData))
+        {
+            Directory.CreateDirectory(pathToRecordedData);
+        }
     }
 
     /// <inheritdoc />
@@ -82,9 +88,10 @@ public class SubjectDataManager : MonoBehaviour
     {
         if (enableWriteData)
         {
-
             string jsonData = JsonConvert.SerializeObject(dataToWrite, Formatting.Indented);
-            File.AppendAllTextAsync(pathToRecordedData, jsonData);
+            fileName = fileName + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".json";
+            pathToRecordedData = Path.Combine(pathToRecordedData, fileName);
+                File.AppendAllTextAsync(pathToRecordedData, jsonData);
         }
         if (webSocket != null)
         {
@@ -118,16 +125,23 @@ public class SubjectDataManager : MonoBehaviour
     private void LoadRecordedJson()
     {
         if(streamType != StreamType.Recorded) return;
-        Debug.Log($"Loading Recorded Data");
-        string json = File.ReadAllText(pathToRecordedData);
-        if (string.IsNullOrEmpty(json))
-        {
-            Debug.LogWarning($"No recorded data found at {pathToRecordedData}.");
-            return;
-        }
 
-        JObject recordedJson = JObject.Parse(json);
-        recordedData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ViconStreamData>>>(recordedJson.ToString());
+        Debug.Log($"Loading Recorded Data");
+
+        foreach (string session in Directory.GetFiles(pathToRecordedData, "*.json"))
+        {
+            string jsonData = Path.Combine(pathToRecordedData, session);
+            string json = File.ReadAllText(jsonData);
+            if (string.IsNullOrEmpty(json))
+            {
+                Debug.LogWarning($"No recorded data found at {pathToRecordedData}.");
+                continue;
+            }
+            Debug.Log($"Now Loading {jsonData}");
+            JObject recordedJson = JObject.Parse(json);
+            Dictionary<string, Dictionary<string, ViconStreamData>> temp = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ViconStreamData>>>(recordedJson.ToString());
+            recordedData = recordedData.Concat(temp).ToDictionary(k => k.Key, v => v.Value);
+        }
         totalFrames = recordedData.Count;
     }
 
@@ -198,7 +212,6 @@ public class SubjectDataManager : MonoBehaviour
                 string rawJsonDataString = jsonDataObject.ToString();
                 data[subject] = JsonConvert.DeserializeObject<ViconStreamData>(rawJsonDataString);
                 rawData[subject] = rawJsonDataString;
-
             }
             else
             {
@@ -210,7 +223,7 @@ public class SubjectDataManager : MonoBehaviour
 
         if (enableWriteData)
         {
-            dataToWrite[currentTicks.ToString()] = new Dictionary<string, ViconStreamData>(data);
+            dataToWrite[currentTicks.ToString()] = new(data);
         }
     }
 
