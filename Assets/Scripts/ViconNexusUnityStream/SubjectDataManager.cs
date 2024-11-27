@@ -39,13 +39,13 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
 
-    public Dictionary<string, Data> StreamedData => data;
+    public Dictionary<string, ViconStreamData> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
 
-    private List<string> subjectList = new();
+    private List<string> subjectList = new List<string>();
     private WebSocket webSocket;
-    private Dictionary<string, Data> data = new();
-    private Dictionary<string, string> rawData = new();
+    private Dictionary<string, ViconStreamData> data = new Dictionary<string, ViconStreamData>();
+    private Dictionary<string, string> rawData = new Dictionary<string, string>();
 
     /// <inheritdoc />
     private void OnEnable()
@@ -133,7 +133,7 @@ public class SubjectDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Disable connection 
+    /// Disable connection
     /// </summary>
     private async void MaybeDisableConnection()
     {
@@ -155,7 +155,7 @@ public class SubjectDataManager : MonoBehaviour
             if (jsonObject.TryGetValue(subject, out JToken jsonDataObject))
             {
                 string rawJsonDataString = jsonDataObject.ToString();
-                data[subject] = JsonConvert.DeserializeObject<Data>(rawJsonDataString);
+                data[subject] = JsonConvert.DeserializeObject<ViconStreamData>(rawJsonDataString);
                 rawData[subject] = rawJsonDataString;
             }
             else

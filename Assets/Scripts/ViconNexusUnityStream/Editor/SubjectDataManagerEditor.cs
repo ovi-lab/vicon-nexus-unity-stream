@@ -10,7 +10,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
     public class SubjectDataManagerEditor: UnityEditor.Editor
     {
         private static readonly string[] excludedSerializedNames = new string[]{"m_Script"};
-        private List<CustomSubjectScript> subjectScripts = new();
+        private List<CustomSubjectScript> subjectScripts = new List<CustomSubjectScript>();
         private SubjectDataManager subjectDataManager;
 
         private SerializedProperty scriptProperty;
