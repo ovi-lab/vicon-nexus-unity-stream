@@ -59,44 +59,37 @@ namespace ubco.ovilab.ViconUnityStream
         protected string segment_5D2 = "5D2";
         protected string segment_5D3 = "5D3";
         protected string segment_5D4 = "5D4";
-
         // Hand and arm markers
         protected string marker_FA2 = "FA2";
         protected string marker_FA1 = "FA1";
         protected string marker_WRA = "WRA";
         protected string marker_WRB = "WRB";
-
         // thumb markers
         protected string marker_TH1 = "TH1";
         protected string marker_TH2 = "TH2";
         protected string marker_TH3 = "TH3";
         protected string marker_TH3P = "TH3P";
         protected string marker_TH4 = "TH4";
-
         // index finger markers
         protected string marker_H2 = "H2";
         protected string marker_IF1 = "IF1";
         protected string marker_IF2 = "IF2";
         protected string marker_IF3 = "IF3";
-
         // middle finger markers
         protected string marker_H3 = "H3";
         protected string marker_TF1 = "TF1";
         protected string marker_TF2 = "TF2";
         protected string marker_TF3 = "TF3";
-
         // ring finger markers
         protected string marker_H4 = "H4";
         protected string marker_RF2 = "RF2";
         protected string marker_RF3 = "RF3";
         protected string marker_RF4 = "RF4";
-
         // pinky finger markers
         protected string marker_H5 = "H5";
         protected string marker_PF1 = "PF1";
         protected string marker_PF2 = "PF2";
         protected string marker_PF3 = "PF3";
-
         protected string finger_1 = "1";
         protected string finger_2 = "2";
         protected string finger_3 = "3";

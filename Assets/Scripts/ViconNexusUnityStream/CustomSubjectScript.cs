@@ -77,9 +77,9 @@ namespace ubco.ovilab.ViconUnityStream
         private StreamWriter rawWriter;
         private string rawData;
 
-        private ViconStreamData _defaultViconStreamDataObj;
+        private ViconStreamData defaultStreamData;
 
-        private List<string> invalidMarkers = new List<string>();
+        private List<string> invalidMarkers = new();
         private List<float> k_curr, k_prev;
         private LinkedList<List<float>> markerQueue;
         private Vector3 pos, k_vector, t_prev_vector, t_current_vector;
@@ -118,11 +118,11 @@ namespace ubco.ovilab.ViconUnityStream
         {
             if (subjectDataManager.UseDefaultData)
             {
-                if (_defaultViconStreamDataObj == null)
+                if (defaultStreamData == null)
                 {
-                    _defaultViconStreamDataObj = JsonConvert.DeserializeObject<ViconStreamData>(defaultData);
+                    defaultStreamData = JsonConvert.DeserializeObject<ViconStreamData>(defaultData);
                 }
-                ProcessData(_defaultViconStreamDataObj, defaultData);
+                ProcessData(defaultStreamData, defaultData);
             }
             else
             {
@@ -222,7 +222,7 @@ namespace ubco.ovilab.ViconUnityStream
 
                 foreach (string marker in segment.Value)
                 {
-                    List<float> _data = viconStreamData.data[marker];
+                    var _data = viconStreamData.data[marker];
 
                     /// Need to run gap fillling stratergy
                     if (_data[0] == 0)
@@ -255,6 +255,52 @@ namespace ubco.ovilab.ViconUnityStream
                         SetPreviousData(marker, _data);
                     }
                     viconStreamData.data[marker] = _data;
+                }
+
+                if (gapFillingStrategy == GapFillingStrategy.FillRelative && !dataValid && segment.Value.Count > 1)
+                {
+                    /// If all data is invalid or there is no previous data,
+                    /// skip that data from being commited to previousData
+                    if (invalidMarkers.Count == segment.Value.Count || previousData[segment.Value[0]].Count <= 1)
+                    {
+                        foreach(string marker in segment.Value)
+                        {
+                            previousData[marker].RemoveLast();
+                        }
+                    }
+                    /// We can salvage this data
+                    else
+                    {
+                        /// let k be the point which has data in previous and current frame
+                        /// let t be a point which has data in previous frame but not current
+                        /// t_curr (the estimate) = (t_prev - k_prev) + (k_curr - k_prev) + k_prev
+                        /// t_curr = t_prev + (k_curr - k_prev)
+
+                        /// pick a k
+                        string k_marker = segment.Value.Where(x => !invalidMarkers.Contains(x)).ToArray()[0];
+                        markerQueue = previousData[k_marker];
+                        k_prev = markerQueue.ElementAt(markerQueue.Count - 2);
+                        k_curr = GetPreviousData(k_marker);
+
+                        k_vector = ListToVector(k_curr) - ListToVector(k_prev);
+
+                        foreach (string t_marker in invalidMarkers)
+                        {
+                            markerQueue = previousData[t_marker];
+                            t_prev_vector = ListToVector(markerQueue.ElementAt(markerQueue.Count - 2));
+                            t_current_vector = t_prev_vector + k_vector;
+
+                            /// Set the new value to the previous list
+                            previousData[t_marker].Last.Value[0] = t_current_vector.x;
+                            /// z <-> y because of difference in coord system of vicon and unity
+                            previousData[t_marker].Last.Value[1] = t_current_vector.z;
+                            previousData[t_marker].Last.Value[2] = t_current_vector.y;
+
+                            /// Set that to the current data object
+                            viconStreamData.data[t_marker] = GetPreviousData(t_marker);
+                        }
+                        dataValid = true; /// Data is now valid
+                    }
                 }
 
                 if (dataValid)
@@ -367,18 +413,12 @@ namespace ubco.ovilab.ViconUnityStream
             _previousData.AddLast(value);
         }
 
-        private void CommitPreviousData()
-        {
-            foreach (LinkedList<List<float>> _previousData in previousData.Values)
-            {
-                if (_previousData.Count > previousDataQueueLimit)
-                {
-                    _previousData.RemoveFirst();
-                }
-            }
-        }
-
-        protected abstract Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, ViconStreamData viconStreamData);
+        /// <summary>
+        /// Executes after computing the segment positions based on the marker data.
+        /// This method can be extended to do additional processing on the segment data.
+        /// Also provides the data recieved for this frame.
+        /// </summary>
+        protected abstract Dictionary<string, Vector3> ProcessSegments(Dictionary<string, Vector3> segments, ViconStreamData data);
 
         /// <summary>
         /// Recursively assign the transform pose starting from the BoneName passed in.
