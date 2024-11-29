@@ -81,10 +81,14 @@ namespace ubco.ovilab.ViconUnityStream.Editor
         private void ResetClicked()
         {
             Undo.RecordObject(Selection.activeObject, "Resetting values");
+            xrHandJointRadiiListProperty.ClearArray();
+            UnityEngine.Assertions.Assert.AreEqual(xrHandJointRadiiListProperty.arraySize, 0);
+            xrHandJointRadiiListProperty.arraySize = XRHandJointIDUtility.ToIndex(XRHandJointID.EndMarker);
 
             for (int i = XRHandJointIDUtility.ToIndex(XRHandJointID.BeginMarker); i < XRHandJointIDUtility.ToIndex(XRHandJointID.EndMarker); ++i)
             {
                 SerializedProperty prop = xrHandJointRadiiListProperty.GetArrayElementAtIndex(i);
+                prop.FindPropertyRelative("joint").enumValueIndex = i;
                 prop.FindPropertyRelative("radius").floatValue = 0;
             }
             serializedObject.ApplyModifiedProperties();
