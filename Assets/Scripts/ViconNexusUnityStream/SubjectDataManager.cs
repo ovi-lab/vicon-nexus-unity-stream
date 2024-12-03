@@ -52,7 +52,9 @@ public class SubjectDataManager : MonoBehaviour
     private Dictionary<string, Dictionary<string, ViconStreamData>> recordedData = new();
     private Dictionary<string, Dictionary<string, ViconStreamData>> dataToWrite = new();
     private string pathToRecordedData;
-    [SerializeField] private int currentFrame = 0;
+    [SerializeField, Range(400, 900)] private int currentFrame = 0;
+    [SerializeField] private bool play;
+
     private int totalFrames = 0;
     private string fileName = "Session";
     private List<string> recordedSessions = new List<string>();
@@ -240,7 +242,7 @@ public class SubjectDataManager : MonoBehaviour
             data[subject.Key] = subject.Value;
             rawData[subject.Key] = subject.Value.ToString();
         }
-        currentFrame++;
+        if(play) currentFrame++;
     }
 
     /// <summary>
