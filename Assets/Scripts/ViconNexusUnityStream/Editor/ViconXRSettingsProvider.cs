@@ -37,6 +37,21 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             viconXRSettingsObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        /// <summary>
+        /// Recursive method to ensure directory exists
+        /// </summary>
+        internal static void EnsureDirectoryExists(string directory)
+        {
+            UnityEngine.Assertions.Assert.IsTrue(directory.Contains("Assets"), $"Trying to recursively create a directory not in Assets folder: {directory}");
+            if (!AssetDatabase.IsValidFolder(directory))
+            {
+                string parentDirectory = Path.GetDirectoryName(directory);
+                EnsureDirectoryExists(parentDirectory);
+                AssetDatabase.CreateFolder(parentDirectory, Path.GetFileName(directory));
+                AssetDatabase.Refresh();
+            }
+        }
+
         internal static ViconXRSettings GetOrCreateSettings()
         {
             ViconXRSettings settings = AssetDatabase.LoadAssetAtPath<ViconXRSettings>(ViconXRConstants.settingsPath);
@@ -44,16 +59,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             {
                 settings = ScriptableObject.CreateInstance<ViconXRSettings>();
 
-                string directoryPath = Path.GetDirectoryName(ViconXRConstants.settingsPath);
-                if (!AssetDatabase.IsValidFolder(directoryPath))
-                {
-                    string parentDirectoryPath = Path.GetDirectoryName(directoryPath);
-                    if (!AssetDatabase.IsValidFolder(parentDirectoryPath))
-                    {
-                        AssetDatabase.CreateFolder("Assets/", Path.GetFileName(parentDirectoryPath));
-                    }
-                    AssetDatabase.CreateFolder(parentDirectoryPath, Path.GetFileName(directoryPath));
-                }
+                EnsureDirectoryExists(Path.GetDirectoryName(ViconXRConstants.settingsPath));
                 AssetDatabase.Refresh();
 
                 AssetDatabase.CreateAsset(settings, ViconXRConstants.settingsPath);

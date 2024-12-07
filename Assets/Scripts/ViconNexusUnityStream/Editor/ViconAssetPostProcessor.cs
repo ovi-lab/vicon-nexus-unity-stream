@@ -1,7 +1,4 @@
 using UnityEditor;
-using UnityEditor.Build;
-using UnityEditor.Build.Reporting;
-using UnityEngine;
 
 namespace ubco.ovilab.ViconUnityStream.Editor
 {
@@ -11,10 +8,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
         {
             if (didDomainReload)
             {
-                if (!ViconXRSettingsProvider.IsSettingsAvailable() || !ViconXRSettingsProvider.IsLoaderAvailable())
-                {
-                    ViconXRSettingsProvider.EnsureViconXRSettingsAndLoaderAreLoaded();
-                }
+                ViconXRSettingsProvider.EnsureViconXRSettingsAndLoaderAreLoaded();
             }
         }
     }
