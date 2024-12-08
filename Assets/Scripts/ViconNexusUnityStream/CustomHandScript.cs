@@ -670,11 +670,26 @@ namespace ubco.ovilab.ViconUnityStream
 
                 for (int i = XRHandJointIDUtility.ToIndex(XRHandJointID.BeginMarker); i < XRHandJointIDUtility.ToIndex(XRHandJointID.EndMarker); ++i)
                 {
-                    xrHandJointRadiiList.Add(new XRHandJointRadius() { joint = XRHandJointIDUtility.FromIndex(i), radius = 0 });
+                    xrHandJointRadiiList.Add(new() { joint = XRHandJointIDUtility.FromIndex(i), radius = 0 });
                 }
             }
+            xrHandJointRadiiList[joint.ToIndex()] = new() { joint = joint, radius = radius };
+            Debug.Log($"Inserting {joint.ToString()} at {joint.ToIndex()} with  radius {radius}");
+        }
 
-            xrHandJointRadiiList[XRHandJointIDUtility.ToIndex(joint)] = new XRHandJointRadius() { joint = joint, radius = radius };
+        public void ClearJointRadiiList()
+        {
+            xrHandJointRadiiList.Clear();
+        }
+
+        public void SetHandJointRadiusAlt(XRHandJointID joint, float radius)
+        {
+            // for (int i = XRHandJointID.BeginMarker.ToIndex()-1; i < XRHandJointID.EndMarker.ToIndex(); ++i)
+            // {
+            //     xrHandJointRadiiList.Add(new() { joint = XRHandJointIDUtility.FromIndex(i), radius = 0 });
+            // }
+            // xrHandJointRadiiList[joint.ToIndex()] = new() { joint = joint, radius = radius };
+            // Debug.Log($"Inserting {joint.ToString()} at {joint.ToIndex()} with  radius {radius}");
         }
     }
 }
