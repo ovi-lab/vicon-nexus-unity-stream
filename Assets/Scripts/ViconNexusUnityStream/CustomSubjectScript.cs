@@ -110,13 +110,13 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         protected virtual void OnDisable()
         {
-            subjectDataManager.UnRegsiterSubject(subjectName);
+            subjectDataManager.UnRegisterSubject(subjectName);
         }
 
         /// <inheritdoc />
         protected void LateUpdate()
         {
-            if (subjectDataManager.UseDefaultData)
+            if (subjectDataManager.StreamType == StreamType.Default)
             {
                 if (defaultStreamData == null)
                 {
@@ -183,7 +183,7 @@ namespace ubco.ovilab.ViconUnityStream
 
         public void WriteData()
         {
-            if (!subjectDataManager.EnableWriteData || subjectDataManager.UseDefaultData)
+            if (!subjectDataManager.EnableWriteData || subjectDataManager.StreamType != StreamType.LiveStream)
                 return;
 
             var currentTicks = DateTimeOffset.Now.ToUnixTimeMilliseconds();
