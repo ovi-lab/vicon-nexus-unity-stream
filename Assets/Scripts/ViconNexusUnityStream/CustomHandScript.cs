@@ -665,7 +665,7 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 if (xrHandJointRadiiList == null)
                 {
-                    xrHandJointRadiiList = new();
+                    xrHandJointRadiiList = new List<XRHandJointRadius>();
                 }
 
                 for (int i = XRHandJointIDUtility.ToIndex(XRHandJointID.BeginMarker); i < XRHandJointIDUtility.ToIndex(XRHandJointID.EndMarker); ++i)
@@ -673,8 +673,8 @@ namespace ubco.ovilab.ViconUnityStream
                     xrHandJointRadiiList.Add(new XRHandJointRadius() { joint = XRHandJointIDUtility.FromIndex(i), radius = 0 });
                 }
             }
-
-            xrHandJointRadiiList[XRHandJointIDUtility.ToIndex(joint)] = new XRHandJointRadius() { joint = joint, radius = radius };
+            xrHandJointRadiiList[joint.ToIndex()] = new() { joint = joint, radius = radius };
+            Debug.Log($"Inserting {joint.ToString()} at {joint.ToIndex()} with  radius {radius}");
         }
     }
 }
