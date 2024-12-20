@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.XR.Hands;
+using UnityEngine.Assertions;
 
 namespace ubco.ovilab.ViconUnityStream
 {
@@ -661,6 +662,8 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public void SetHandJointRadius(XRHandJointID joint, float radius)
         {
+            // In case the being marker is changed to be not 0!
+            int beginIndex = XRHandJointIDUtility.ToIndex(XRHandJointID.BeginMarker);
             if (xrHandJointRadiiList == null || xrHandJointRadiiList.Count == 0)
             {
                 if (xrHandJointRadiiList == null)
@@ -668,12 +671,15 @@ namespace ubco.ovilab.ViconUnityStream
                     xrHandJointRadiiList = new List<XRHandJointRadius>();
                 }
 
-                for (int i = XRHandJointIDUtility.ToIndex(XRHandJointID.BeginMarker); i < XRHandJointIDUtility.ToIndex(XRHandJointID.EndMarker); ++i)
+                for (int i = beginIndex; i < XRHandJointIDUtility.ToIndex(XRHandJointID.EndMarker); ++i)
                 {
                     xrHandJointRadiiList.Add(new XRHandJointRadius() { joint = XRHandJointIDUtility.FromIndex(i), radius = 0 });
                 }
             }
-            xrHandJointRadiiList[joint.ToIndex()] = new() { joint = joint, radius = radius };
+
+            Assert.IsTrue(joint.ToIndex() >= beginIndex);
+            
+            xrHandJointRadiiList[joint.ToIndex() - beginIndex] = new XRHandJointRadius() { joint = joint, radius = radius };
             Debug.Log($"Inserting {joint.ToString()} at {joint.ToIndex()} with  radius {radius}");
         }
     }
