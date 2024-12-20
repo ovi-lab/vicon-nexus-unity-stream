@@ -9,11 +9,11 @@ namespace ubco.ovilab.ViconUnityStream.Editor
     [CanEditMultipleObjects]
     public class SubjectDataManagerEditor: UnityEditor.Editor
     {
-        private static readonly string[] excludedSerializedNames = new string[]{"m_Script"};
+        private static readonly string[] excludedSerializedNames = new string[]{"m_Script", "pathToDataFile", "totalFrames", "currentFrame", "play"};
         private List<CustomSubjectScript> subjectScripts = new();
         private SubjectDataManager subjectDataManager;
 
-        private SerializedProperty scriptProperty;
+        private SerializedProperty scriptProperty, totalFramesProperty, currentFrameProperty, playProperty, pathToDataFileProperty;
 
         private void OnEnable()
         {
@@ -22,6 +22,10 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             subjectDataManager = target as SubjectDataManager;
 
             scriptProperty = serializedObject.FindProperty("m_Script");
+            pathToDataFileProperty = serializedObject.FindProperty("pathToDataFile");
+            currentFrameProperty = serializedObject.FindProperty("currentFrame");
+            totalFramesProperty = serializedObject.FindProperty("totalFrames");
+            playProperty = serializedObject.FindProperty("play");
         }
 
         private void OnDisable()
@@ -58,6 +62,15 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             }
 
             DrawPropertiesExcluding(serializedObject, excludedSerializedNames);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Recorded data controls", EditorStyles.boldLabel);
+            int totalFrames = totalFramesProperty.intValue;
+            GUI.enabled = subjectDataManager.StreamType == StreamType.Recorded;
+            EditorGUILayout.PropertyField(pathToDataFileProperty);
+            EditorGUILayout.IntSlider(currentFrameProperty, 0, totalFrames);
+            EditorGUILayout.PropertyField(playProperty);
+            GUI.enabled = true;
 
             serializedObject.ApplyModifiedProperties();
         }

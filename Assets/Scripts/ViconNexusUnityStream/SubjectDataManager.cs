@@ -39,8 +39,6 @@ public class SubjectDataManager : MonoBehaviour
     /// </summary>
     public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
 
-    [Tooltip("Path to write the subject data file.")]
-    [SerializeField] private string pathToDataFile;
     public Dictionary<string, ViconStreamData> StreamedData => data;
     public Dictionary<string, string> StreamedRawData => rawData;
 
@@ -49,29 +47,38 @@ public class SubjectDataManager : MonoBehaviour
     private Dictionary<string, ViconStreamData> data = new();
     private Dictionary<string, string> rawData = new();
 
+#if UNITY_EDITOR
     private Dictionary<string, Dictionary<string, ViconStreamData>> recordedData = new();
     private Dictionary<string, Dictionary<string, ViconStreamData>> dataToWrite = new();
     private string pathToRecordedData;
-    [SerializeField, Range(400, 900)] private int currentFrame = 0;
+    [Tooltip("Path to write the subject data file.")]
+    [SerializeField] private string pathToDataFile;
+    [SerializeField] private int currentFrame = 0;
     [SerializeField] private bool play;
 
-    private int totalFrames = 0;
+    [SerializeField, HideInInspector] private int totalFrames = 0;
     private string fileName = "Session";
     private List<string> recordedSessions = new List<string>();
+#endif
+
     private void Awake()
     {
+#if UNITY_EDITOR
         pathToRecordedData = Path.Combine(Application.dataPath, pathToDataFile);
         if (!Directory.Exists(pathToRecordedData))
         {
             Directory.CreateDirectory(pathToRecordedData);
         }
+#endif
     }
 
     /// <inheritdoc />
     private void OnEnable()
     {
         MaybeSetupConnection();
+#if UNITY_EDITOR
         LoadRecordedJson();
+#endif
     }
 
     /// <inheritdoc />
@@ -79,7 +86,9 @@ public class SubjectDataManager : MonoBehaviour
     {
         if (streamType == StreamType.Recorded)
         {
+#if UNITY_EDITOR
             StreamLocalData();
+#endif
             return;
         }
         webSocket?.DispatchLatestMessage();
@@ -88,13 +97,16 @@ public class SubjectDataManager : MonoBehaviour
     /// <inheritdoc />
     private void OnDisable()
     {
+#if UNITY_EDITOR
         if (enableWriteData)
         {
             string jsonData = JsonConvert.SerializeObject(dataToWrite, Formatting.Indented);
             fileName = fileName + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".json";
             pathToRecordedData = Path.Combine(pathToRecordedData, fileName);
-                File.AppendAllTextAsync(pathToRecordedData, jsonData);
+            File.AppendAllTextAsync(pathToRecordedData, jsonData);
         }
+#endif
+
         if (webSocket != null)
         {
             webSocket.OnMessage -= StreamData;
@@ -124,9 +136,13 @@ public class SubjectDataManager : MonoBehaviour
         }
     }
 
+#if UNITY_EDITOR
     private void LoadRecordedJson()
     {
-        if(streamType != StreamType.Recorded) return;
+        if(streamType != StreamType.Recorded)
+        {
+            return;
+        }
 
         Debug.Log($"Loading Recorded Data");
 
@@ -146,6 +162,27 @@ public class SubjectDataManager : MonoBehaviour
         }
         totalFrames = recordedData.Count;
     }
+
+    private void StreamLocalData()
+    {
+        if (currentFrame >= totalFrames)
+        {
+            currentFrame = 0;
+        }
+
+        KeyValuePair<string, Dictionary<string, ViconStreamData>> currentFrameData = recordedData.ElementAt(currentFrame);
+        foreach (KeyValuePair<string, ViconStreamData> subject in currentFrameData.Value)
+        {
+            data[subject.Key] = subject.Value;
+            rawData[subject.Key] = subject.Value.ToString();
+        }
+
+        if(play)
+        {
+            currentFrame++;
+        }
+    }
+#endif
 
     /// <summary>
     /// Setup websocket connection.
@@ -227,22 +264,6 @@ public class SubjectDataManager : MonoBehaviour
         {
             dataToWrite[currentTicks.ToString()] = new(data);
         }
-    }
-
-    private void StreamLocalData()
-    {
-        if (currentFrame >= totalFrames)
-        {
-            currentFrame = 0;
-        }
-
-        KeyValuePair<string, Dictionary<string, ViconStreamData>> currentFrameData = recordedData.ElementAt(currentFrame);
-        foreach (KeyValuePair<string, ViconStreamData> subject in currentFrameData.Value)
-        {
-            data[subject.Key] = subject.Value;
-            rawData[subject.Key] = subject.Value.ToString();
-        }
-        if(play) currentFrame++;
     }
 
     /// <summary>
