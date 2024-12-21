@@ -165,6 +165,11 @@ public class SubjectDataManager : MonoBehaviour
 
     private void StreamLocalData()
     {
+        if (recordedData == null || recordedData.Count == 0)
+        {
+            return;
+        }
+
         if (currentFrame >= totalFrames)
         {
             currentFrame = 0;
