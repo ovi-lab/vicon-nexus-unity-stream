@@ -10,11 +10,12 @@ namespace ubco.ovilab.ViconUnityStream.Editor
     [CanEditMultipleObjects]
     public class SubjectDataManagerEditor: UnityEditor.Editor
     {
-        private static readonly string[] excludedSerializedNames = new string[]{"m_Script", "pathToDataFile", "totalFrames", "currentFrame", "jsonFilesToLoad", "play", "enableWriteData", "fileNameBase"};
         private List<CustomSubjectScript> subjectScripts = new();
         private SubjectDataManager subjectDataManager;
 
-        private SerializedProperty scriptProperty, totalFramesProperty, currentFrameProperty, playProperty, pathToDataFileProperty, jsonFilesToLoadProperty, enableWriteDataProperty, fileNameBaseProperty;
+        private SerializedProperty scriptProperty, totalFramesProperty, currentFrameProperty,
+            playProperty, pathToDataFileProperty, jsonFilesToLoadProperty, enableWriteDataProperty,
+            fileNameBaseProperty, baseURIProperty, streamTypeProperty;
 
         private void OnEnable()
         {
@@ -23,6 +24,8 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             subjectDataManager = target as SubjectDataManager;
 
             scriptProperty = serializedObject.FindProperty("m_Script");
+            baseURIProperty = serializedObject.FindProperty("baseURI");
+            streamTypeProperty = serializedObject.FindProperty("streamType");
             pathToDataFileProperty = serializedObject.FindProperty("pathToDataFile");
             currentFrameProperty = serializedObject.FindProperty("currentFrame");
             totalFramesProperty = serializedObject.FindProperty("totalFrames");
@@ -64,8 +67,16 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             {
                 UpdateContent();
             }
-
-            DrawPropertiesExcluding(serializedObject, excludedSerializedNames);
+            EditorGUILayout.PropertyField(baseURIProperty);
+            using(var check = new EditorGUI.ChangeCheckScope())
+            {
+                EditorGUILayout.PropertyField(streamTypeProperty);
+                if (check.changed && Application.isPlaying)
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    subjectDataManager.LoadRecordedJson();
+                }
+            }
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Controls for recording LiveStream data", EditorStyles.boldLabel);
