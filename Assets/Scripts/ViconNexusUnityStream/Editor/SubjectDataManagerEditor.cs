@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -9,11 +10,11 @@ namespace ubco.ovilab.ViconUnityStream.Editor
     [CanEditMultipleObjects]
     public class SubjectDataManagerEditor: UnityEditor.Editor
     {
-        private static readonly string[] excludedSerializedNames = new string[]{"m_Script", "pathToDataFile", "totalFrames", "currentFrame", "play"};
+        private static readonly string[] excludedSerializedNames = new string[]{"m_Script", "pathToDataFile", "totalFrames", "currentFrame", "jsonFilesToLoad", "play", "enableWriteData", "fileNameBase"};
         private List<CustomSubjectScript> subjectScripts = new();
         private SubjectDataManager subjectDataManager;
 
-        private SerializedProperty scriptProperty, totalFramesProperty, currentFrameProperty, playProperty, pathToDataFileProperty;
+        private SerializedProperty scriptProperty, totalFramesProperty, currentFrameProperty, playProperty, pathToDataFileProperty, jsonFilesToLoadProperty, enableWriteDataProperty, fileNameBaseProperty;
 
         private void OnEnable()
         {
@@ -25,6 +26,9 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             pathToDataFileProperty = serializedObject.FindProperty("pathToDataFile");
             currentFrameProperty = serializedObject.FindProperty("currentFrame");
             totalFramesProperty = serializedObject.FindProperty("totalFrames");
+            jsonFilesToLoadProperty = serializedObject.FindProperty("jsonFilesToLoad");
+            enableWriteDataProperty = serializedObject.FindProperty("enableWriteData");
+            fileNameBaseProperty = serializedObject.FindProperty("fileNameBase");
             playProperty = serializedObject.FindProperty("play");
         }
 
@@ -64,13 +68,28 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             DrawPropertiesExcluding(serializedObject, excludedSerializedNames);
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Recorded data controls", EditorStyles.boldLabel);
-            int totalFrames = totalFramesProperty.intValue;
-            GUI.enabled = subjectDataManager.StreamType == StreamType.Recorded;
+            EditorGUILayout.LabelField("Controls for recording LiveStream data", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(enableWriteDataProperty);
+            EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PropertyField(pathToDataFileProperty);
-            EditorGUILayout.IntSlider(currentFrameProperty, 0, totalFrames);
+            if (GUILayout.Button("Select", GUILayout.MaxWidth(100)))
+            {
+                pathToDataFileProperty.stringValue = Path.GetRelativePath(Application.dataPath, EditorUtility.OpenFolderPanel("Location to save live streamed data", "", ""));
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.PropertyField(fileNameBaseProperty);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Contols for playing recorded data", EditorStyles.boldLabel);
+            int totalFrames = totalFramesProperty.intValue;
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(jsonFilesToLoadProperty);
+            if (EditorGUI.EndChangeCheck())
+            {
+                totalFrames = totalFramesProperty.intValue = subjectDataManager.LoadRecordedJson();
+            }
+            EditorGUILayout.IntSlider(currentFrameProperty, 0, totalFrames, $"Current Frame (out of {totalFrames})");
             EditorGUILayout.PropertyField(playProperty);
-            GUI.enabled = true;
 
             serializedObject.ApplyModifiedProperties();
         }

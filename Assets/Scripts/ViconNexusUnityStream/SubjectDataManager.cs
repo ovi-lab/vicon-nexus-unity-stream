@@ -55,9 +55,12 @@ public class SubjectDataManager : MonoBehaviour
     [SerializeField] private string pathToDataFile;
     [SerializeField] private int currentFrame = 0;
     [SerializeField] private bool play;
+    [SerializeField, Tooltip("The json file to load when using StreamType.Recorded")]
+    private List<TextAsset> jsonFilesToLoad;
 
-    [SerializeField, HideInInspector] private int totalFrames = 0;
-    private string fileName = "Session";
+    [SerializeField] private int totalFrames = 0;
+    [SerializeField, Tooltip("The file saved would have this prifix + date string")]
+    private string fileNameBase = "Session";
     private List<string> recordedSessions = new List<string>();
 #endif
 
@@ -101,8 +104,8 @@ public class SubjectDataManager : MonoBehaviour
         if (enableWriteData)
         {
             string jsonData = JsonConvert.SerializeObject(dataToWrite, Formatting.Indented);
-            fileName = fileName + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".json";
-            pathToRecordedData = Path.Combine(pathToRecordedData, fileName);
+            fileNameBase = fileNameBase + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".json";
+            pathToRecordedData = Path.Combine(pathToRecordedData, fileNameBase);
             File.AppendAllTextAsync(pathToRecordedData, jsonData);
         }
 #endif
@@ -137,30 +140,29 @@ public class SubjectDataManager : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    private void LoadRecordedJson()
+    public int LoadRecordedJson()
     {
         if(streamType != StreamType.Recorded)
         {
-            return;
+            return -1;
         }
 
         Debug.Log($"Loading Recorded Data");
 
-        foreach (string session in Directory.GetFiles(pathToRecordedData, "*.json"))
+        recordedData.Clear();
+
+        foreach(TextAsset jsonFileToLoad in jsonFilesToLoad)
         {
-            string jsonData = Path.Combine(pathToRecordedData, session);
-            string json = File.ReadAllText(jsonData);
-            if (string.IsNullOrEmpty(json))
+            if (jsonFileToLoad == null)
             {
-                Debug.LogWarning($"No recorded data found at {pathToRecordedData}.");
                 continue;
             }
-            Debug.Log($"Now Loading {jsonData}");
-            JObject recordedJson = JObject.Parse(json);
-            Dictionary<string, Dictionary<string, ViconStreamData>> temp = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ViconStreamData>>>(recordedJson.ToString());
+            Debug.Log($"Now Loading {jsonFileToLoad.name}");
+            Dictionary<string, Dictionary<string, ViconStreamData>> temp = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ViconStreamData>>>(jsonFileToLoad.text);
             recordedData = recordedData.Concat(temp).ToDictionary(k => k.Key, v => v.Value);
         }
         totalFrames = recordedData.Count;
+        return totalFrames;
     }
 
     private void StreamLocalData()
