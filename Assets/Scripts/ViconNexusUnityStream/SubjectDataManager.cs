@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 
 namespace ubco.ovilab.ViconUnityStream
 {
@@ -41,49 +42,81 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
 
+        [Tooltip("Path to write the subject data file. If in editor, will be relative to the Assets folder. In player, will use persistentDataPath.")]
+        [SerializeField] private string pathToDataFile;
+        [SerializeField, Tooltip("The file saved would have this prifix + date string")]
+        private string fileNameBase = "Session";
+
+        [SerializeField] private int totalFrames = 0;
+
+        /// <summary>
+        /// When using StreamType.Recorded, the total number of frames in the data that is loaded.
+        /// </summary>
+        public int TotalFrames { get => totalFrames; }
+
+        [SerializeField] private int currentFrame = 0;
+
+        /// <summary>
+        /// When using StreamType.Recorded, the frame number in the loaded data being played.
+        /// </summary>
+        public int CurrentFrame => currentFrame;
+
+        [SerializeField] private bool play;
+        /// <summary>
+        /// When using StreamType.Recorded, if the data manager should progress to next frame automatically or not.
+        /// </summary>
+        public bool Play => play;
+
+        [SerializeField, Tooltip("The json file to load when using StreamType.Recorded")]
+        private List<TextAsset> jsonFilesToLoad;
+
+        /// <summary>
+        /// The json file to load when using StreamType.Recorded.
+        /// </summary>
+        /// <seealso cref="AddToJsonFilesToLoad"/>
+        /// <seealso cref="RemoveFromJsonFilesToLoad"/>
+        /// <seealso cref="ClearJsonFilesToLoad"/>
+        public ReadOnlyCollection<TextAsset> JsonFilesToLoad { get => jsonFilesToLoad.AsReadOnly(); }
+
+        /// <summary>
+        /// Deserialized data recieved by the data manager.
+        /// </summary>
         public Dictionary<string, ViconStreamData> StreamedData => data;
+
+        /// <summary>
+        /// The raw data being recieved by data manager.
+        /// </summary>
         public Dictionary<string, string> StreamedRawData => rawData;
 
         private List<string> subjectList = new();
         private WebSocket webSocket;
+        private string pathToRecordedData;
         private Dictionary<string, ViconStreamData> data = new();
         private Dictionary<string, string> rawData = new();
-
-#if UNITY_EDITOR
         private Dictionary<string, Dictionary<string, ViconStreamData>> recordedData = new();
         private Dictionary<string, Dictionary<string, ViconStreamData>> dataToWrite = new();
-        private string pathToRecordedData;
-        [Tooltip("Path to write the subject data file.")]
-        [SerializeField] private string pathToDataFile;
-        [SerializeField] private int currentFrame = 0;
-        [SerializeField] private bool play;
-        [SerializeField, Tooltip("The json file to load when using StreamType.Recorded")]
-        private List<TextAsset> jsonFilesToLoad;
-
-        [SerializeField] private int totalFrames = 0;
-        [SerializeField, Tooltip("The file saved would have this prifix + date string")]
-        private string fileNameBase = "Session";
-        private List<string> recordedSessions = new List<string>();
-#endif
 
         private void Awake()
         {
+            pathToRecordedData = Path.Combine(
 #if UNITY_EDITOR
-            pathToRecordedData = Path.Combine(Application.dataPath, pathToDataFile);
+                Application.dataPath,
+#else
+                Application.persistentDataPath,
+#endif
+                pathToDataFile);
             if (!Directory.Exists(pathToRecordedData))
             {
                 Directory.CreateDirectory(pathToRecordedData);
             }
-#endif
         }
 
         /// <inheritdoc />
         private void OnEnable()
         {
             MaybeSetupConnection();
-#if UNITY_EDITOR
+            // FIXME: Prevent loading from slowing down. Better caching?
             LoadRecordedJson();
-#endif
         }
 
         /// <inheritdoc />
@@ -91,9 +124,7 @@ namespace ubco.ovilab.ViconUnityStream
         {
             if (streamType == StreamType.Recorded)
             {
-#if UNITY_EDITOR
-                StreamLocalData();
-#endif
+                StreamRecordedData();
                 return;
             }
             webSocket?.DispatchLatestMessage();
@@ -102,7 +133,6 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         private void OnDisable()
         {
-#if UNITY_EDITOR
             if (enableWriteData)
             {
                 string jsonData = JsonConvert.SerializeObject(dataToWrite, Formatting.Indented);
@@ -110,7 +140,6 @@ namespace ubco.ovilab.ViconUnityStream
                 pathToRecordedData = Path.Combine(pathToRecordedData, fileNameBase);
                 File.AppendAllTextAsync(pathToRecordedData, jsonData);
             }
-#endif
 
             if (webSocket != null)
             {
@@ -141,7 +170,9 @@ namespace ubco.ovilab.ViconUnityStream
             }
         }
 
-#if UNITY_EDITOR
+        /// <summary>
+        /// Load all data from the <see cref="JsonFilesToLoad"/> list.
+        /// </summary>
         public int LoadRecordedJson()
         {
             if (streamType != StreamType.Recorded)
@@ -167,7 +198,34 @@ namespace ubco.ovilab.ViconUnityStream
             return totalFrames;
         }
 
-        private void StreamLocalData()
+        /// <summary>
+        /// Add a TextAsset to the list of json file to load as recoded data.
+        /// </summary>
+        public void AddToJsonFilesToLoad(TextAsset asset)
+        {
+            jsonFilesToLoad.Add(asset);
+            LoadRecordedJson();
+        }
+
+        /// <summary>
+        /// Remove a TextAsset to the list of json file to load as recoded data.
+        /// </summary>
+        public void RemoveFromJsonFilesToLoad(TextAsset asset)
+        {
+            jsonFilesToLoad.Remove(asset);
+            LoadRecordedJson();
+        }
+
+        /// <summary>
+        /// Clear the list of json file to load as recoded data.
+        /// </summary>
+        public void ClearJsonFilesToLoad()
+        {
+            jsonFilesToLoad.Clear();
+            LoadRecordedJson();
+        }
+
+        private void StreamRecordedData()
         {
             if (recordedData == null || recordedData.Count == 0)
             {
@@ -191,7 +249,6 @@ namespace ubco.ovilab.ViconUnityStream
                 currentFrame++;
             }
         }
-#endif
 
         /// <summary>
         /// Setup websocket connection.
@@ -244,7 +301,6 @@ namespace ubco.ovilab.ViconUnityStream
                 await webSocket.Close();
             }
         }
-
 
         /// <summary>
         /// Process the date from websocket. Is inteaded as callback for the <see cref="WebSocket.OnMessage"/>
