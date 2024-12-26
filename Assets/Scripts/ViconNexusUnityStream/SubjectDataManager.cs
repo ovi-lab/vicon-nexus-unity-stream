@@ -59,13 +59,13 @@ namespace ubco.ovilab.ViconUnityStream
         /// <summary>
         /// When using StreamType.Recorded, the frame number in the loaded data being played.
         /// </summary>
-        public int CurrentFrame => currentFrame;
+        public int CurrentFrame { get => currentFrame; set => currentFrame = value; }
 
         [SerializeField] private bool play;
         /// <summary>
         /// When using StreamType.Recorded, if the data manager should progress to next frame automatically or not.
         /// </summary>
-        public bool Play => play;
+        public bool Play { get => play; set => play = value; }
 
         [SerializeField, Tooltip("The json file to load when using StreamType.Recorded")]
         private List<TextAsset> jsonFilesToLoad;
