@@ -133,14 +133,6 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         private void OnDisable()
         {
-            if (enableWriteData)
-            {
-                string jsonData = JsonConvert.SerializeObject(dataToWrite, Formatting.Indented);
-                fileNameBase = fileNameBase + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".json";
-                pathToRecordedData = Path.Combine(pathToRecordedData, fileNameBase);
-                File.AppendAllTextAsync(pathToRecordedData, jsonData);
-            }
-
             if (webSocket != null)
             {
                 webSocket.OnMessage -= StreamData;
@@ -152,6 +144,19 @@ namespace ubco.ovilab.ViconUnityStream
         private void OnValidate()
         {
             ProcessDefaultDataAndWebSocket();
+        }
+
+        /// <inheritdoc />
+        private void OnDestory()
+        {
+            // TODO: Ensure not running into memory issues.
+            if (enableWriteData)
+            {
+                string jsonData = JsonConvert.SerializeObject(dataToWrite, Formatting.Indented);
+                fileNameBase = fileNameBase + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".json";
+                pathToRecordedData = Path.Combine(pathToRecordedData, fileNameBase);
+                File.AppendAllTextAsync(pathToRecordedData, jsonData);
+            }
         }
 
         /// <summary>
