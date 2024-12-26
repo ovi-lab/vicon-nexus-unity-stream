@@ -72,10 +72,7 @@ namespace ubco.ovilab.ViconUnityStream
         private int previousDataQueueLimit = 3;
         private Dictionary<string, LinkedList<List<float>>> previousData = new();
 
-        private StreamWriter inputWriter;
         private StreamWriter finalWriter;
-        private StreamWriter rawWriter;
-        private string rawData;
 
         private ViconStreamData defaultStreamData;
 
@@ -143,9 +140,7 @@ namespace ubco.ovilab.ViconUnityStream
             if (subjectDataManager.EnableWriteData)
             {
                 Debug.Log("Closing files: \n    " + string.Join("\n    ", filePaths));
-                inputWriter?.Close();
                 finalWriter?.Close();
-                rawWriter?.Close();
             }
         }
         #endregion
@@ -158,20 +153,8 @@ namespace ubco.ovilab.ViconUnityStream
 
             filePaths = new List<string>();
 
-            string filePath;
-
-            filePath = GetPath("input");
-            inputWriter = new StreamWriter(filePath, true);
-            filePaths.Add(filePath);
-            Debug.Log("Writing to:  " + filePath);
-
-            filePath = GetPath("final");
+            string filePath = GetPath("final");
             finalWriter = new StreamWriter(filePath, true);
-            filePaths.Add(filePath);
-            Debug.Log("Writing to:  " + filePath);
-
-            filePath = GetPath("raw");
-            rawWriter = new StreamWriter(filePath, true);
             filePaths.Add(filePath);
             Debug.Log("Writing to:  " + filePath);
         }
@@ -188,18 +171,13 @@ namespace ubco.ovilab.ViconUnityStream
 
             var currentTicks = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-            inputWriter.WriteLine(currentTicks + ", " + "{" + string.Join(",", segments.Select(kvp => "[" +kvp.Key + ", " + kvp.Value.ToString("F6") + "]")) + "}");
-            inputWriter.Flush();
-
             finalWriter.WriteLine(currentTicks + ", " + ConstructFinalWriterString());
             finalWriter.Flush();
-
-            rawWriter.WriteLine(currentTicks + ", " + rawData);
-            rawWriter.Flush();
         }
 
         protected virtual string ConstructFinalWriterString()
         {
+            // FIXME: update this to not use string concat so much.
             return "{ 'positions':" + string.Join(",", finalPositionVectors.Select(kvp => "[" +kvp.Key + ", " + kvp.Value.ToString("F6") + "]")) +
                 ", 'up':" + string.Join(",", finalUpVectors.Select(kvp => "[" +kvp.Key + ", " + kvp.Value.ToString("F6") + "]")) +
                 ", 'forward':" + string.Join(",", finalForwardVectors.Select(kvp => "[" +kvp.Key + ", " + kvp.Value.ToString("F6") + "]")) +
@@ -209,8 +187,6 @@ namespace ubco.ovilab.ViconUnityStream
 
         void ProcessData(ViconStreamData viconStreamData, string text)
         {
-            rawData = text;
-
             int zeroMarkers = 0;
 
             foreach (KeyValuePair<string, List<string>> segment in segmentMarkers)
