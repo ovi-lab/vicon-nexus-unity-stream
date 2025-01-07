@@ -147,7 +147,7 @@ namespace ubco.ovilab.ViconUnityStream
         }
 
         /// <inheritdoc />
-        private void OnDestory()
+        private void OnDestroy()
         {
             // TODO: Ensure not running into memory issues.
             if (enableWriteData)
