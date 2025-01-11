@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.XR.Hands;
 using UnityEngine.Assertions;
+using UnityEngine.Serialization;
 
 namespace ubco.ovilab.ViconUnityStream
 {
@@ -25,18 +26,18 @@ namespace ubco.ovilab.ViconUnityStream
         [Tooltip("The radius of each joint to be reported by the xr hands. Joints not in this list will not report radius.")]
         private List<XRHandJointRadius> xrHandJointRadiiList = new();
 
-        public float normalOffset = 0.001f;
+        public float baseNormalOffset = 0.001f;
 
-        [Range(0, 0.09f)]
-        [SerializeField] public float indexNormalOffset = 0.001f;
-        [Range(0, 0.09f)]
-        [SerializeField] public float middleNormalOffset = 0.0018f;
-        [Range(0, 0.09f)]
-        [SerializeField] public float ringNormalOffset = 0.0013f;
-        [Range(0, 0.09f)]
-        [SerializeField] public float littleNormalOffset = 0.0012f;
-        [Range(0, 0.09f)]
-        [SerializeField] public float thumbNormalOffset = 0.00009f;
+        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
+        [SerializeField] public float indexNormalOffset = 0f;
+        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
+        [SerializeField] public float middleNormalOffset = 0f;
+        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
+        [SerializeField] public float ringNormalOffset = 0f;
+        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
+        [SerializeField] public float littleNormalOffset = 0f;
+        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
+        [SerializeField] public float thumbNormalOffset = 0f;
 
         public bool setPosition = true;
         public bool setScale = true;
@@ -607,15 +608,15 @@ namespace ubco.ovilab.ViconUnityStream
                         if (setPosition)
                         {
                             if (fingerId == finger_1)
-                                Bone.position += Bone.forward * normalOffset * 0.9f;
+                                Bone.position += Bone.forward * (baseNormalOffset * (1 + thumbNormalOffset * 0.01f));
                             else if (fingerId == finger_3)
-                                Bone.position += Bone.forward * normalOffset * 1.08f;
+                                Bone.position += Bone.forward * (baseNormalOffset * (1 + middleNormalOffset * 0.01f));
                             else if (fingerId == finger_4)
-                                Bone.position += Bone.forward * normalOffset * 1.13f;
+                                Bone.position += Bone.forward * (baseNormalOffset * (1 + ringNormalOffset * 0.01f));
                             else if (fingerId == finger_5)
-                                Bone.position += Bone.forward * normalOffset * 1.2f;
+                                Bone.position += Bone.forward * (baseNormalOffset * (1 + littleNormalOffset * 0.01f));
                             else
-                                Bone.position += Bone.forward * normalOffset;
+                                Bone.position += Bone.forward * (baseNormalOffset * (1 + indexNormalOffset * 0.01f));
                         }
 
                         if (segmentToJointMapping.ContainsKey(BoneName))
@@ -690,7 +691,7 @@ namespace ubco.ovilab.ViconUnityStream
             }
 
             Assert.IsTrue(joint.ToIndex() >= beginIndex);
-            
+
             xrHandJointRadiiList[joint.ToIndex() - beginIndex] = new XRHandJointRadius() { joint = joint, radius = radius };
             Debug.Log($"Inserting {joint.ToString()} at {joint.ToIndex()} with  radius {radius}");
         }
