@@ -189,7 +189,7 @@ namespace ubco.ovilab.ViconUnityStream
 
             recordedData.Clear();
 
-            foreach (TextAsset jsonFileToLoad in jsonFilesToLoad)
+            foreach (TextAsset jsonFileToLoad in jsonFilesToLoad.Distinct())
             {
                 if (jsonFileToLoad == null)
                 {

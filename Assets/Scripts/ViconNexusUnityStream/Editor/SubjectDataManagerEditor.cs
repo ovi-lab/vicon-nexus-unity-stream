@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -17,11 +18,15 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             playProperty, pathToDataFileProperty, jsonFilesToLoadProperty, enableWriteDataProperty,
             fileNameBaseProperty, baseURIProperty, streamTypeProperty;
 
+        private bool showDuplicateWarning = false;
+
         private void OnEnable()
         {
             subjectScripts.AddRange(FindObjectsByType<CustomSubjectScript>(FindObjectsSortMode.None));
 
             subjectDataManager = target as SubjectDataManager;
+
+            showDuplicateWarning = subjectDataManager.JsonFilesToLoad.Count != subjectDataManager.JsonFilesToLoad.Distinct().Count();
 
             scriptProperty = serializedObject.FindProperty("m_Script");
             baseURIProperty = serializedObject.FindProperty("baseURI");
@@ -94,9 +99,15 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             EditorGUILayout.LabelField("Contols for playing recorded data", EditorStyles.boldLabel);
             int totalFrames = totalFramesProperty.intValue;
             EditorGUI.BeginChangeCheck();
+            if (showDuplicateWarning)
+            {
+                EditorGUILayout.HelpBox("There are duplicate entries in Json Files To Load. Only one of them will be loaded", MessageType.Warning);
+            }
             EditorGUILayout.PropertyField(jsonFilesToLoadProperty);
             if (EditorGUI.EndChangeCheck())
             {
+                serializedObject.ApplyModifiedProperties();
+                showDuplicateWarning = subjectDataManager.JsonFilesToLoad.Count != subjectDataManager.JsonFilesToLoad.Distinct().Count();
                 totalFrames = totalFramesProperty.intValue = subjectDataManager.LoadRecordedJson();
             }
             EditorGUILayout.IntSlider(currentFrameProperty, 0, totalFrames, $"Current Frame (out of {totalFrames})");
