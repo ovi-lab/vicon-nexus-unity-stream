@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using UnityEditor;
 
 namespace ubco.ovilab.ViconUnityStream
 {
@@ -156,6 +157,8 @@ namespace ubco.ovilab.ViconUnityStream
                 fileNameBase = fileNameBase + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".json";
                 pathToRecordedData = Path.Combine(pathToRecordedData, fileNameBase);
                 File.AppendAllTextAsync(pathToRecordedData, jsonData);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
             }
         }
 
