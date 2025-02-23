@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ubco.ovilab.ViconUnityStream.Utils;
 using UnityEngine;
 using UnityEngine.XR.Hands;
 using UnityEngine.Assertions;
@@ -26,18 +27,8 @@ namespace ubco.ovilab.ViconUnityStream
         [Tooltip("The radius of each joint to be reported by the xr hands. Joints not in this list will not report radius.")]
         private List<XRHandJointRadius> xrHandJointRadiiList = new();
 
-        public float baseNormalOffset = 0.001f;
-
-        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
-        [SerializeField] public float indexNormalOffset = 0f;
-        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
-        [SerializeField] public float middleNormalOffset = 0f;
-        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
-        [SerializeField] public float ringNormalOffset = 0f;
-        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
-        [SerializeField] public float littleNormalOffset = 0f;
-        [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
-        [SerializeField] public float thumbNormalOffset = 0f;
+        [Tooltip("Properties of the hand to be configured"), SerializeField]
+        private HandProperties handProperties;
 
         public bool setPosition = true;
         public bool setScale = true;
@@ -608,15 +599,15 @@ namespace ubco.ovilab.ViconUnityStream
                         if (setPosition)
                         {
                             if (fingerId == finger_1)
-                                Bone.position += Bone.forward * (baseNormalOffset * (1 + thumbNormalOffset * 0.01f));
+                                Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.ThumbNormalOffset * 0.01f));
                             else if (fingerId == finger_3)
-                                Bone.position += Bone.forward * (baseNormalOffset * (1 + middleNormalOffset * 0.01f));
+                                Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.MiddleNormalOffset * 0.01f));
                             else if (fingerId == finger_4)
-                                Bone.position += Bone.forward * (baseNormalOffset * (1 + ringNormalOffset * 0.01f));
+                                Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.RingNormalOffset * 0.01f));
                             else if (fingerId == finger_5)
-                                Bone.position += Bone.forward * (baseNormalOffset * (1 + littleNormalOffset * 0.01f));
+                                Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.LittleNormalOffset * 0.01f));
                             else
-                                Bone.position += Bone.forward * (baseNormalOffset * (1 + indexNormalOffset * 0.01f));
+                                Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.IndexNormalOffset * 0.01f));
                         }
 
                         if (segmentToJointMapping.ContainsKey(BoneName))
