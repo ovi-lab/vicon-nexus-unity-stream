@@ -2,10 +2,11 @@ using UnityEngine;
 
 namespace ubco.ovilab.ViconUnityStream.Utils
 {
-    [CreateAssetMenu(fileName = "HandProperties", menuName = "ViconCustomSubject/HandProperties", order = 0)]
+    [CreateAssetMenu(fileName = "HandProperties", menuName = "ViconNexusUnityStream/HandProperties", order = 0)]
     public class HandProperties : ScriptableObject
     {
-        private float baseNormalOffset = 0.001f;
+        [Tooltip("Base normal offset in unity units to place hand from marker positions")]
+        [SerializeField] private float baseNormalOffset = 0.001f;
 
         [Tooltip("Increasing or decreasing the normal offset value by a certain percentage.")] [Range(-100, 100)]
         [SerializeField] private float indexNormalOffset = 0f;
