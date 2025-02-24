@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ubco.ovilab.ViconUnityStream.Utils;
 using UnityEngine;
@@ -30,14 +31,46 @@ namespace ubco.ovilab.ViconUnityStream
         [Tooltip("Properties of the hand to be configured"), SerializeField]
         private HandProperties handProperties;
 
-        public bool setPosition = true;
-        public bool setScale = true;
-        public float scaleToSet = 0.02f;
+        [SerializeField] public Handedness handedness = Handedness.Right;
+
+        [Obsolete("Set position will be deprecated in a future version"), Tooltip("If the hand pose should be set"), SerializeField]
+        private bool setPosition = true;
+        [Tooltip("If the hand model should be set to a specific scale"), SerializeField]
+        private bool setScale = true;
+        [Tooltip("The scale the model should be set to if setScale is enabled"), SerializeField]
+        private float scaleToSet = 0.02f;
+
+        /// <summary>
+        /// If the hand pose should be set
+        /// </summary>
+        [Obsolete("Set position will be deprecated in a future version")]
+        public bool SetPosition
+        {
+            get => setPosition;
+            set => setPosition = value;
+        }
+
+        /// <summary>
+        /// If the hand model should be set to a specific scale
+        /// </summary>
+        public bool SetScale
+        {
+            get => setScale;
+            set => setScale = value;
+        }
+
+        /// <summary>
+        /// The scale the model should be set to if setScale is enabled
+        /// </summary>
+        public float ScaleToSet
+        {
+            get => scaleToSet;
+            set => scaleToSet = value;
+        }
+
         private Vector3 normal;
         private Vector3 palm;
-        private bool noHand = false;
-        [SerializeField]
-        public Handedness handedness = Handedness.Right;
+        private bool noHand;
 
         // NOTE: Considered using an enum with a dictionary, but that
         // means using a dictionary lookup everytime a name is needed,
