@@ -25,5 +25,6 @@
         "description": "Sample scene which uses HWDMerger.",
         "path": "Samples~/SampleSceneWithHWDMerger"
       }
-    ]
+    ],
+    "hideInEditor" : false
 }
