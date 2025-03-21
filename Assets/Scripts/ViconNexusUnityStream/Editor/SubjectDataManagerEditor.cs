@@ -84,19 +84,34 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             }
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Controls for recording LiveStream data", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(enableWriteDataProperty);
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(pathToDataFileProperty);
-            if (GUILayout.Button("Select", GUILayout.MaxWidth(100)))
-            {
-                pathToDataFileProperty.stringValue = Path.GetRelativePath(Application.dataPath, EditorUtility.OpenFolderPanel("Location to save live streamed data", "", ""));
-            }
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.PropertyField(fileNameBaseProperty);
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Contols for playing recorded data", EditorStyles.boldLabel);
+            StreamType currentStreamType = (StreamType)streamTypeProperty.enumValueIndex;
+            switch (currentStreamType)
+            {
+                case StreamType.LiveStream:
+                {
+                    LiveStreamControls();
+                    break;
+                }
+                case StreamType.Recorded:
+                {
+                    RecordedDataControls();
+                    break;
+                }
+                case StreamType.Default:
+                {
+                    enableWriteDataProperty.boolValue = false;
+                    break;
+                }
+            }
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void RecordedDataControls()
+        {
+            enableWriteDataProperty.boolValue = false;
+            EditorGUILayout.LabelField("Controls for playing recorded data", EditorStyles.boldLabel);
             int totalFrames = totalFramesProperty.intValue;
             EditorGUI.BeginChangeCheck();
             if (showDuplicateWarning)
@@ -112,8 +127,20 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             }
             EditorGUILayout.IntSlider(currentFrameProperty, 0, totalFrames, $"Current Frame (out of {totalFrames})");
             EditorGUILayout.PropertyField(playProperty);
+        }
 
-            serializedObject.ApplyModifiedProperties();
+        private void LiveStreamControls()
+        {
+            EditorGUILayout.LabelField("Controls for recording LiveStream data", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(enableWriteDataProperty);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PropertyField(pathToDataFileProperty);
+            if (GUILayout.Button("Select", GUILayout.MaxWidth(100)))
+            {
+                pathToDataFileProperty.stringValue = Path.GetRelativePath(Application.dataPath, EditorUtility.OpenFolderPanel("Location to save live streamed data", "", ""));
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.PropertyField(fileNameBaseProperty);
         }
 
         private void UpdateContent()
