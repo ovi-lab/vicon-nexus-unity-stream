@@ -19,6 +19,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             fileNameBaseProperty, baseURIProperty, streamTypeProperty;
 
         private bool showDuplicateWarning = false;
+        private Texture2D playIcon, pauseIcon, prevIcon, nextIcon, ffwdIcon, frwdIcon;
 
         private void OnEnable()
         {
@@ -38,6 +39,14 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             enableWriteDataProperty = serializedObject.FindProperty("enableWriteData");
             fileNameBaseProperty = serializedObject.FindProperty("fileNameBase");
             playProperty = serializedObject.FindProperty("play");
+
+            string packagePath = "Packages/ubc.ok.ovilab.vicon-nexus-unity-stream/Assets/Scripts/ViconNexusUnityStream/Editor/Resources";
+            playIcon = (Texture2D)AssetDatabase.LoadAssetAtPath($"{packagePath}/play.png", typeof(Texture2D));
+            pauseIcon = (Texture2D)AssetDatabase.LoadAssetAtPath($"{packagePath}/pause.png", typeof(Texture2D));
+            prevIcon = (Texture2D)AssetDatabase.LoadAssetAtPath($"{packagePath}/prev.png", typeof(Texture2D));
+            nextIcon = (Texture2D)AssetDatabase.LoadAssetAtPath($"{packagePath}/next.png", typeof(Texture2D));
+            ffwdIcon = (Texture2D)AssetDatabase.LoadAssetAtPath($"{packagePath}/ffwd.png", typeof(Texture2D));
+            frwdIcon = (Texture2D)AssetDatabase.LoadAssetAtPath($"{packagePath}/frwd.png", typeof(Texture2D));
         }
 
         private void OnDisable()
@@ -126,7 +135,33 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 totalFrames = totalFramesProperty.intValue = subjectDataManager.LoadRecordedJson();
             }
             EditorGUILayout.IntSlider(currentFrameProperty, 0, totalFrames, $"Current Frame (out of {totalFrames})");
-            EditorGUILayout.PropertyField(playProperty);
+            GUI.color = Color.white;
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button(new GUIContent(frwdIcon, "Rewind 30 frames"), GUILayout.Width(50), GUILayout.Height(50)))
+            {
+                currentFrameProperty.intValue = Mathf.Max(0, currentFrameProperty.intValue - 30);
+            }
+            if (GUILayout.Button(new GUIContent(prevIcon, "Rewind 1 frame"), GUILayout.Width(50), GUILayout.Height(50)))
+            {
+                currentFrameProperty.intValue = Mathf.Max(0, currentFrameProperty.intValue - 1);
+            }
+            if (GUILayout.Button(new GUIContent(playProperty.boolValue ? pauseIcon : playIcon, playProperty.boolValue ? "Pause" : "Play"), GUILayout.Width(50), GUILayout.Height(50)))
+            {
+                playProperty.boolValue = !playProperty.boolValue;
+            }
+            if (GUILayout.Button(new GUIContent(nextIcon, "Advance 1 frame"), GUILayout.Width(50), GUILayout.Height(50)))
+            {
+                currentFrameProperty.intValue = Mathf.Min(totalFrames, currentFrameProperty.intValue + 1);
+            }
+            if (GUILayout.Button(new GUIContent(ffwdIcon, "Advance 30 frames"), GUILayout.Width(50), GUILayout.Height(50)))
+            {
+                currentFrameProperty.intValue = Mathf.Max(0, currentFrameProperty.intValue + 30);
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
         }
 
         private void LiveStreamControls()
