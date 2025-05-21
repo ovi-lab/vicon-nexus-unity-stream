@@ -10,11 +10,12 @@ namespace ubco.ovilab.ViconUnityStream.Editor
     [CanEditMultipleObjects]
     public class CustomHandScriptEditor: CustomSubjectScriptEditor
     {
-        protected override string[] excludedSerializedNames => base.excludedSerializedNames.Union(new string[]{"driveSkeleton", "xrHandJointRadiiList"}).ToArray();
+        protected override string[] excludedSerializedNames => base.excludedSerializedNames.Union(new string[]{"driveSkeleton", "xrHandJointRadiiList", "handProperties"}).ToArray();
         private CustomHandScript customSubjectScript;
 
         private SerializedProperty driveSekeltonProperty;
         private SerializedProperty xrHandJointRadiiListProperty;
+        private SerializedProperty handPropertiesProperty;
         private bool usingXRHands, jointRadiiFolout;
         // private SerializedProperty subjectDataManagerProperty;
 
@@ -25,6 +26,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
 
             driveSekeltonProperty = serializedObject.FindProperty("driveSkeleton");
             xrHandJointRadiiListProperty = serializedObject.FindProperty("xrHandJointRadiiList");
+            handPropertiesProperty = serializedObject.FindProperty("handProperties");
 
             if (xrHandJointRadiiListProperty.arraySize == 0)
             {
@@ -57,6 +59,14 @@ namespace ubco.ovilab.ViconUnityStream.Editor
 
             DrawPropertiesExcluding(serializedObject, excludedSerializedNames);
 
+            EditorGUILayout.Space();
+            if (handPropertiesProperty.objectReferenceValue == null)
+            {
+                EditorGUILayout.HelpBox("Hand properties not set", MessageType.Error);
+            }
+            EditorGUILayout.PropertyField(handPropertiesProperty);
+
+            EditorGUILayout.Space();
             jointRadiiFolout = EditorGUILayout.BeginFoldoutHeaderGroup(jointRadiiFolout, "XR Hand Joint Radii List", null, ShowHeaderContextMenu);
             if (jointRadiiFolout)
             {
@@ -68,6 +78,8 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 }
                 EditorGUI.indentLevel --;
             }
+            EditorGUILayout.EndFoldoutHeaderGroup();
+            DrawEvents();
             serializedObject.ApplyModifiedProperties();
         }
 

@@ -8,11 +8,14 @@ namespace ubco.ovilab.ViconUnityStream.Editor
     [CanEditMultipleObjects]
     public class CustomSubjectScriptEditor: UnityEditor.Editor
     {
-        protected virtual string[] excludedSerializedNames => new string[]{"m_Script", "subjectDataManager"};
+        protected virtual string[] excludedSerializedNames => new string[]{"m_Script", "subjectDataManager", "OnHidingSubject", "OnShowingSubject"};
         private CustomSubjectScript customSubjectScript;
 
         private SerializedProperty scriptProperty;
         private SerializedProperty subjectDataManagerProperty;
+        private SerializedProperty onHidingSubjectProperty;
+        private SerializedProperty onShowingSubjectProperty;
+        private bool eventFoldout;
 
         protected virtual void OnEnable()
         {
@@ -20,12 +23,15 @@ namespace ubco.ovilab.ViconUnityStream.Editor
 
             scriptProperty = serializedObject.FindProperty("m_Script");
             subjectDataManagerProperty = serializedObject.FindProperty("subjectDataManager");
+            onHidingSubjectProperty = serializedObject.FindProperty("OnHidingSubject");
+            onShowingSubjectProperty = serializedObject.FindProperty("OnShowingSubject");
         }
 
         public override void OnInspectorGUI()
         {
             DrawSubjectHeader();
             DrawPropertiesExcluding(serializedObject, excludedSerializedNames);
+            DrawEvents();
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -77,6 +83,18 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             }
 
             EditorGUILayout.Space();
+        }
+
+        public virtual void DrawEvents()
+        {
+            EditorGUILayout.Space();
+            eventFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(eventFoldout, "Events");
+            if (eventFoldout)
+            {
+                EditorGUILayout.PropertyField(onHidingSubjectProperty);
+                EditorGUILayout.PropertyField(onShowingSubjectProperty);
+            }
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
     }
 }

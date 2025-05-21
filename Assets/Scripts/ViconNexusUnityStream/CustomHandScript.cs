@@ -135,6 +135,8 @@ namespace ubco.ovilab.ViconUnityStream
         protected override void Start()
         {
             base.Start();
+            Assert.IsNotNull(handProperties, "Hand properties is null.");
+
             string prefix = handedness == Handedness.Right ? "R": "L";
 
             segment_1D1 = prefix + segment_1D1;
