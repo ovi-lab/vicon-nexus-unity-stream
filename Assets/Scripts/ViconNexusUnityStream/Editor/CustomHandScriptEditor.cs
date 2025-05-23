@@ -2,7 +2,6 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.XR.Hands;
-using System;
 
 namespace ubco.ovilab.ViconUnityStream.Editor
 {
@@ -67,6 +66,21 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             EditorGUILayout.PropertyField(handPropertiesProperty);
 
             EditorGUILayout.Space();
+
+            int numberOfRadiiWithZero = 0;
+            for (int i = XRHandJointIDUtility.ToIndex(XRHandJointID.ThumbMetacarpal); i<XRHandJointIDUtility.ToIndex(XRHandJointID.EndMarker); ++i)
+            {
+                if (xrHandJointRadiiListProperty.GetArrayElementAtIndex(i).FindPropertyRelative("radius").floatValue == 0)
+                {
+                    numberOfRadiiWithZero++;
+                }
+            }
+
+            if (numberOfRadiiWithZero > 0)
+            {
+                EditorGUILayout.HelpBox($"{numberOfRadiiWithZero} joint(s) have a radius of 0", MessageType.Warning);
+            }
+
             jointRadiiFolout = EditorGUILayout.BeginFoldoutHeaderGroup(jointRadiiFolout, "XR Hand Joint Radii List", null, ShowHeaderContextMenu);
             if (jointRadiiFolout)
             {
