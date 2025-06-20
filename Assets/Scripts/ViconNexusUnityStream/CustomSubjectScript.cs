@@ -497,6 +497,11 @@ namespace ubco.ovilab.ViconUnityStream
         {
             return true;
         }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.DrawSphere(transform.position, 0.25f);
+        }
     }
 
     public enum GapFillingStrategy

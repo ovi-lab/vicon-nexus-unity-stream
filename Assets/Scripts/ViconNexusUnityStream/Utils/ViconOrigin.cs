@@ -75,11 +75,9 @@ namespace ubco.ovilab.ViconUnityStream
                 {
                     case Axis.PositiveForwardAxis:
                         forwardSegments = (segment.markerNames[0], segment.markerNames[1]);
-                        Debug.Log($"{forwardSegments.Item1}, {forwardSegments.Item2}");
                         break;
                     case Axis.NegativeForwardAxis:
                         forwardSegments = (segment.markerNames[1], segment.markerNames[0]);
-                        Debug.Log($"{forwardSegments.Item1}, {forwardSegments.Item2}");
                         break;
                     case Axis.PositiveRightAxis:
                         rightSegments = (segment.markerNames[0], segment.markerNames[1]);
@@ -108,7 +106,6 @@ namespace ubco.ovilab.ViconUnityStream
             Vector3 forward;
             Vector3 right;
             Vector3 up;
-            Debug.Log(forwardSegments.Item1);
 
             if (segments.TryGetValue(forwardSegments.Item1, out Vector3 forward1) && segments.TryGetValue(forwardSegments.Item2, out Vector3 forward2))
             {

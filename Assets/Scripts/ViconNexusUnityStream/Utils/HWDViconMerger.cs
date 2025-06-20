@@ -34,8 +34,8 @@ namespace ubco.ovilab.ViconUnityStream.Utils
         /// The transform with the camera component that follows the HWD position and rotation. Generally, this the Main Camera under the XR Origin.
         /// </summary>
         public Transform xrHWD => _xrHWD;
-        
-        
+
+
         /// <inheritdoc />
         protected void OnEnable()
         {
@@ -45,7 +45,7 @@ namespace ubco.ovilab.ViconUnityStream.Utils
         /// <summary>
         /// Move the XR origin such that the Vicon HWD and XR HWD transforms are within specified thresholds.
         /// </summary>
-        public void MergeSubject()
+        public override void MergeSubject()
         {
             bool success = false;
             for (int i = 0; i < 5; ++i)
@@ -77,13 +77,5 @@ namespace ubco.ovilab.ViconUnityStream.Utils
             }
         }
 
-        /// <inheritdoc />
-        protected void Update()
-        {
-            if (!IsBelowThreshold())
-            {
-                OnDifferenceAboveThreshold.Invoke();
-            }
-        }
     }
 }
