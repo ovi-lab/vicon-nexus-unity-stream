@@ -18,7 +18,7 @@ namespace ubco.ovilab.ViconUnityStream
             {XRHandJointID.Palm, false},
             {XRHandJointID.Wrist, true},
 
-            {XRHandJointID.ThumbMetacarpal, false},
+            {XRHandJointID.ThumbMetacarpal, true},
             {XRHandJointID.ThumbProximal, true},
             {XRHandJointID.ThumbDistal, true},
             {XRHandJointID.ThumbTip, true},
