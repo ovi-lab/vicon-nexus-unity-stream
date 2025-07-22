@@ -15,8 +15,9 @@ namespace ubco.ovilab.ViconUnityStream.Editor
         private SubjectDataManager subjectDataManager;
 
         private SerializedProperty scriptProperty, totalFramesProperty, currentFrameProperty,
-            playProperty, pathToDataFileProperty, jsonFilesToLoadProperty, enableWriteDataProperty,
-            fileNameBaseProperty, baseURIProperty, streamTypeProperty;
+            fileSaveLocationBaseProperty, playProperty, pathToDataFileProperty,
+            jsonlFilesToLoadProperty, enableWriteDataProperty, fileNameBaseProperty,
+            baseURIProperty, streamTypeProperty;
 
         private bool showDuplicateWarning = false;
         private Texture2D playIcon, pauseIcon, prevIcon, nextIcon, ffwdIcon, frwdIcon;
@@ -27,15 +28,16 @@ namespace ubco.ovilab.ViconUnityStream.Editor
 
             subjectDataManager = target as SubjectDataManager;
 
-            showDuplicateWarning = subjectDataManager.JsonFilesToLoad.Count != subjectDataManager.JsonFilesToLoad.Distinct().Count();
+            showDuplicateWarning = subjectDataManager.JsonlFilesToLoad.Count != subjectDataManager.JsonlFilesToLoad.Distinct().Count();
 
             scriptProperty = serializedObject.FindProperty("m_Script");
             baseURIProperty = serializedObject.FindProperty("baseURI");
             streamTypeProperty = serializedObject.FindProperty("streamType");
+            fileSaveLocationBaseProperty = serializedObject.FindProperty("fileSaveLocationBase");
             pathToDataFileProperty = serializedObject.FindProperty("pathToDataFile");
             currentFrameProperty = serializedObject.FindProperty("currentFrame");
             totalFramesProperty = serializedObject.FindProperty("totalFrames");
-            jsonFilesToLoadProperty = serializedObject.FindProperty("jsonFilesToLoad");
+            jsonlFilesToLoadProperty = serializedObject.FindProperty("jsonlFilesToLoad");
             enableWriteDataProperty = serializedObject.FindProperty("enableWriteData");
             fileNameBaseProperty = serializedObject.FindProperty("fileNameBase");
             playProperty = serializedObject.FindProperty("play");
@@ -88,7 +90,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 if (check.changed && Application.isPlaying)
                 {
                     serializedObject.ApplyModifiedProperties();
-                    subjectDataManager.LoadRecordedJson();
+                    subjectDataManager.LoadRecordedJsonl();
                 }
             }
 
@@ -125,14 +127,14 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             EditorGUI.BeginChangeCheck();
             if (showDuplicateWarning)
             {
-                EditorGUILayout.HelpBox("There are duplicate entries in Json Files To Load. Only one of them will be loaded", MessageType.Warning);
+                EditorGUILayout.HelpBox("There are duplicate entries in Jsonl Files To Load. Only one of them will be loaded", MessageType.Warning);
             }
-            EditorGUILayout.PropertyField(jsonFilesToLoadProperty);
+            EditorGUILayout.PropertyField(jsonlFilesToLoadProperty);
             if (EditorGUI.EndChangeCheck())
             {
                 serializedObject.ApplyModifiedProperties();
-                showDuplicateWarning = subjectDataManager.JsonFilesToLoad.Count != subjectDataManager.JsonFilesToLoad.Distinct().Count();
-                totalFrames = totalFramesProperty.intValue = subjectDataManager.LoadRecordedJson();
+                showDuplicateWarning = subjectDataManager.JsonlFilesToLoad.Count != subjectDataManager.JsonlFilesToLoad.Distinct().Count();
+                totalFrames = totalFramesProperty.intValue = subjectDataManager.LoadRecordedJsonl();
             }
             EditorGUILayout.IntSlider(currentFrameProperty, 0, totalFrames, $"Current Frame (out of {totalFrames})");
             GUI.color = Color.white;
@@ -168,14 +170,24 @@ namespace ubco.ovilab.ViconUnityStream.Editor
         {
             EditorGUILayout.LabelField("Controls for recording LiveStream data", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(enableWriteDataProperty);
+            bool guiEnabled = GUI.enabled;
+            GUI.enabled = !Application.isPlaying;
+            EditorGUILayout.PropertyField(fileSaveLocationBaseProperty);
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PropertyField(pathToDataFileProperty);
             if (GUILayout.Button("Select", GUILayout.MaxWidth(100)))
             {
-                pathToDataFileProperty.stringValue = Path.GetRelativePath(Application.dataPath, EditorUtility.OpenFolderPanel("Location to save live streamed data", "", ""));
+                string basePath = ((SubjectDataManager.FileSaveLocation)fileSaveLocationBaseProperty.enumValueIndex) switch
+                {
+                    SubjectDataManager.FileSaveLocation.dataPath => Application.dataPath,
+                    SubjectDataManager.FileSaveLocation.persistentDataPath => Application.persistentDataPath,
+                    _ => throw new System.Exception($"Unkown value for FileSaveLocation")
+                };
+                pathToDataFileProperty.stringValue = Path.GetRelativePath(basePath, EditorUtility.OpenFolderPanel("Location to save live streamed data", "", ""));
             }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.PropertyField(fileNameBaseProperty);
+            GUI.enabled = guiEnabled;
         }
 
         private void UpdateContent()

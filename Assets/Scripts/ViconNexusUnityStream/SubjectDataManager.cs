@@ -10,11 +10,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using UnityEditor;
+using System.Collections;
 
 namespace ubco.ovilab.ViconUnityStream
 {
     public class SubjectDataManager : MonoBehaviour
     {
+        public enum FileSaveLocation
+        {
+            /// <summary>
+            /// Use <see cref="Application.dataPath"/>
+            /// </summary>
+            dataPath = 0,
+            /// <summary>
+            /// Use <see cref="Application.persistentDataPath"/>
+            /// </summary>
+            persistentDataPath = 1
+        }
+
         [Tooltip("The Webscoket URL used for connection.")]
         [SerializeField] private string baseURI = "ws://viconmx.hcilab.ok.ubc.ca:5001/markers/";
         /// <summary>
@@ -32,7 +45,7 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 streamType = value;
                 ProcessDefaultDataAndWebSocket();
-                LoadRecordedJson();
+                LoadRecordedJsonl();
             }
         }
 
@@ -43,10 +56,30 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
 
-        [Tooltip("Path to write the subject data file. If in editor, will be relative to the Assets folder. In player, will use persistentDataPath.")]
-        [SerializeField] private string pathToDataFile;
+        [SerializeField, Tooltip("The base location, relative to which the file will be written.")]
+        private FileSaveLocation fileSaveLocationBase;
+
+        /// <summary>
+        /// The base location, relative to which the file will be written.
+        /// </summary>
+        public FileSaveLocation FileSaveLocationBase { get => fileSaveLocationBase; set => fileSaveLocationBase = value; }
+
+        [Tooltip("Path to write the subject data file. Will be relative to fileSaveLocationBase.")]
+        [SerializeField]
+        private string pathToDataFile;
+
+        /// <summary>
+        /// Path to write the subject data file. Will be relative to fileSaveLocationBase.
+        /// </summary>
+        public string PathToDataFile { get => pathToDataFile; set => pathToDataFile = value; }
+
         [SerializeField, Tooltip("The file saved would have this prifix + date string")]
         private string fileNameBase = "Session";
+
+        /// <summary>
+        /// The file saved would have this prifix + date string.
+        /// </summary>
+        public string FileNameBase { get => fileNameBase; set => fileNameBase = value; }
 
         [SerializeField] private int totalFrames = 0;
 
@@ -68,16 +101,16 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public bool Play { get => play; set => play = value; }
 
-        [SerializeField, Tooltip("The json file to load when using StreamType.Recorded")]
-        private List<TextAsset> jsonFilesToLoad;
+        [SerializeField, Tooltip("The jsonl files to load when using StreamType.Recorded")]
+        private List<TextAsset> jsonlFilesToLoad;
 
         /// <summary>
-        /// The json file to load when using StreamType.Recorded.
+        /// The jsonl files to load when using StreamType.Recorded.
         /// </summary>
-        /// <seealso cref="AddToJsonFilesToLoad"/>
-        /// <seealso cref="RemoveFromJsonFilesToLoad"/>
-        /// <seealso cref="ClearJsonFilesToLoad"/>
-        public ReadOnlyCollection<TextAsset> JsonFilesToLoad { get => jsonFilesToLoad.AsReadOnly(); }
+        /// <seealso cref="AddToJsonlFilesToLoad"/>
+        /// <seealso cref="RemoveFromJsonlFilesToLoad"/>
+        /// <seealso cref="ClearJsonlFilesToLoad"/>
+        public ReadOnlyCollection<TextAsset> JsonlFilesToLoad { get => jsonlFilesToLoad.AsReadOnly(); }
 
         /// <summary>
         /// Deserialized data recieved by the data manager.
@@ -89,26 +122,100 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public Dictionary<string, string> StreamedRawData => rawData;
 
+        /// <summary>
+        /// The path to which the data is being recorded.
+        /// <seealso cref="SetPathToRecordedData"/>
+        /// </summary>
+        public string PathToRecordedData { get => pathToRecordedData; }
+
         private List<string> subjectList = new();
         private WebSocket webSocket;
-        private string pathToRecordedData;
+        private string pathBaseToRecordedData,
+            pathToRecordedData;
         private Dictionary<string, ViconStreamData> data = new();
         private Dictionary<string, string> rawData = new();
         private Dictionary<string, Dictionary<string, ViconStreamData>> recordedData = new();
-        private Dictionary<string, Dictionary<string, ViconStreamData>> dataToWrite = new();
+        private Task task;
+        private Dictionary<string, Dictionary<string, ViconStreamData>> dataToWrite;
+        private readonly object dataLock = new object();
 
         private void Awake()
         {
-            pathToRecordedData = Path.Combine(
-#if UNITY_EDITOR
-                Application.dataPath,
-#else
-                Application.persistentDataPath,
-#endif
-                pathToDataFile);
-            if (!Directory.Exists(pathToRecordedData))
+            dataToWrite = new Dictionary<string, Dictionary<string, ViconStreamData>>();
+            SetPathToRecordedData();
+            StartCoroutine(PeriodicallyWriteData());
+        }
+
+        /// <summary>
+        /// Sets the path to the recorded data file by generating a unique filename 
+        /// with the current date and time, appending the ".jsonl.txt" extension,
+        /// and combining it with the base path. Calling this again will force data being
+        /// written to a different file. Returns the file location to which data is written.
+        /// The file be in the location will be:
+        /// `<see cref="FileSaveLocationBase"/>/<see cref="PathToDataFile"/>/<see cref="FileNameBase"/>_< date > < time >.jsonl.txt`
+        /// 
+        /// This method needs to invoked after setting the values of
+        /// <see cref="FileSaveLocationBase"/>, <see cref="PathToDataFile"/>
+        /// or <see cref="FileNameBase"/> for them to take effect.
+        ///
+        /// <seealso cref="PathToRecordedData"/>
+        /// The file written will be a jsonl file. It is saved as .jsonl.txt as unity doesn't
+        /// support jsonl as a TextAsset format.
+        /// </summary>
+        public string SetPathToRecordedData()
+        {
+            string basePath = FileSaveLocationBase switch
             {
-                Directory.CreateDirectory(pathToRecordedData);
+                SubjectDataManager.FileSaveLocation.dataPath => Application.dataPath,
+                SubjectDataManager.FileSaveLocation.persistentDataPath => Application.persistentDataPath,
+                _ => throw new System.Exception($"Unkown value for FileSaveLocation")
+            };
+
+            pathBaseToRecordedData = Path.Combine(
+                basePath,
+            pathToDataFile);
+            if (!Directory.Exists(pathBaseToRecordedData))
+            {
+                Directory.CreateDirectory(pathBaseToRecordedData);
+            }
+            // KLUDGE: jsonl is not supported as a TextAsset in unity.
+            // Hence appending the .txt so that it can be detected as a TextAsset.
+            string fileName = fileNameBase + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".jsonl.txt";
+            pathToRecordedData = Path.Combine(pathBaseToRecordedData, fileName);
+            Debug.Log($"Setting data file path to: {pathToRecordedData}");
+            return pathToRecordedData;
+        }
+
+        private IEnumerator PeriodicallyWriteData()
+        {
+            while(true)
+            {
+                yield return new WaitForSeconds(5);
+
+                if (enableWriteData)
+                {
+
+                    Dictionary<string, Dictionary<string, ViconStreamData>> dataCopy;
+                    lock (dataLock)
+                    {
+                        dataCopy = dataToWrite;
+                        dataToWrite = new Dictionary<string, Dictionary<string, ViconStreamData>>();
+                    }
+                    task = Task.Run(() =>
+                    {
+                        WriteToFile(pathToRecordedData, dataCopy);
+                    });
+                }
+            }
+        }
+
+        private void WriteToFile(string pathToRecordedData, Dictionary<string, Dictionary<string, ViconStreamData>> data)
+        {
+            using (StreamWriter stream = new StreamWriter(pathToRecordedData, append: true))
+            {
+                string jsonlData = JsonConvert.SerializeObject(data);
+                stream.WriteLine(jsonlData);
+                Debug.Log($"Appending to {pathBaseToRecordedData}");
             }
         }
 
@@ -117,7 +224,7 @@ namespace ubco.ovilab.ViconUnityStream
         {
             MaybeSetupConnection();
             // FIXME: Prevent loading from slowing down. Better caching?
-            LoadRecordedJson();
+            LoadRecordedJsonl();
         }
 
         /// <inheritdoc />
@@ -150,13 +257,15 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         private void OnDestroy()
         {
-            // TODO: Ensure not running into memory issues.
             if (enableWriteData)
             {
-                string jsonData = JsonConvert.SerializeObject(dataToWrite, Formatting.Indented);
-                fileNameBase = fileNameBase + "_" + DateTime.Now.ToString("dd-MM-yy hh-mm-ss") + ".json";
-                pathToRecordedData = Path.Combine(pathToRecordedData, fileNameBase);
-                File.AppendAllTextAsync(pathToRecordedData, jsonData);
+                StopAllCoroutines();
+                if (task != null)
+                {
+                    task.Wait();
+                }
+                Debug.Log($"TODO WIRITINGGG222");
+                WriteToFile(pathToRecordedData, dataToWrite);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }
@@ -179,9 +288,9 @@ namespace ubco.ovilab.ViconUnityStream
         }
 
         /// <summary>
-        /// Load all data from the <see cref="JsonFilesToLoad"/> list.
+        /// Load all data from the <see cref="JsonlFilesToLoad"/> list.
         /// </summary>
-        public int LoadRecordedJson()
+        public int LoadRecordedJsonl()
         {
             if (streamType != StreamType.Recorded)
             {
@@ -192,45 +301,52 @@ namespace ubco.ovilab.ViconUnityStream
 
             recordedData.Clear();
 
-            foreach (TextAsset jsonFileToLoad in jsonFilesToLoad.Distinct())
+            foreach (TextAsset jsonlFileToLoad in jsonlFilesToLoad.Distinct())
             {
-                if (jsonFileToLoad == null)
+                if (jsonlFileToLoad == null)
                 {
                     continue;
                 }
-                Debug.Log($"Now Loading {jsonFileToLoad.name}");
-                Dictionary<string, Dictionary<string, ViconStreamData>> temp = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ViconStreamData>>>(jsonFileToLoad.text);
-                recordedData = recordedData.Concat(temp).ToDictionary(k => k.Key, v => v.Value);
+                Debug.Log($"Now Loading {jsonlFileToLoad.name}");
+                using (StringReader reader = new StringReader(jsonlFileToLoad.text))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        Dictionary<string, Dictionary<string, ViconStreamData>> temp = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ViconStreamData>>>(line);
+                        recordedData = recordedData.Concat(temp).ToDictionary(k => k.Key, v => v.Value);
+                    }
+                }
             }
             totalFrames = recordedData.Count;
             return totalFrames;
         }
 
         /// <summary>
-        /// Add a TextAsset to the list of json file to load as recoded data.
+        /// Add a TextAsset to the list of jsonl file to load as recoded data.
         /// </summary>
-        public void AddToJsonFilesToLoad(TextAsset asset)
+        public void AddToJsonlFilesToLoad(TextAsset asset)
         {
-            jsonFilesToLoad.Add(asset);
-            LoadRecordedJson();
+            jsonlFilesToLoad.Add(asset);
+            LoadRecordedJsonl();
         }
 
         /// <summary>
-        /// Remove a TextAsset to the list of json file to load as recoded data.
+        /// Remove a TextAsset to the list of jsonl file to load as recoded data.
         /// </summary>
-        public void RemoveFromJsonFilesToLoad(TextAsset asset)
+        public void RemoveFromJsonlFilesToLoad(TextAsset asset)
         {
-            jsonFilesToLoad.Remove(asset);
-            LoadRecordedJson();
+            jsonlFilesToLoad.Remove(asset);
+            LoadRecordedJsonl();
         }
 
         /// <summary>
-        /// Clear the list of json file to load as recoded data.
+        /// Clear the list of jsonl file to load as recoded data.
         /// </summary>
-        public void ClearJsonFilesToLoad()
+        public void ClearJsonlFilesToLoad()
         {
-            jsonFilesToLoad.Clear();
-            LoadRecordedJson();
+            jsonlFilesToLoad.Clear();
+            LoadRecordedJsonl();
         }
 
         private void StreamRecordedData()
@@ -335,7 +451,10 @@ namespace ubco.ovilab.ViconUnityStream
 
             if (enableWriteData)
             {
-                dataToWrite[currentTicks.ToString()] = new(data);
+                lock(dataLock)
+                {
+                    dataToWrite[currentTicks.ToString()] = new(data);
+                }
             }
         }
 
