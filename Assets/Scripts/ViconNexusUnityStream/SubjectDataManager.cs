@@ -364,8 +364,17 @@ namespace ubco.ovilab.ViconUnityStream
             KeyValuePair<string, Dictionary<string, ViconStreamData>> currentFrameData = recordedData.ElementAt(currentFrame);
             foreach (KeyValuePair<string, ViconStreamData> subject in currentFrameData.Value)
             {
-                data[subject.Key] = subject.Value;
-                rawData[subject.Key] = subject.Value.ToString();
+                if (subject.Value != null)
+                {
+                    data[subject.Key] = subject.Value;
+                    rawData[subject.Key] = subject.Value.ToString();
+                }
+                else
+                {
+                    data[subject.Key] = null;
+                    rawData[subject.Key] = null;
+                    Debug.LogWarning($"Missing subject data in frame for `{subject}`");
+                }
             }
 
             if (play)
