@@ -594,9 +594,8 @@ namespace ubco.ovilab.ViconUnityStream
                                 {
                                     Vector3 right;
                                     Vector3 forward;
-                                    if (fingerId == finger_1)
+                                    if (fingerId == finger_1 && baseVectors.TryGetValue("R1_right", out right))
                                     {
-                                        right = baseVectors["R1_right"];
                                         forward = Vector3.Cross(upDirection, right);
                                     }
                                     else
