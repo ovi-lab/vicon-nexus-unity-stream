@@ -192,6 +192,7 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 SubjectDataManager.FileSaveLocation.dataPath => Application.dataPath,
                 SubjectDataManager.FileSaveLocation.persistentDataPath => Application.persistentDataPath,
+                SubjectDataManager.FileSaveLocation.fixedPath => FixedFileSaveLocationBase,
                 _ => throw new System.Exception($"Unkown value for FileSaveLocation")
             };
 
