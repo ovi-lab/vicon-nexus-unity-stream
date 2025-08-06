@@ -15,7 +15,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
         private SubjectDataManager subjectDataManager;
 
         private SerializedProperty scriptProperty, totalFramesProperty, currentFrameProperty,
-            fileSaveLocationBaseProperty, playProperty, pathToDataFileProperty,
+            fileSaveLocationBaseProperty, fixedFileSaveLocationBaseProperty, playProperty, pathToDataFileProperty,
             jsonlFilesToLoadProperty, enableWriteDataProperty, fileNameBaseProperty,
             baseURIProperty, streamTypeProperty;
 
@@ -34,6 +34,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             baseURIProperty = serializedObject.FindProperty("baseURI");
             streamTypeProperty = serializedObject.FindProperty("streamType");
             fileSaveLocationBaseProperty = serializedObject.FindProperty("fileSaveLocationBase");
+            fixedFileSaveLocationBaseProperty = serializedObject.FindProperty("fixedFileSaveLocationBase");
             pathToDataFileProperty = serializedObject.FindProperty("pathToDataFile");
             currentFrameProperty = serializedObject.FindProperty("currentFrame");
             totalFramesProperty = serializedObject.FindProperty("totalFrames");
@@ -173,6 +174,10 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             bool guiEnabled = GUI.enabled;
             GUI.enabled = !Application.isPlaying;
             EditorGUILayout.PropertyField(fileSaveLocationBaseProperty);
+            if (((SubjectDataManager.FileSaveLocation)fileSaveLocationBaseProperty.enumValueIndex) == SubjectDataManager.FileSaveLocation.fixedPath)
+            {
+                EditorGUILayout.PropertyField(fixedFileSaveLocationBaseProperty);
+            }
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PropertyField(pathToDataFileProperty);
             if (GUILayout.Button("Select", GUILayout.MaxWidth(100)))
@@ -181,9 +186,29 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 {
                     SubjectDataManager.FileSaveLocation.dataPath => Application.dataPath,
                     SubjectDataManager.FileSaveLocation.persistentDataPath => Application.persistentDataPath,
+                    SubjectDataManager.FileSaveLocation.fixedPath => fixedFileSaveLocationBaseProperty.stringValue,
                     _ => throw new System.Exception($"Unkown value for FileSaveLocation")
                 };
-                pathToDataFileProperty.stringValue = Path.GetRelativePath(basePath, EditorUtility.OpenFolderPanel("Location to save live streamed data", "", ""));
+
+                bool directoryCheckPass = false;
+                if (Directory.Exists(basePath))
+                {
+                    directoryCheckPass = true;
+                }
+                else if (EditorUtility.DisplayDialog("Creat missing base folder", $"Folder {basePath} does not exist. Create it?", "Yes", "No (don't set path to data file)"))
+                {
+                    Directory.CreateDirectory(basePath);
+                    directoryCheckPass = true;
+                }
+
+                if (directoryCheckPass)
+                {
+                    string fullPath = EditorUtility.OpenFolderPanel("Location to save live streamed data", basePath, "");
+                    if (!string.IsNullOrWhiteSpace(fullPath))
+                    {
+                        pathToDataFileProperty.stringValue = Path.GetRelativePath(basePath, fullPath);
+                    }
+                }
             }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.PropertyField(fileNameBaseProperty);

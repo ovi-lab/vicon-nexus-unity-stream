@@ -25,7 +25,11 @@ namespace ubco.ovilab.ViconUnityStream
             /// <summary>
             /// Use <see cref="Application.persistentDataPath"/>
             /// </summary>
-            persistentDataPath = 1
+            persistentDataPath = 1,
+            /// <summary>
+            /// Use a fixed path.
+            /// </summary>
+            fixedPath = 2
         }
 
         [Tooltip("The Webscoket URL used for connection.")]
@@ -54,7 +58,17 @@ namespace ubco.ovilab.ViconUnityStream
         /// <summary>
         /// Enable writing data to disk.
         /// </summary>
-        public bool EnableWriteData { get => enableWriteData; set => enableWriteData = value; }
+        public bool EnableWriteData {
+            get => enableWriteData;
+            set
+            {
+                if (enableWriteData)
+                {
+                    forceWrite = true;
+                }
+                enableWriteData = value;
+            }
+        }
 
         [SerializeField, Tooltip("The base location, relative to which the file will be written.")]
         private FileSaveLocation fileSaveLocationBase;
@@ -63,6 +77,15 @@ namespace ubco.ovilab.ViconUnityStream
         /// The base location, relative to which the file will be written.
         /// </summary>
         public FileSaveLocation FileSaveLocationBase { get => fileSaveLocationBase; set => fileSaveLocationBase = value; }
+
+        [SerializeField, Tooltip("The base location when FileSaveLocationBase is Fixed.")]
+        private string fixedFileSaveLocationBase = "";
+
+        /// <summary>
+        /// The base location when FileSaveLocationBase is Fixed.
+        /// <seealso cref="FileSaveLocationBase.fixedPath"/>
+        /// </summary>
+        public string FixedFileSaveLocationBase { get => fixedFileSaveLocationBase; set => fixedFileSaveLocationBase = value; }
 
         [Tooltip("Path to write the subject data file. Will be relative to fileSaveLocationBase.")]
         [SerializeField]
@@ -137,6 +160,7 @@ namespace ubco.ovilab.ViconUnityStream
         private Dictionary<string, Dictionary<string, ViconStreamData>> recordedData = new();
         private Task task;
         private Dictionary<string, Dictionary<string, ViconStreamData>> dataToWrite;
+        private bool forceWrite;
         private readonly object dataLock = new object();
 
         private void Awake()
@@ -192,9 +216,9 @@ namespace ubco.ovilab.ViconUnityStream
             {
                 yield return new WaitForSeconds(5);
 
-                if (enableWriteData)
+                if (EnableWriteData || forceWrite)
                 {
-
+                    forceWrite = false;
                     Dictionary<string, Dictionary<string, ViconStreamData>> dataCopy;
                     lock (dataLock)
                     {
@@ -257,7 +281,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         private void OnDestroy()
         {
-            if (enableWriteData)
+            if (EnableWriteData)
             {
                 StopAllCoroutines();
                 if (task != null)
@@ -458,7 +482,7 @@ namespace ubco.ovilab.ViconUnityStream
                 }
             }
 
-            if (enableWriteData)
+            if (EnableWriteData)
             {
                 lock(dataLock)
                 {
