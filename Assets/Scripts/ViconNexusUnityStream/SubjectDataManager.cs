@@ -125,7 +125,7 @@ namespace ubco.ovilab.ViconUnityStream
         public bool Play { get => play; set => play = value; }
 
         [SerializeField, Tooltip("The jsonl files to load when using StreamType.Recorded")]
-        private List<TextAsset> jsonlFilesToLoad;
+        private List<TextAsset> jsonlFilesToLoad = new();
 
         /// <summary>
         /// The jsonl files to load when using StreamType.Recorded.
