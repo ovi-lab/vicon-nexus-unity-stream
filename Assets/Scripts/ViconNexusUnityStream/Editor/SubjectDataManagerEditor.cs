@@ -17,7 +17,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
         private SerializedProperty scriptProperty, totalFramesProperty, currentFrameProperty,
             fileSaveLocationBaseProperty, fixedFileSaveLocationBaseProperty, playProperty, pathToDataFileProperty,
             jsonlFilesToLoadProperty, enableWriteDataProperty, fileNameBaseProperty,
-            baseURIProperty, streamTypeProperty;
+            baseURIProperty, streamTypeProperty, suppressMissingSubjectWarningProperty;
 
         private bool showDuplicateWarning = false;
         private Texture2D playIcon, pauseIcon, prevIcon, nextIcon, ffwdIcon, frwdIcon;
@@ -42,6 +42,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
             enableWriteDataProperty = serializedObject.FindProperty("enableWriteData");
             fileNameBaseProperty = serializedObject.FindProperty("fileNameBase");
             playProperty = serializedObject.FindProperty("play");
+            suppressMissingSubjectWarningProperty = serializedObject.FindProperty("suppressMissingSubjectWarning");
 
             string packagePath = "Packages/ubc.ok.ovilab.vicon-nexus-unity-stream/Assets/Scripts/ViconNexusUnityStream/Editor/Resources";
             playIcon = (Texture2D)AssetDatabase.LoadAssetAtPath($"{packagePath}/play.png", typeof(Texture2D));
@@ -85,6 +86,7 @@ namespace ubco.ovilab.ViconUnityStream.Editor
                 UpdateContent();
             }
             EditorGUILayout.PropertyField(baseURIProperty);
+            EditorGUILayout.PropertyField(suppressMissingSubjectWarningProperty);
             using(var check = new EditorGUI.ChangeCheckScope())
             {
                 EditorGUILayout.PropertyField(streamTypeProperty);

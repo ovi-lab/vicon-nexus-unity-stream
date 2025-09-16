@@ -135,6 +135,14 @@ namespace ubco.ovilab.ViconUnityStream
         /// <seealso cref="ClearJsonlFilesToLoad"/>
         public ReadOnlyCollection<TextAsset> JsonlFilesToLoad { get => jsonlFilesToLoad.AsReadOnly(); }
 
+        [SerializeField, Tooltip("If set, will not print warnings about missing subject.")]
+        private bool suppressMissingSubjectWarning = false;
+
+        /// <summary>
+        /// If set, will not print warnings about missing subject.
+        /// </summary>
+        public bool SuppressMissingSubjectWarning { get => suppressMissingSubjectWarning; set => suppressMissingSubjectWarning = value; }
+
         /// <summary>
         /// Deserialized data recieved by the data manager.
         /// </summary>
@@ -398,7 +406,10 @@ namespace ubco.ovilab.ViconUnityStream
                 {
                     data[subject.Key] = null;
                     rawData[subject.Key] = null;
-                    Debug.LogWarning($"Missing subject data in frame for `{subject}`");
+                    if (!SuppressMissingSubjectWarning)
+                    {
+                        Debug.LogWarning($"Missing subject data in frame for `{subject}`");
+                    }
                 }
             }
 
@@ -479,7 +490,10 @@ namespace ubco.ovilab.ViconUnityStream
                 {
                     data[subject] = null;
                     rawData[subject] = null;
-                    Debug.LogWarning($"Missing subject data in frame for `{subject}`");
+                    if (!SuppressMissingSubjectWarning)
+                    {
+                        Debug.LogWarning($"Missing subject data in frame for `{subject}`");
+                    }
                 }
             }
 
