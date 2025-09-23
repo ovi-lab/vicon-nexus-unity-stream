@@ -67,6 +67,12 @@ namespace ubco.ovilab.ViconUnityStream
                     forceWrite = true;
                 }
                 enableWriteData = value;
+
+                if (enableWriteData && string.IsNullOrWhiteSpace(pathToDataFile))
+                {
+                    Debug.Log($"Initializing the path to record data.");
+                    SetPathToRecordedData();
+                }
             }
         }
 
@@ -174,7 +180,10 @@ namespace ubco.ovilab.ViconUnityStream
         private void Awake()
         {
             dataToWrite = new Dictionary<string, Dictionary<string, ViconStreamData>>();
-            SetPathToRecordedData();
+            if (EnableWriteData)
+            {
+                SetPathToRecordedData();
+            }
             StartCoroutine(PeriodicallyWriteData());
         }
 
@@ -196,6 +205,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         public string SetPathToRecordedData()
         {
+            // FIXME: on builds, not all the paths are viable
             string basePath = FileSaveLocationBase switch
             {
                 SubjectDataManager.FileSaveLocation.dataPath => Application.dataPath,
@@ -207,6 +217,7 @@ namespace ubco.ovilab.ViconUnityStream
             pathBaseToRecordedData = Path.Combine(
                 basePath,
             pathToDataFile);
+            Debug.Log($"Trying to create {pathBaseToRecordedData}");
             if (!Directory.Exists(pathBaseToRecordedData))
             {
                 Directory.CreateDirectory(pathBaseToRecordedData);
@@ -299,8 +310,10 @@ namespace ubco.ovilab.ViconUnityStream
                 }
                 Debug.Log($"TODO WIRITINGGG222");
                 WriteToFile(pathToRecordedData, dataToWrite);
+#if UNITY_EDITOR
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
+#endif
             }
         }
 
