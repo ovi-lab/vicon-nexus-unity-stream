@@ -1,17 +1,12 @@
 using UnityEngine;
 using TMPro;
-using ubco.ovilab.HPUI.Interaction;
+using ubco.ovilab.HPUI.Core.Interaction;
 
 namespace ubco.ovilab.ViconUnityStream.Samples
 {
     public class SampleInteractions: MonoBehaviour
     {
         public TextMeshPro text;
-
-        public void OnTap(HPUITapEventArgs args)
-        {
-            text.text = $"Tap @ {args.Position}";
-        }
 
         public void OnGesture(HPUIGestureEventArgs args)
         {
