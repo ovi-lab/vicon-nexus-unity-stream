@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using ubco.ovilab.ViconUnityStream.Utils;
 using UnityEngine;
 using UnityEngine.XR.Hands;
 using UnityEngine.Assertions;
-using UnityEngine.Serialization;
 
 namespace ubco.ovilab.ViconUnityStream
 {
@@ -24,17 +22,18 @@ namespace ubco.ovilab.ViconUnityStream
         /// </summary>
         internal static Dictionary<Handedness, CustomHandScript> activeHandScripts = new Dictionary<Handedness, CustomHandScript>();
 
-        [SerializeField]
-        [Tooltip("The radius of each joint to be reported by the xr hands. Joints not in this list will not report radius.")]
+        [Tooltip("The radius of each joint to be reported by the xr hands. Joints not in this list will not report radius."), SerializeField]
         protected List<XRHandJointRadius> xrHandJointRadiiList = new();
 
         [Tooltip("Properties of the hand to be configured"), SerializeField]
-        protected HandProperties handProperties;
+        private HandProperties handProperties;
 
-        [SerializeField] public Handedness handedness = Handedness.Right;
+        [Tooltip("The handedness of this subject"), SerializeField]
+        private Handedness handedness = Handedness.Right;
 
         [Tooltip("If the hand model should be set to a specific scale"), SerializeField]
         protected bool setScale = true;
+
         [Tooltip("The scale the model should be set to if setScale is enabled"), SerializeField]
         protected float scaleToSet = 0.02f;
 
@@ -54,6 +53,24 @@ namespace ubco.ovilab.ViconUnityStream
         {
             get => scaleToSet;
             set => scaleToSet = value;
+        }
+
+        /// <summary>
+        /// Properties of the hand to be configured
+        /// </summary>
+        public HandProperties HandProperties
+        {
+            get => handProperties;
+            set => handProperties = value;
+        }
+
+        /// <summary>
+        /// The handedness of this subject.
+        /// </summary>
+        public Handedness Handedness
+        {
+            get => handedness;
+            set => handedness = value;
         }
 
         protected Vector3 normal;
@@ -135,9 +152,9 @@ namespace ubco.ovilab.ViconUnityStream
         protected override void Start()
         {
             base.Start();
-            Assert.IsNotNull(handProperties, "Hand properties is null.");
+            Assert.IsNotNull(HandProperties, "Hand properties is null.");
 
-            string prefix = handedness == Handedness.Right ? "R": "L";
+            string prefix = Handedness == Handedness.Right ? "R" : "L";
 
             segment_1D1 = prefix + segment_1D1;
             segment_1D2 = prefix + segment_1D2;
@@ -321,11 +338,11 @@ namespace ubco.ovilab.ViconUnityStream
         protected override void OnEnable()
         {
             base.OnEnable();
-            if (activeHandScripts.ContainsKey(handedness))
+            if (activeHandScripts.ContainsKey(Handedness))
             {
-                if (activeHandScripts[handedness] != this)
+                if (activeHandScripts[Handedness] != this)
                 {
-                    Debug.LogWarning($"A CustomHandScript has already been registered for the {handedness}. Disabling thy self.");
+                    Debug.LogWarning($"A CustomHandScript has already been registered for the {Handedness}. Disabling thy self.");
                     gameObject.SetActive(false);
                 }
                 else
@@ -335,7 +352,7 @@ namespace ubco.ovilab.ViconUnityStream
             }
             else
             {
-                activeHandScripts.Add(handedness, this);
+                activeHandScripts.Add(Handedness, this);
             }
         }
 
@@ -343,15 +360,15 @@ namespace ubco.ovilab.ViconUnityStream
         protected override void OnDisable()
         {
             base.OnDisable();
-            if (activeHandScripts.ContainsKey(handedness) && activeHandScripts[handedness] == this)
+            if (activeHandScripts.ContainsKey(Handedness) && activeHandScripts[Handedness] == this)
             {
-                activeHandScripts.Remove(handedness);
+                activeHandScripts.Remove(Handedness);
             }
         }
 
         protected bool isRightHand()
         {
-            return handedness == Handedness.Right;
+            return Handedness == Handedness.Right;
         }
 
         /// <inheritdoc />
@@ -360,7 +377,7 @@ namespace ubco.ovilab.ViconUnityStream
             /// Filling any gaps that can be filled
             if (gapFillingStrategy == GapFillingStrategy.FillRelative)
             {
-                foreach(string segment in segments.Keys.ToList())
+                foreach (string segment in segments.Keys.ToList())
                 {
                     if (segments[segment] == Vector3.zero)
                     {
@@ -374,7 +391,7 @@ namespace ubco.ovilab.ViconUnityStream
             normal = Vector3.Cross(palm, segments[segment_4D1] - segments[segment_3D1]);
             if (!isRightHand())
             {
-                 normal = -normal;
+                normal = -normal;
             }
 
             if (segmentChild.ContainsKey(segment_1D1) && segments[segmentChild[segment_1D1]] != Vector3.zero && segments[segment_1D1] != Vector3.zero)
@@ -616,15 +633,15 @@ namespace ubco.ovilab.ViconUnityStream
                             // Bone.rotation = Quaternion.identity;
                         }
                         if (fingerId == finger_1)
-                            Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.ThumbNormalOffset * 0.01f));
+                            Bone.position += Bone.forward * (HandProperties.BaseNormalOffset * (1 + HandProperties.ThumbNormalOffset * 0.01f));
                         else if (fingerId == finger_3)
-                            Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.MiddleNormalOffset * 0.01f));
+                            Bone.position += Bone.forward * (HandProperties.BaseNormalOffset * (1 + HandProperties.MiddleNormalOffset * 0.01f));
                         else if (fingerId == finger_4)
-                            Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.RingNormalOffset * 0.01f));
+                            Bone.position += Bone.forward * (HandProperties.BaseNormalOffset * (1 + HandProperties.RingNormalOffset * 0.01f));
                         else if (fingerId == finger_5)
-                            Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.LittleNormalOffset * 0.01f));
+                            Bone.position += Bone.forward * (HandProperties.BaseNormalOffset * (1 + HandProperties.LittleNormalOffset * 0.01f));
                         else
-                            Bone.position += Bone.forward * (handProperties.BaseNormalOffset * (1 + handProperties.IndexNormalOffset * 0.01f));
+                            Bone.position += Bone.forward * (HandProperties.BaseNormalOffset * (1 + HandProperties.IndexNormalOffset * 0.01f));
 
                         if (segmentToJointMapping.ContainsKey(BoneName))
                         {
@@ -635,7 +652,7 @@ namespace ubco.ovilab.ViconUnityStream
                 previousSegments[BoneName] = BonePosition;
             }
 
-            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses, xrHandJointRadiiList);
+            ViconXRLoader.TrySetHandSbsystemData(Handedness, xrJointPoses, xrHandJointRadiiList);
 
             AddBoneDataToWriter(Bone);
             if (Bone.name == segment_Hand)
