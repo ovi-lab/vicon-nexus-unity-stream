@@ -26,17 +26,17 @@ namespace ubco.ovilab.ViconUnityStream
 
         [SerializeField]
         [Tooltip("The radius of each joint to be reported by the xr hands. Joints not in this list will not report radius.")]
-        private List<XRHandJointRadius> xrHandJointRadiiList = new();
+        protected List<XRHandJointRadius> xrHandJointRadiiList = new();
 
         [Tooltip("Properties of the hand to be configured"), SerializeField]
-        private HandProperties handProperties;
+        protected HandProperties handProperties;
 
         [SerializeField] public Handedness handedness = Handedness.Right;
 
         [Tooltip("If the hand model should be set to a specific scale"), SerializeField]
-        private bool setScale = true;
+        protected bool setScale = true;
         [Tooltip("The scale the model should be set to if setScale is enabled"), SerializeField]
-        private float scaleToSet = 0.02f;
+        protected float scaleToSet = 0.02f;
 
         /// <summary>
         /// If the hand model should be set to a specific scale
@@ -56,9 +56,9 @@ namespace ubco.ovilab.ViconUnityStream
             set => scaleToSet = value;
         }
 
-        private Vector3 normal;
-        private Vector3 palm;
-        private bool noHand;
+        protected Vector3 normal;
+        protected Vector3 palm;
+        protected bool noHand;
 
         // NOTE: Considered using an enum with a dictionary, but that
         // means using a dictionary lookup everytime a name is needed,
@@ -451,7 +451,7 @@ namespace ubco.ovilab.ViconUnityStream
             return segments;
         }
 
-        private Matrix4x4 handWorldToLocalMatrix;
+        protected Matrix4x4 handWorldToLocalMatrix;
 
         protected override string ConstructFinalWriterString()
         {
@@ -466,7 +466,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <summary>
         /// When a segment is missing, try to assertain its position based on the adjacent segment data.
         /// </summary>
-        private Vector3 FillWithRelativeAdjacent(string boneName, Dictionary<string, Vector3> _segments)
+        protected Vector3 FillWithRelativeAdjacent(string boneName, Dictionary<string, Vector3> _segments)
         {
             if (gapFillingStrategy != GapFillingStrategy.FillRelative)
             {
