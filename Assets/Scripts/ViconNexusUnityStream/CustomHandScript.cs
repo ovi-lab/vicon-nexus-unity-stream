@@ -73,6 +73,19 @@ namespace ubco.ovilab.ViconUnityStream
             set => handedness = value;
         }
 
+        /// <summary>
+        /// If not null, will be used to feed data.
+        /// If the <see cref="ViconXRSettings.EnableXRHandSubsystem"/> is true, the subsystem
+        /// configured in <see cref="ViconXRLoader.HandSubsystem"/> will be set to this.
+        /// </summary>
+        /// <seealso cref="ViconXRLoader"/>
+        /// <seealso cref="ViconXRSettings"/>
+        public ViconHandSubsystem HandSubsystem
+        {
+            get => handSubsystem;
+            set => handSubsystem = value;
+        }
+
         protected Vector3 normal;
         protected Vector3 palm;
         protected bool noHand;
@@ -148,6 +161,8 @@ namespace ubco.ovilab.ViconUnityStream
 
         protected Dictionary<string, XRHandJointID> segmentToJointMapping;
         protected Dictionary<XRHandJointID, Pose> xrJointPoses;
+
+        protected ViconHandSubsystem handSubsystem;
 
         protected override void Start()
         {
@@ -332,6 +347,7 @@ namespace ubco.ovilab.ViconUnityStream
                 {segment_5D4, XRHandJointID.LittleTip},
 
             };
+            handSubsystem = ViconXRLoader.Instance.HandSubsystem;
         }
 
         /// <inheritdoc />
@@ -652,7 +668,10 @@ namespace ubco.ovilab.ViconUnityStream
                 previousSegments[BoneName] = BonePosition;
             }
 
-            ViconXRLoader.TrySetHandSbsystemData(Handedness, xrJointPoses, xrHandJointRadiiList);
+            if (handSubsystem != null)
+            {
+                handSubsystem.SetHandJointPoses(Handedness, xrJointPoses, xrHandJointRadiiList);
+            }
 
             AddBoneDataToWriter(Bone);
             if (Bone.name == segment_Hand)

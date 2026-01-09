@@ -13,7 +13,9 @@ namespace ubco.ovilab.ViconUnityStream
         static List<XRHandSubsystemDescriptor> xrHandsSubsystemDescriptors = new();
 
         private ViconXRSettings settings;
-        private static ViconXRLoader loader;
+        public static ViconXRLoader Instance => instance;
+
+        private static ViconXRLoader instance;
 
         /// <summary>
         /// Return the currently active Input Subsystem intance, if any.
@@ -34,14 +36,14 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         private void Awake()
         {
-            loader = this;
+            instance = this;
         }
 
         /// <inheritdoc />
         private void OnEnable()
         {
             // Duplicate because of how Unity handles these calls!
-            loader = this;
+            instance = this;
         }
 
         /// <inheritdoc />
@@ -63,7 +65,7 @@ namespace ubco.ovilab.ViconUnityStream
         {
             HandSubsystem?.Destroy();
             XRDevice?.Destroy();
-            loader = null;
+            instance = null;
         }
 
         internal static ViconXRSettings GetSettings()
@@ -76,20 +78,20 @@ namespace ubco.ovilab.ViconUnityStream
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         internal static void Initialize()
         {
-            if (loader == null)
+            if (instance == null)
             {
                 Debug.LogError($"Loader is not set");
                 return;
             }
 
-            loader.settings = GetSettings();
-            if (loader.settings == null)
+            instance.settings = GetSettings();
+            if (instance.settings == null)
             {
                 Debug.LogError($"Vicon XR Setting not loaded!");
                 return;
             }
 
-            if (loader.settings.EnableXRHandSubsystem)
+            if (instance.settings.EnableXRHandSubsystem)
             {
                 SubsystemManager.GetSubsystemDescriptors<XRHandSubsystemDescriptor>(xrHandsSubsystemDescriptors);
 
@@ -99,48 +101,37 @@ namespace ubco.ovilab.ViconUnityStream
                     {
                         if (String.Compare(descriptor.id, ViconXRConstants.handSubsystemId, true) == 0)
                         {
-                            loader.HandSubsystem = descriptor.Create() as ViconHandSubsystem;
+                            instance.HandSubsystem = descriptor.Create() as ViconHandSubsystem;
                             break;
                         }
                     }
                 }
-                if (loader.HandSubsystem == null)
+                if (instance.HandSubsystem == null)
                 {
                     Debug.LogError($"{typeof(ViconHandSubsystem).Name} failed to configure!");
                 }
                 else
                 {
-                    loader.HandSubsystem?.Start();
+                    instance.HandSubsystem?.Start();
                     Debug.Log($"{typeof(ViconHandSubsystem).Name} configured!");
                 }
             }
 
-            if (loader.settings.EnableViconXRDevice)
+            if (instance.settings.EnableViconXRDevice)
             {
-                loader.XRDevice = ViconXRDevice.SetupDevice();
+                instance.XRDevice = ViconXRDevice.SetupDevice();
             }
         }
 
         #region Passing data to subsystems
         /// <summary>
-        /// Set hand subsystem data.
-        /// </summary>
-        public static void TrySetHandSbsystemData(Handedness handedness, Dictionary<XRHandJointID, Pose> poses, List<XRHandJointRadius> radii)
-        {
-            if (loader != null)
-            {
-                loader.HandSubsystem?.SetHandJointPoses(handedness, poses, radii);
-            }
-        }
-
-        /// <summary>
         /// If the loader is setup and configured, set the hwd data in the HMD device.
         /// </summary>
         public static void TrySetXRDeviceData(Vector3 pos, Quaternion rot)
         {
-            if (loader != null && loader.settings != null)
+            if (instance != null && instance.settings != null)
             {
-                loader.XRDevice?.SetDeviceData(pos, rot);
+                instance.XRDevice?.SetDeviceData(pos, rot);
             }
         }
         #endregion

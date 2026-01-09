@@ -22,6 +22,20 @@ namespace ubco.ovilab.ViconUnityStream
         [SerializeField]
         public Handedness handedness = Handedness.Right;
 
+
+        /// <summary>
+        /// If not null, will be used to feed data.
+        /// If the <see cref="ViconXRSettings.EnableXRHandSubsystem"/> is true, the subsystem
+        /// configured in <see cref="ViconXRLoader.HandSubsystem"/> will be set to this.
+        /// </summary>
+        /// <seealso cref="ViconXRLoader"/>
+        /// <seealso cref="ViconXRSettings"/>
+        public ViconHandSubsystem HandSubsystem
+        {
+            get => handSubsystem;
+            set => handSubsystem = value;
+        }
+
         // NOTE: Considered using an enum with a dictionary, but that
         // means using a dictionary lookup everytime a name is needed,
         // so doing it the ugly (or not?) way
@@ -100,6 +114,8 @@ namespace ubco.ovilab.ViconUnityStream
 
         protected Dictionary<string, XRHandJointID> segmentToJointMapping;
         protected Dictionary<XRHandJointID, Pose> xrJointPoses;
+
+        protected ViconHandSubsystem handSubsystem;
 
         protected override void Start()
         {
@@ -486,8 +502,11 @@ namespace ubco.ovilab.ViconUnityStream
                 previousSegments[segmentName] = segmentPosition;
             }
 
-            // FIXME: pass radius
-            ViconXRLoader.TrySetHandSbsystemData(handedness, xrJointPoses, null);
+            if (handSubsystem != null)
+            {
+                // FIXME: pass radius
+                handSubsystem.SetHandJointPoses(handedness, xrJointPoses, null);
+            }
 
             return segments;
         }

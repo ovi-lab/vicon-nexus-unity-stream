@@ -106,6 +106,7 @@ namespace ubco.ovilab.ViconUnityStream
         /// <inheritdoc />
         public override void Start()
         {
+            subsystemUpdater?.Start();
             jointsPoses.Clear();
         }
 
